@@ -40,7 +40,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         self.window = UIWindow(frame: UIScreen.main.bounds)
-        window?.rootViewController = ViewController()
+        let mainVC = FirstViewController()
+        let navigationController = UINavigationController(rootViewController: mainVC)
+        window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
         return true
     }
@@ -52,7 +54,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
-//метод уменуется как WILL resign active, метода didResignActive не предусмотренно, но по документации, здесь мы преходим в state Inactive, поэтому задал nowState вручную
+        
+//метод уменуется как WILL resign active, метода didResignActive не предусмотренно, но по документации, здесь мы преходим в state Inactive, поэтому задал actualState вручную
         actualState = "Inactive"
         print("Application moved from \(previousState) to \(actualState): \(#function)")
         previousState = actualState
@@ -65,7 +68,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-//по аналогии с willResignActive
+        
+//по аналогии с willResignActive, при вызове этого метода приложение только БУДЕТ переведено в inactive
         actualState = "Inactive"
         print("Application moved from \(previousState) to \(actualState): \(#function)")
         previousState = actualState
@@ -75,5 +79,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         actualState = "Not Running"
         print("Application moved from \(previousState) to \(actualState): \(#function)")
     }
-//можно отметить, что state Suspended в AppDelegate отловить невозможно, так как в этот state приложение переводит сама система, AppDelegate о нем не знает
+
+//могу предположить, что стейт Suspended в AppDelegate отловить невозможно, так как система не вызывает какой либо метод в AppDelegate, а таковой метод и не предусмотрен. Причина по которой его не предусмотрели, наверняка в том, что когда приложение переходит в Suspended, оно вообще не выполняет какого либо кода, а остается в памяти. Даже если представить что у нас есть условный didBecomeSuspended(), код в этом методе не будет выполняться, потому что приложение перешло в Suspended, вот поэтому и в действительности подобного метода нет. *надеюсь это предположение похоже на правду*
+}
+
+//Метод ниже реализует отключение логирования, необходимо в Edit scheme переключить Build Configuration на Release. 
+public func print(_ object: Any) {
+#if DEBUG
+    Swift.print(object)
+#endif
 }
