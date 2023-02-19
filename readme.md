@@ -1,6 +1,6 @@
-Поддержка iPhone
-Ориентация только портрет
-Deployment Target - iOS 14.0
+Поддержка iPhone<br />
+Ориентация только портрет<br />
+Deployment Target - iOS 14.0<br />
 
 Для логирования state'ов использовал метод .applicationState, в каждом методе жизненного цикла.
 
