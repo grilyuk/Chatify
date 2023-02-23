@@ -13,9 +13,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //MARK: Properties
     var window: UIWindow?
 
+    let log = Logger(shouldLog: false)
     var actualState = ""
     var previousState = ""
-    let log = Logger()
 
     //MARK: Method for show the application state as string
     func getState(state: UIApplication.State) -> String {
@@ -42,8 +42,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         self.window = UIWindow(frame: UIScreen.main.bounds)
-        let firstVC = FirstViewController()
-        window?.rootViewController = firstVC
+        let mainVC = MainViewController()
+        window?.rootViewController = mainVC
         window?.makeKeyAndVisible()
         return true
     }
@@ -55,9 +55,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
-        let secVC = SecondViewController()
-        window?.rootViewController = secVC
-//метод уменуется как WILL resign active, метода didResignActive не предусмотренно, но по документации, здесь мы преходим в state Inactive, поэтому задал actualState вручную
         actualState = "Inactive"
         log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState
@@ -70,9 +67,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-        let firstVC = FirstViewController()
+        let firstVC = MainViewController()
         window?.rootViewController = firstVC
-//по аналогии с willResignActive, при вызове этого метода приложение только БУДЕТ переведено в Inactive
         actualState = "Inactive"
         log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState
@@ -82,6 +78,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         actualState = "Not Running"
         log.handleLog(actualState: actualState, previousState: previousState)
     }
-
-//могу предположить, что стейт Suspended в AppDelegate отловить невозможно, так как система не вызывает какой либо метод в AppDelegate, а таковой метод и не предусмотрен. Причина по которой его не предусмотрели, наверняка в том, что когда приложение переходит в Suspended, оно вообще не выполняет какого либо кода, а остается в памяти. Даже если представить что у нас есть условный didBecomeSuspended(), код в этом методе не будет выполняться, потому что приложение перешло в Suspended и никакого кода выполнять не может,  поэтому и в действительности подобного метода нет, он будет бессмысленным.
 }

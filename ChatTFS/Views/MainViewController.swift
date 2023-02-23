@@ -7,15 +7,19 @@
 
 import UIKit
 
-class FirstViewController: UIViewController {
+class MainViewController: UIViewController {
 
-    let log = Logger()
-    
+    let log = Logger(shouldLog: false)
+
     //MARK: ViewController Lifeсycle methods
+    override func loadView() {
+        super.loadView()
+        log.handleLog(actualState: nil, previousState: nil)
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        log.handleLog(actualState: nil, previousState: nil)
-        view.backgroundColor = .systemYellow
+        view.backgroundColor = .white
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -26,6 +30,8 @@ class FirstViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         log.handleLog(actualState: nil, previousState: nil)
+        let profileVC = ProfileViewController()
+        present(profileVC, animated: true)
     }
 
     override func viewWillLayoutSubviews() {
