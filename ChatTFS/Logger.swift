@@ -8,39 +8,45 @@
 import Foundation
 
 class Logger {
-
+    
     var shouldLog: Bool
+    var logType: LogType
     var description = ""
-
-    init(shouldLog: Bool) {
+    
+    init(shouldLog: Bool, logType: LogType) {
         self.shouldLog = shouldLog
+        self.logType = logType
     }
     
     enum LogType {
         case app
         case viewController
+        case frame
     }
-
+    
     func handleLog(function: String = #function, actualState: String?, previousState: String?) {
         if shouldLog == true {
-            var logType: LogType
-
-            if previousState == nil && actualState == nil {
-                logType = .viewController
-            } else {
-                logType = .app
-            }
-
             switch logType {
             case .app:
                 description = "Application moved from \(previousState ?? "") to \(actualState ?? ""): \(function)"
             case .viewController:
                 description = "Called method: \(function)"
+            case .frame:
+                description = ""
             }
-
+            
             #if DEBUG
             print(description)
             #endif
         }
+    }
+    
+    func handleFrame(frame: String?) {
+        if shouldLog == true {
+            description = "Frame is: \(frame ?? "")"
+        }
+        #if DEBUG
+        print(description)
+        #endif
     }
 }

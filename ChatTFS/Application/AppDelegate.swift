@@ -11,9 +11,8 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     //MARK: Properties
-    var window: UIWindow?
-
-    let log = Logger(shouldLog: false)
+    lazy var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
+    let log = Logger(shouldLog: false, logType: .app)
     var actualState = ""
     var previousState = ""
 
@@ -41,8 +40,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        self.window = UIWindow(frame: UIScreen.main.bounds)
         let mainVC = MainViewController()
+        window?.overrideUserInterfaceStyle = .light
         window?.rootViewController = mainVC
         window?.makeKeyAndVisible()
         return true

@@ -10,6 +10,7 @@ import UIKit
 class ProfileViewController: UIViewController, UINavigationBarDelegate {
 
     //MARK: Private properties
+    private let log = Logger(shouldLog: true, logType: .frame)
     private let navigationBar = UINavigationBar()
     private let profileImage = UIImageView()
     private let addPhotoButton = UIButton(type: .system)
@@ -33,8 +34,21 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
 
     //MARK: Lifeceycle
+    
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        let frame = addPhotoButton.frame.debugDescription.description
+        log.handleFrame(frame: frame)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        let frame = addPhotoButton.frame.debugDescription.description
+        log.handleFrame(frame: frame)
         view.backgroundColor = .white
         setupUI()
     }
@@ -47,6 +61,12 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         profileImage.layer.addSublayer(gradient)
         profileImage.layer.cornerRadius = profileImage.frame.height / 2
         profileImage.clipsToBounds = true
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        let frame = addPhotoButton.frame.debugDescription.description
+        log.handleFrame(frame: frame)
     }
 
     //MARK: Setup UI
@@ -113,7 +133,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     private func setFullNameLabel() {
         view.addSubview(fullNameLabel)
         fullNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        fullNameLabel.text = "Srigoriy Janilyuk"
+        fullNameLabel.text = "Grigoriy Danilyuk"
         fullNameLabel.font = UIFont.systemFont(ofSize: UIConstants.largerFontSize, weight: .bold)
         
         NSLayoutConstraint.activate([

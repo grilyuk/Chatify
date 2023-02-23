@@ -9,7 +9,7 @@ import UIKit
 
 class MainViewController: UIViewController {
 
-    let log = Logger(shouldLog: false)
+    let log = Logger(shouldLog: false, logType: .viewController)
 
     //MARK: ViewController Lifeсycle methods
     override func loadView() {
