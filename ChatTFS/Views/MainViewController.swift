@@ -11,7 +11,7 @@ class MainViewController: UIViewController {
 
     let log = Logger(shouldLog: false, logType: .viewController)
 
-    //MARK: ViewController Lifeсycle methods
+    //MARK: MainViewController Lifeсycle methods
     override func loadView() {
         super.loadView()
         log.handleLog(actualState: nil, previousState: nil)
