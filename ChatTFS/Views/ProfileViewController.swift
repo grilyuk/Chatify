@@ -7,10 +7,11 @@
 
 import UIKit
 
-class ProfileViewController: UIViewController, UINavigationBarDelegate {
+class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
     
     //MARK: Private properties
     private let log = Logger(shouldLog: true, logType: .frame)
+    private let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
     private let navigationBar = UINavigationBar()
     private let profileImage = UIImageView()
     private let addPhotoButton = UIButton(type: .system)
@@ -19,32 +20,19 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     private let userInitialsLabel = UILabel()
     
     //MARK: UIConstants
-    private enum UIConstants {
-        static let fontSize: CGFloat = 17
-        static let largerFontSize: CGFloat = 22
-        static let initialsFontSize: CGFloat = 68
-        static let navBarHeight: CGFloat = 56
-        static let navBarToProfileImage: CGFloat = 32
-        static let imageProfileSize: CGFloat = 150
-        static let imageProfileToAddPhoto: CGFloat = 24
-        static let addPhotoToNameLabel: CGFloat = 24
-        static let nameLabelToInfoText: CGFloat = 10
-        static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
-        static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
-    }
+    private let UIConstants = UIConstant.self
     
-    //MARK: Lifeceycle
-
+    //MARK: Lifecycle
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
         let frame = addPhotoButton.frame.debugDescription.description
         log.handleFrame(frame: frame)
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         let frame = addPhotoButton.frame.debugDescription.description
@@ -52,7 +40,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         view.backgroundColor = .white
         setupUI()
     }
-
+    
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         let gradient = CAGradientLayer()
@@ -62,13 +50,13 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         profileImage.layer.cornerRadius = profileImage.frame.height / 2
         profileImage.clipsToBounds = true
     }
-
+    
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         let frame = addPhotoButton.frame.debugDescription.description
         log.handleFrame(frame: frame)
     }
-
+    
     //MARK: Setup UI
     private func setupUI() {
         setNavBar()
@@ -78,11 +66,11 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         setInfoText()
         setInitialsLabel()
     }
-
+    
     private func setNavBar() {
         view.addSubview(navigationBar)
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let navTitle = UINavigationItem(title: "My Profile")
         let navCloseButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(closeProfileTapped))
         let navEditProfile = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editProfileTapped))
@@ -97,7 +85,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         navTitle.rightBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
         navTitle.leftBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
         navigationBar.setItems([navTitle], animated: false)
-
+        
         NSLayoutConstraint.activate([
             navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -174,17 +162,19 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
             userInitialsLabel.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor)
         ])
     }
-    
+
     @objc func editProfileTapped() {
         //temporary empty
     }
-    
+
     @objc func closeProfileTapped() {
         self.dismiss(animated: true)
     }
     
     @objc func addPhototapped() {
-        let chooseAction = AlertController()
-        self.present(chooseAction, animated: true)
+        let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        present(alert, animated: true) {
+            alert.vc = self
+        }
     }
 }
