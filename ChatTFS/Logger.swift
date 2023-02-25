@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 class Logger {
     
@@ -32,18 +33,17 @@ class Logger {
             case .viewController:
                 description = "Called method: \(function)"
             case .frame:
-                description = ""
+                description = "Wrong method, choose 'handleFrame'"
             }
-            
             #if DEBUG
             print(description)
             #endif
         }
     }
     
-    func handleFrame(frame: String?) {
+    func handleFrame(frame: String?, function: String = #function, object: String) {
         if shouldLog == true {
-            description = "Frame is: \(frame ?? "")"
+            description = "Frame equal \(object): \(frame ?? "") in \(function)"
         }
         #if DEBUG
         print(description)

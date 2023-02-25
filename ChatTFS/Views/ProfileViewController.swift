@@ -7,13 +7,16 @@
 
 import UIKit
 
-class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
+class ProfileViewController: UIViewController, UINavigationBarDelegate {
+    
+    //MARK: Public properties
+    public let profileImageView = UIImageView()
     
     //MARK: Private properties
     private let log = Logger(shouldLog: true, logType: .frame)
     private let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
     private let navigationBar = UINavigationBar()
-    private let profileImage = UIImageView()
+    private let gradient = CAGradientLayer()
     private let addPhotoButton = UIButton(type: .system)
     private let fullNameLabel = UILabel()
     private let infoText = UITextView()
@@ -25,8 +28,9 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
     //MARK: Lifecycle
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+// здесь происходит инициализация нашего контроллера, о границах вьюшек не может идти и речи, так как мы еще даже не знаем есть они у нас или нет
         let frame = addPhotoButton.frame.debugDescription.description
-        log.handleFrame(frame: frame)
+        log.handleFrame(frame: frame, object: "addPhotoButton")
     }
     
     required init?(coder: NSCoder) {
@@ -35,26 +39,38 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
     
     override func viewDidLoad() {
         super.viewDidLoad()
+// в данном методе ЖЦ, наши вьюшки уже занесены в память, но не отображены на экране
+// здесь не происходят вычисления их границ, пока мы просто знаем что они у нас есть и дальше мы можем с ними работать
         let frame = addPhotoButton.frame.debugDescription.description
-        log.handleFrame(frame: frame)
+        log.handleFrame(frame: frame, object: "addPhotoButton")
         view.backgroundColor = .white
         setupUI()
     }
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        let gradient = CAGradientLayer()
-        gradient.colors = [UIConstants.imageProfileTopColor.cgColor, UIConstants.imageProfileBottomColor.cgColor]
-        gradient.frame = profileImage.bounds
-        profileImage.layer.addSublayer(gradient)
-        profileImage.layer.cornerRadius = profileImage.frame.height / 2
-        profileImage.clipsToBounds = true
+        if profileImageView.image == nil {
+            gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
+                               UIConstants.imageProfileBottomColor.cgColor]
+            gradient.frame = profileImageView.bounds
+            profileImageView.layer.addSublayer(gradient)
+        } else {
+            gradient.removeFromSuperlayer()
+            userInitialsLabel.isHidden = true
+            profileImageView.contentMode = .scaleAspectFill
+        }
+        profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
+        profileImageView.clipsToBounds = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
+// уже здесь, отработали методы AutoLayout'a и viewDid/WillLayoutSubviews
+// эти методы в свою очередь как раз отвечают за вычисление границ и размеров наших
+// viewDidAppear срабатывает уже после отображения на экране устройства
+// поэтому во viewDidAppear мы уже видим итоговое значение frame нашей кнопки, так как предыдущие методы его вычислили
         let frame = addPhotoButton.frame.debugDescription.description
-        log.handleFrame(frame: frame)
+        log.handleFrame(frame: frame, object: "addPhotoButton")
     }
     
     //MARK: Setup UI
@@ -95,14 +111,14 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
     }
     
     private func setProfileImage() {
-        view.addSubview(profileImage)
-        profileImage.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(profileImageView)
+        profileImageView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            profileImage.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
-            profileImage.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
-            profileImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            profileImage.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: UIConstants.navBarToProfileImage)
+            profileImageView.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
+            profileImageView.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
+            profileImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            profileImageView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: UIConstants.navBarToProfileImage)
         ])
     }
     
@@ -113,9 +129,8 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
         addPhotoButton.titleLabel?.font = UIFont.systemFont(ofSize: UIConstants.fontSize)
         addPhotoButton.addTarget(self, action: #selector(addPhototapped), for: .touchUpInside)
         
-        
         NSLayoutConstraint.activate([
-            addPhotoButton.topAnchor.constraint(equalTo: profileImage.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
+            addPhotoButton.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
             addPhotoButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
@@ -131,7 +146,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
             fullNameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
-    
+
     private func setInfoText() {
         view.addSubview(infoText)
         infoText.translatesAutoresizingMaskIntoConstraints = false
@@ -146,7 +161,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
             infoText.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
-    
+
     private func setInitialsLabel() {
         view.addSubview(userInitialsLabel)
         userInitialsLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -158,8 +173,8 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
         userInitialsLabel.textColor = .white
         
         NSLayoutConstraint.activate([
-            userInitialsLabel.centerXAnchor.constraint(equalTo: profileImage.centerXAnchor),
-            userInitialsLabel.centerYAnchor.constraint(equalTo: profileImage.centerYAnchor)
+            userInitialsLabel.centerXAnchor.constraint(equalTo: profileImageView.centerXAnchor),
+            userInitialsLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor)
         ])
     }
 
@@ -170,7 +185,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate, UIImageP
     @objc func closeProfileTapped() {
         self.dismiss(animated: true)
     }
-    
+
     @objc func addPhototapped() {
         let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         present(alert, animated: true) {
