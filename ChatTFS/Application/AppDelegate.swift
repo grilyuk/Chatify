@@ -30,7 +30,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    //MARK: App Lifecycle methods
+    //MARK: Lifecycle
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         previousState = "Not running"
         actualState = getState(state: application.applicationState)
@@ -40,7 +40,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let mainVC = MainViewController()
+        window?.overrideUserInterfaceStyle = .light
+        let mainVC = MainModuleBuilder().mainBuild()
         window?.rootViewController = mainVC
         window?.makeKeyAndVisible()
         return true
@@ -65,8 +66,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-        let firstVC = MainViewController()
-        window?.rootViewController = firstVC
         actualState = "Inactive"
         log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState

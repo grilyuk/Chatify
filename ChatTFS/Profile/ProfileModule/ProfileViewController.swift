@@ -7,12 +7,18 @@
 
 import UIKit
 
+protocol ProfileViewProtocol: AnyObject {
+    func showProfile(profile: ProfileModel)
+}
+
 class ProfileViewController: UIViewController, UINavigationBarDelegate {
-    
-    //MARK: Properties
-    public let profileImageView = UIImageView()
+    var presenter: ProfilePresenterProtocol?
     private let log = Logger(shouldLog: true, logType: .frame)
-    private let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+    
+    //MARK: Public
+    public let profileImageView = UIImageView()
+    
+    //MARK: Private
     private let navigationBar = UINavigationBar()
     private let gradient = CAGradientLayer()
     private let addPhotoButton = UIButton(type: .system)
@@ -39,6 +45,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         super.viewDidLoad()
 // в данном методе ЖЦ, наши вьюшки уже занесены в память, но не отображены на экране
 // здесь не происходят вычисления их границ, пока мы просто знаем что они у нас есть и дальше мы можем с ними работать
+        presenter?.viewDidLoaded()
         let frame = addPhotoButton.frame.debugDescription
         log.handleFrame(frame: frame, object: "addPhotoButton")
         view.backgroundColor = .white
@@ -136,7 +143,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     private func setFullNameLabel() {
         view.addSubview(fullNameLabel)
         fullNameLabel.translatesAutoresizingMaskIntoConstraints = false
-        fullNameLabel.text = "Grigoriy Danilyuk"
         fullNameLabel.font = UIFont.systemFont(ofSize: UIConstants.largerFontSize, weight: .bold)
 
         NSLayoutConstraint.activate([
@@ -151,7 +157,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         infoText.textAlignment = .center
         infoText.font = UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)
         infoText.textColor = .gray
-        infoText.text = "Almost iOS Developer \nSaint-Petersburg, Russia"
         infoText.isScrollEnabled = false
 
         NSLayoutConstraint.activate([
@@ -189,5 +194,14 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         present(alert, animated: true) {
             alert.vc = self
         }
+    }
+}
+
+//MARK: ProfileViewController + ProfileViewProtocol
+extension ProfileViewController: ProfileViewProtocol {
+    func showProfile(profile: ProfileModel) {
+        self.fullNameLabel.text = profile.fullName
+        self.infoText.text = profile.statusText
+        self.profileImageView.image = profile.profileImage
     }
 }
