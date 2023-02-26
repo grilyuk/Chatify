@@ -26,7 +26,7 @@ class ImagePickerController: UIImagePickerController, UIImagePickerControllerDel
         if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             self.imagePicked = image
             guard vc != nil else { return }
-            vc?.profileImageView.image = imagePicked
+            vc?.profileImageView.image = image
             vc?.viewDidLayoutSubviews()
             self.dismiss(animated: true)
         }

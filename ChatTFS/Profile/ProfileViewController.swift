@@ -20,10 +20,10 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     
     //MARK: Private
     private let navigationBar = UINavigationBar()
-    private let gradient = CAGradientLayer()
+    lazy var gradient = CAGradientLayer()
     private let addPhotoButton = UIButton(type: .system)
     private let fullNameLabel = UILabel()
-    private let infoText = UITextView()
+    private let statusText = UITextView()
     private let userInitialsLabel = UILabel()
 
     //MARK: UIConstants
@@ -32,7 +32,8 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     //MARK: Lifecycle
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-// здесь происходит инициализация нашего контроллера, о границах вьюшек не может идти и речи, так как мы еще даже не знаем есть они у нас или нет
+// здесь происходит инициализация нашего контроллера
+// о границах вьюшек мы еще не знаем
         let frame = addPhotoButton.frame.debugDescription.description
         log.handleFrame(frame: frame, object: "addPhotoButton")
     }
@@ -152,26 +153,28 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
 
     private func setInfoText() {
-        view.addSubview(infoText)
-        infoText.translatesAutoresizingMaskIntoConstraints = false
-        infoText.textAlignment = .center
-        infoText.font = UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)
-        infoText.textColor = .gray
-        infoText.isScrollEnabled = false
+        view.addSubview(statusText)
+        statusText.translatesAutoresizingMaskIntoConstraints = false
+        statusText.textAlignment = .center
+        statusText.font = UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)
+        statusText.textColor = .gray
+        statusText.isScrollEnabled = false
 
         NSLayoutConstraint.activate([
-            infoText.topAnchor.constraint(equalTo: fullNameLabel.bottomAnchor, constant: UIConstants.nameLabelToInfoText),
-            infoText.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            statusText.topAnchor.constraint(equalTo: fullNameLabel.bottomAnchor, constant: UIConstants.nameLabelToInfoText),
+            statusText.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
 
     private func setInitialsLabel() {
         view.addSubview(userInitialsLabel)
         userInitialsLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        guard let initials = fullNameLabel.text else { return }
-        userInitialsLabel.text = initials.components(separatedBy: " ")
-            .reduce("") {($0 == "" ? "" : "\($0.first ?? " ")") + "\($1.first ?? " ")"}
+        
+        let formatter = PersonNameComponentsFormatter()
+        guard let initials = fullNameLabel.text,
+        let components = formatter.personNameComponents(from: initials) else { return }
+        formatter.style = .abbreviated
+        userInitialsLabel.text = formatter.string(from: components)
         userInitialsLabel.font = .rounded(ofSize: UIConstants.initialsFontSize, weight: .semibold)
         userInitialsLabel.textColor = .white
 
@@ -201,7 +204,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
 extension ProfileViewController: ProfileViewProtocol {
     func showProfile(profile: ProfileModel) {
         self.fullNameLabel.text = profile.fullName
-        self.infoText.text = profile.statusText
+        self.statusText.text = profile.statusText
         self.profileImageView.image = profile.profileImage
     }
 }

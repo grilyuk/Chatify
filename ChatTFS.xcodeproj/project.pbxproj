@@ -86,9 +86,11 @@
 		5EB6218129AB601B00029FB8 /* Profile */ = {
 			isa = PBXGroup;
 			children = (
-				5EB6219D29ABA6E900029FB8 /* ProfileModule */,
-				5E74BCB329A8DCA3009236A1 /* AlertController.swift */,
-				5E74BCB529A8E438009236A1 /* ImagePickerController.swift */,
+				5E08ADC229A16B10004510A6 /* ProfileViewController.swift */,
+				5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */,
+				5EB6218229AB609700029FB8 /* ProfilePresenter.swift */,
+				5EB6218629AB60BC00029FB8 /* ProfileRouter.swift */,
+				5EB6218829AB60D600029FB8 /* ProfileModuleBuilder.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -103,24 +105,21 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
-		5EB6219D29ABA6E900029FB8 /* ProfileModule */ = {
-			isa = PBXGroup;
-			children = (
-				5E08ADC229A16B10004510A6 /* ProfileViewController.swift */,
-				5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */,
-				5EB6218229AB609700029FB8 /* ProfilePresenter.swift */,
-				5EB6218629AB60BC00029FB8 /* ProfileRouter.swift */,
-				5EB6218829AB60D600029FB8 /* ProfileModuleBuilder.swift */,
-			);
-			path = ProfileModule;
-			sourceTree = "<group>";
-		};
 		5EB6219E29ABACF800029FB8 /* Models */ = {
 			isa = PBXGroup;
 			children = (
 				5EB6218A29AB683B00029FB8 /* ProfileModel.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		5EB621A029ABBA6700029FB8 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				5E74BCB329A8DCA3009236A1 /* AlertController.swift */,
+				5E74BCB529A8E438009236A1 /* ImagePickerController.swift */,
+			);
+			path = Services;
 			sourceTree = "<group>";
 		};
 		5EDC6586299ECEAD009B6586 = {
@@ -146,6 +145,7 @@
 				5EB6218029AB600500029FB8 /* Main */,
 				5EB6218129AB601B00029FB8 /* Profile */,
 				5EB6219E29ABACF800029FB8 /* Models */,
+				5EB621A029ABBA6700029FB8 /* Services */,
 				5EB6219C29ABA6AF00029FB8 /* Extensions */,
 				5EDC65A6299EE2C3009B6586 /* Resources */,
 			);
@@ -398,7 +398,6 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -431,7 +430,6 @@
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
-				INFOPLIST_KEY_UIUserInterfaceStyle = Light;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
