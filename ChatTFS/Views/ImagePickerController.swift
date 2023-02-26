@@ -8,16 +8,19 @@
 import UIKit
 
 class ImagePickerController: UIImagePickerController, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
-    
+
+    //MARK: Properties
     var imagePicked: UIImage?
     var vc: ProfileViewController?
-    
+
+    //MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         self.delegate = self
         self.allowsEditing = true
     }
-    
+
+    //MARK: Methods
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
 
         if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
@@ -25,7 +28,7 @@ class ImagePickerController: UIImagePickerController, UIImagePickerControllerDel
             guard vc != nil else { return }
             vc?.profileImageView.image = imagePicked
             vc?.viewDidLayoutSubviews()
-            self.dismiss(animated: true, completion: nil)
+            self.dismiss(animated: true)
         }
     }
 }

@@ -43,7 +43,7 @@ class Logger {
     
     func handleFrame(frame: String?, function: String = #function, object: String) {
         if shouldLog == true {
-            description = "Frame equal \(object): \(frame ?? "") in \(function)"
+            description = "Frame \(object) equal : \(frame ?? "") in \(function)"
         }
         #if DEBUG
         print(description)
