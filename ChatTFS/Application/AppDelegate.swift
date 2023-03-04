@@ -11,8 +11,8 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     //MARK: Properties
-    var window: UIWindow?
-
+    lazy var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
+    let log = Logger(shouldLog: false, logType: .app)
     var actualState = ""
     var previousState = ""
 
@@ -30,64 +30,49 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
 
-    //MARK: App Lifecycle methods
+    //MARK: Lifecycle
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         previousState = "Not running"
         actualState = getState(state: application.applicationState)
-        print("Application moved from \(previousState) to \(actualState): \(#function)")
+        log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState
         return true
     }
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        self.window = UIWindow(frame: UIScreen.main.bounds)
-        let firstVC = FirstViewController()
-        window?.rootViewController = firstVC
+        window?.overrideUserInterfaceStyle = .light
+        let mainVC = MainModuleBuilder().mainBuild()
+        window?.rootViewController = mainVC
         window?.makeKeyAndVisible()
         return true
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
         actualState = getState(state: application.applicationState)
-        print("Application moved from \(previousState) to \(actualState): \(#function)")
+        log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState
     }
 
     func applicationWillResignActive(_ application: UIApplication) {
-        let secVC = SecondViewController()
-        window?.rootViewController = secVC
-//метод уменуется как WILL resign active, метода didResignActive не предусмотренно, но по документации, здесь мы преходим в state Inactive, поэтому задал actualState вручную
         actualState = "Inactive"
-        print("Application moved from \(previousState) to \(actualState): \(#function)")
+        log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
         actualState = getState(state: application.applicationState)
-        print("Application moved from \(previousState) to \(actualState): \(#function)")
+        log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState
     }
 
     func applicationWillEnterForeground(_ application: UIApplication) {
-        let firstVC = FirstViewController()
-        window?.rootViewController = firstVC
-//по аналогии с willResignActive, при вызове этого метода приложение только БУДЕТ переведено в Inactive
         actualState = "Inactive"
-        print("Application moved from \(previousState) to \(actualState): \(#function)")
+        log.handleLog(actualState: actualState, previousState: previousState)
         previousState = actualState
     }
 
     func applicationWillTerminate(_ application: UIApplication) {
         actualState = "Not Running"
-        print("Application moved from \(previousState) to \(actualState): \(#function)")
+        log.handleLog(actualState: actualState, previousState: previousState)
     }
-
-//могу предположить, что стейт Suspended в AppDelegate отловить невозможно, так как система не вызывает какой либо метод в AppDelegate, а таковой метод и не предусмотрен. Причина по которой его не предусмотрели, наверняка в том, что когда приложение переходит в Suspended, оно вообще не выполняет какого либо кода, а остается в памяти. Даже если представить что у нас есть условный didBecomeSuspended(), код в этом методе не будет выполняться, потому что приложение перешло в Suspended и никакого кода выполнять не может,  поэтому и в действительности подобного метода нет, он будет бессмысленным. *надеюсь это предположение похоже на правду*
-}
-
-//Метод ниже реализует отключение логирования, необходимо в Edit scheme переключить Build Configuration на Release. 
-public func print(_ object: Any) {
-#if DEBUG
-    Swift.print(object)
-#endif
 }
