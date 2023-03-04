@@ -8,23 +8,32 @@
 import Foundation
 
 protocol ModuleBuilderProtocol: AnyObject {
-    func buildMain() -> MainViewController
-    func buildProfile(profile: ProfileModel) -> ProfileViewController
+    static func buildMain() -> MainViewController
+    static func buildProfile(profile: ProfileModel) -> ProfileViewController
 }
 
 class ModuleBuilder: ModuleBuilderProtocol {
-    func buildMain() -> MainViewController {
+    static func buildMain() -> MainViewController {
         let view = MainViewController()
         let router = Router()
         let interactor = MainInteractor()
         let presenter = MainPresenter(router: router, interactor: interactor)
+        presenter.view = view
         view.presenter = presenter
         interactor.presenter = presenter
         router.view = view
         return view
     }
     
-    func buildProfile(profile: ProfileModel) -> ProfileViewController {
-        return ProfileViewController()
+    static func buildProfile(profile: ProfileModel) -> ProfileViewController {
+        let interactor = ProfileInteractor(profile: profile)
+        let view = ProfileViewController()
+        let router = Router()
+        let presenter = ProfilePresenter(router: router, interactor: interactor)
+        presenter.view = view
+        view.presenter = presenter
+        interactor.presenter = presenter
+        router.view = view
+        return view
     }
 }

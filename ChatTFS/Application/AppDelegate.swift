@@ -16,7 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //MARK: Lifecycle
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window?.overrideUserInterfaceStyle = .light
-        let mainVC = MainViewController.build()
+        let mainVC = ModuleBuilder.buildMain()
         window?.rootViewController = mainVC
         window?.makeKeyAndVisible()
         return true

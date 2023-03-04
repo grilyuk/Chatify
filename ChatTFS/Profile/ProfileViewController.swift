@@ -44,7 +44,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     //MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter?.viewDidLoaded()
+        presenter?.viewReady()
         view.backgroundColor = .white
         setupUI()
     }
@@ -193,19 +193,5 @@ extension ProfileViewController: ProfileViewProtocol {
         self.fullNameLabel.text = profile.fullName
         self.statusText.text = profile.statusText
         self.profileImageView.image = profile.profileImage
-    }
-}
-
-extension ProfileViewController {
-    static func build(profile: ProfileModel) -> ProfileViewController {
-        let interactor = ProfileInteractor(profile: profile)
-        let view = ProfileViewController()
-        let router = Router()
-        let presenter = ProfilePresenter(router: router, interactor: interactor)
-        router.view = view
-        view.presenter = presenter
-        interactor.presenter = presenter
-        presenter.view = view
-        return view
     }
 }

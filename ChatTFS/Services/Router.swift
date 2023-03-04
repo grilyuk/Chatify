@@ -17,13 +17,13 @@ protocol ProfileRouterProtocol: AnyObject {
 }
 
 class Router {
-    var view: UIViewController?
+    weak var view: UIViewController?
 }
 
 //MARK: Router + MainRouterProtocol
 extension Router: MainRouterProtocol {
     func showProfile(profile: ProfileModel) {
-        let vc = ProfileViewController.build(profile: profile)
+        let vc = ModuleBuilder.buildProfile(profile: profile)
         view?.present(vc, animated: true)
     }
 }

@@ -8,8 +8,8 @@
 import UIKit
 
 protocol ProfilePresenterProtocol: AnyObject {
-    func viewDidLoaded()
-    func didLoad(data: ProfileModel)
+    func viewReady()
+    func dataUploaded(data: ProfileModel)
 }
 
 class ProfilePresenter {
@@ -25,11 +25,11 @@ class ProfilePresenter {
 
 //MARK: ProfilePresenter + ProfilePresenterProtocol
 extension ProfilePresenter: ProfilePresenterProtocol {
-    func didLoad(data: ProfileModel) {
+    func dataUploaded(data: ProfileModel) {
         view?.showProfile(profile: data)
     }
 
-    func viewDidLoaded() {
+    func viewReady() {
         interactor.loadData()
     }
 }

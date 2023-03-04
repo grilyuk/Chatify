@@ -20,6 +20,6 @@ class ProfileInteractor: ProfileInteractorProtocol {
     }
 
     func loadData() {
-        presenter?.didLoad(data: profile )
+        presenter?.dataUploaded(data: profile )
     }
 }

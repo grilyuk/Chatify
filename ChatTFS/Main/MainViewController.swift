@@ -17,14 +17,19 @@ class MainViewController: UIViewController {
     var presenter: MainPresenterProtocol?
 
     //MARK: Private
-    private let profileButton = UIButton(type: .system)
+    private lazy var profileButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Show profile", for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
+        return button
+    }()
 
     //MARK: Lifeсycle
-
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
         setupUI()
+        profileButton.addTarget(self, action: #selector(profileButtonTapped), for: .touchUpInside)
     }
 
     //MARK: Setup UI
@@ -35,17 +40,13 @@ class MainViewController: UIViewController {
     private func setProfileButton() {
         view.addSubview(profileButton)
         profileButton.translatesAutoresizingMaskIntoConstraints = false
-        profileButton.setTitle("Show profile", for: .normal)
-        profileButton.titleLabel?.font = UIFont.systemFont(ofSize: 30)
-        profileButton.addTarget(self, action: #selector(profileButtonTapped), for: .touchUpInside)
-
         NSLayoutConstraint.activate([
             profileButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             profileButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
 
-    @objc func profileButtonTapped() {
+    @objc private func profileButtonTapped() {
         presenter?.didTappedProfile()
     }
 }
@@ -54,19 +55,5 @@ class MainViewController: UIViewController {
 extension MainViewController: MainViewProtocol {
     func showMain() {
         view.backgroundColor = .cyan
-    }
-}
-
-extension MainViewController {
-    static func build() -> MainViewController {
-        let interactor = MainInteractor()
-        let view = MainViewController()
-        let router = Router()
-        let presenter = MainPresenter(router: router, interactor: interactor)
-        router.view = view
-        view.presenter = presenter
-        interactor.presenter = presenter
-        presenter.view = view
-        return view
     }
 }
