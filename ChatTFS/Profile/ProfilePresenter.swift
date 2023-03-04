@@ -14,11 +14,11 @@ protocol ProfilePresenterProtocol: AnyObject {
 
 class ProfilePresenter {
     weak var view: ProfileViewProtocol?
-    let router: ProfileRouterProtocol
+    let router: RouterProtocol
     let interactor: ProfileInteractorProtocol
     var profile: ProfileModel
 
-    init(router: ProfileRouterProtocol, interactor: ProfileInteractorProtocol, profile: ProfileModel) {
+    init(router: RouterProtocol, interactor: ProfileInteractorProtocol, profile: ProfileModel) {
         self.router = router
         self.interactor = interactor
         self.profile = profile

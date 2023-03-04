@@ -16,8 +16,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     //MARK: Lifecycle
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         window?.overrideUserInterfaceStyle = .light
-        let mainVC = ModuleBuilder.buildMain()
-        window?.rootViewController = mainVC
+        let moduleBuilder = ModuleBuilder()
+        let navigationController = UINavigationController()
+        let router = Router(navigationController: navigationController, moduleBuilder: moduleBuilder)
+        router.initialViewController()
+        window?.rootViewController = navigationController
         window?.makeKeyAndVisible()
         return true
     }

@@ -8,29 +8,38 @@
 import Foundation
 import UIKit
 
-protocol MainRouterProtocol: AnyObject {
+protocol RouterMain: AnyObject {
+    var navigationController: UINavigationController? {get set}
+    var moduleBuilder: ModuleBuilderProtocol? {get set}
+}
+
+protocol RouterProtocol: RouterMain {
+    func initialViewController()
     func showProfile(profile: ProfileModel)
 }
 
-protocol ProfileRouterProtocol: AnyObject {
-    func editProfile()
-}
-
-class Router {
-    weak var view: UIViewController?
-}
-
-//MARK: Router + MainRouterProtocol
-extension Router: MainRouterProtocol {
-    func showProfile(profile: ProfileModel) {
-        let vc = ModuleBuilder.buildProfile(profile: profile)
-        view?.present(vc, animated: true)
+class Router: RouterProtocol {
+    
+    var navigationController: UINavigationController?
+    var moduleBuilder: ModuleBuilderProtocol?
+    
+    init(navigationController: UINavigationController, moduleBuilder: ModuleBuilderProtocol) {
+        self.navigationController = navigationController
+        self.moduleBuilder = moduleBuilder
     }
-}
-
-//MARK: Router + ProfileRouterProtocol
-extension Router: ProfileRouterProtocol {
-    func editProfile() {
-        //temporary empty
+    
+    func initialViewController() {
+        if let navigationController = navigationController {
+            guard let mainViewProtocol = moduleBuilder?.buildMain(router: self) else { return }
+            navigationController.viewControllers = [mainViewProtocol]
+        }
+    }
+    
+    func showProfile(profile: ProfileModel) {
+        if let navigationController = navigationController {
+            guard let profileViewProtocol = moduleBuilder?.buildProfile(router: self, profile: profile) else { return }
+            navigationController.present(profileViewProtocol, animated: true)
+            
+        }
     }
 }

@@ -16,11 +16,11 @@ protocol MainPresenterProtocol: AnyObject {
 
 class MainPresenter {
     weak var view: MainViewProtocol?
-    let router: MainRouterProtocol?
+    let router: RouterProtocol?
     let interactor: MainInteractorProtocol
     var profile: ProfileModel?
     
-    init(router: MainRouterProtocol, interactor: MainInteractorProtocol) {
+    init(router: RouterProtocol, interactor: MainInteractorProtocol) {
         self.router = router
         self.interactor = interactor
     }

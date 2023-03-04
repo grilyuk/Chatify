@@ -17,43 +17,50 @@ class MainViewController: UIViewController {
     var presenter: MainPresenterProtocol?
 
     //MARK: Private
-    private lazy var profileButton: UIButton = {
-        let button = UIButton(type: .system)
-        button.setTitle("Show profile", for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
-        return button
-    }()
-
+    private lazy var tableView = UITableView(frame: .zero)
+    private lazy var navigationBar = UINavigationBar()
+    
+    
     //MARK: Lifeсycle
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
+        presenter?.didTappedProfile()
+        let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear")!, style: .plain, target: nil, action: nil)
+        navigationItem.leftBarButtonItem = settingButton
         setupUI()
-        profileButton.addTarget(self, action: #selector(profileButtonTapped), for: .touchUpInside)
     }
 
     //MARK: Setup UI
     private func setupUI() {
-        setProfileButton()
-    }
-
-    private func setProfileButton() {
-        view.addSubview(profileButton)
-        profileButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        view.addSubview(navigationBar)
+        navigationBar.translatesAutoresizingMaskIntoConstraints = false
+        navigationBar.backgroundColor = .white
+        
+        
+        
         NSLayoutConstraint.activate([
-            profileButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            profileButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
+            navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            navigationBar.heightAnchor.constraint(equalToConstant: 56),
+            navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            navigationBar.widthAnchor.constraint(equalToConstant: view.frame.width)
         ])
-    }
-
-    @objc private func profileButtonTapped() {
-        presenter?.didTappedProfile()
+        
+        view.addSubview(tableView)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
     }
 }
 
 //MARK: MainViewController + MainViewProtocol
 extension MainViewController: MainViewProtocol {
     func showMain() {
-        view.backgroundColor = .cyan
+        view.backgroundColor = .white
     }
 }
