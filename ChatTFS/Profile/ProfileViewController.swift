@@ -13,42 +13,38 @@ protocol ProfileViewProtocol: AnyObject {
 
 class ProfileViewController: UIViewController, UINavigationBarDelegate {
     var presenter: ProfilePresenterProtocol?
-    private let log = Logger(shouldLog: true, logType: .frame)
-    
+
+    //MARK: UIConstants
+    private enum UIConstants {
+        static let fontSize: CGFloat = 17
+        static let largerFontSize: CGFloat = 22
+        static let initialsFontSize: CGFloat = 68
+        static let navBarHeight: CGFloat = 56
+        static let navBarToProfileImage: CGFloat = 32
+        static let imageProfileSize: CGFloat = 150
+        static let imageProfileToAddPhoto: CGFloat = 24
+        static let addPhotoToNameLabel: CGFloat = 24
+        static let nameLabelToInfoText: CGFloat = 10
+        static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
+        static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
+    }
+
     //MARK: Public
     public let profileImageView = UIImageView()
     
     //MARK: Private
     private let navigationBar = UINavigationBar()
-    lazy var gradient = CAGradientLayer()
+    private let gradient = CAGradientLayer()
     private let addPhotoButton = UIButton(type: .system)
     private let fullNameLabel = UILabel()
     private let statusText = UITextView()
     private let userInitialsLabel = UILabel()
 
-    //MARK: UIConstants
-    private let UIConstants = UIConstant.self
 
     //MARK: Lifecycle
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
-// здесь происходит инициализация нашего контроллера
-// о границах вьюшек мы еще не знаем
-        let frame = addPhotoButton.frame.debugDescription.description
-        log.handleFrame(frame: frame, object: "addPhotoButton")
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
     override func viewDidLoad() {
         super.viewDidLoad()
-// в данном методе ЖЦ, наши вьюшки уже занесены в память, но не отображены на экране
-// здесь не происходят вычисления их границ, пока мы просто знаем что они у нас есть и дальше мы можем с ними работать
         presenter?.viewDidLoaded()
-        let frame = addPhotoButton.frame.debugDescription
-        log.handleFrame(frame: frame, object: "addPhotoButton")
         view.backgroundColor = .white
         setupUI()
     }
@@ -67,16 +63,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         }
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
         profileImageView.clipsToBounds = true
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-// уже здесь, отработали методы AutoLayout'a и viewWill/DidLayoutSubviews
-// эти методы в свою очередь как раз отвечают за вычисление границ и размеров наших вью
-// viewDidAppear срабатывает уже после отображения на экране устройства
-// поэтому во viewDidAppear мы уже видим итоговое значение frame нашей кнопки, так как его вычислили предыдущие методы 
-        let frame = addPhotoButton.frame.debugDescription
-        log.handleFrame(frame: frame, object: "addPhotoButton")
     }
 
     //MARK: Setup UI
@@ -175,7 +161,8 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         let components = formatter.personNameComponents(from: initials) else { return }
         formatter.style = .abbreviated
         userInitialsLabel.text = formatter.string(from: components)
-        userInitialsLabel.font = .rounded(ofSize: UIConstants.initialsFontSize, weight: .semibold)
+        guard let descriptor = UIFont.systemFont(ofSize: UIConstants.initialsFontSize, weight: .semibold).fontDescriptor.withDesign(.rounded) else { return }
+        userInitialsLabel.font = UIFont(descriptor: descriptor, size: UIConstants.initialsFontSize)
         userInitialsLabel.textColor = .white
 
         NSLayoutConstraint.activate([
@@ -184,15 +171,15 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         ])
     }
 
-    @objc func editProfileTapped() {
+    @objc private func editProfileTapped() {
         //temporary empty
     }
 
-    @objc func closeProfileTapped() {
+    @objc private func closeProfileTapped() {
         self.dismiss(animated: true)
     }
 
-    @objc func addPhototapped() {
+    @objc private func addPhototapped() {
         let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         present(alert, animated: true) {
             alert.vc = self
@@ -206,5 +193,19 @@ extension ProfileViewController: ProfileViewProtocol {
         self.fullNameLabel.text = profile.fullName
         self.statusText.text = profile.statusText
         self.profileImageView.image = profile.profileImage
+    }
+}
+
+extension ProfileViewController {
+    static func build(profile: ProfileModel) -> ProfileViewController {
+        let interactor = ProfileInteractor(profile: profile)
+        let view = ProfileViewController()
+        let router = Router()
+        let presenter = ProfilePresenter(router: router, interactor: interactor)
+        router.view = view
+        view.presenter = presenter
+        interactor.presenter = presenter
+        presenter.view = view
+        return view
     }
 }

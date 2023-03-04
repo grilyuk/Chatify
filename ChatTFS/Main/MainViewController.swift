@@ -15,51 +15,16 @@ class MainViewController: UIViewController {
 
     //MARK: Public
     var presenter: MainPresenterProtocol?
-    let log = Logger(shouldLog: false, logType: .viewController)
 
     //MARK: Private
     private let profileButton = UIButton(type: .system)
 
     //MARK: Lifeсycle
-    override func loadView() {
-        super.loadView()
-        log.handleLog(actualState: nil, previousState: nil)
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter?.viewDidLoaded()
+        presenter?.viewReady()
         setupUI()
-    }
-
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        log.handleLog(actualState: nil, previousState: nil)
-    }
-
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        log.handleLog(actualState: nil, previousState: nil)
-    }
-
-    override func viewWillLayoutSubviews() {
-        super.viewWillLayoutSubviews()
-        log.handleLog(actualState: nil, previousState: nil)
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        log.handleLog(actualState: nil, previousState: nil)
-    }
-
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        log.handleLog(actualState: nil, previousState: nil)
-    }
-
-    override func viewDidDisappear(_ animated: Bool) {
-        super.viewDidDisappear(animated)
-        log.handleLog(actualState: nil, previousState: nil)
     }
 
     //MARK: Setup UI
@@ -89,5 +54,19 @@ class MainViewController: UIViewController {
 extension MainViewController: MainViewProtocol {
     func showMain() {
         view.backgroundColor = .cyan
+    }
+}
+
+extension MainViewController {
+    static func build() -> MainViewController {
+        let interactor = MainInteractor()
+        let view = MainViewController()
+        let router = Router()
+        let presenter = MainPresenter(router: router, interactor: interactor)
+        router.view = view
+        view.presenter = presenter
+        interactor.presenter = presenter
+        presenter.view = view
+        return view
     }
 }

@@ -10,36 +10,34 @@ import UIKit
 class AlertController: UIAlertController {
 
     //MARK: Properties
-    var vc: ProfileViewController?
-    var pickerController: ImagePickerController?
+    weak var vc: UIViewController?
+    private var pickerController: ImagePickerController?
 
     //MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        DispatchQueue.main.async {
-            self.pickerController = ImagePickerController()
-        }
+        pickerController = ImagePickerController()
         addActions()
     }
 
     //MARK: Methods
     private func addActions() {
-        self.addAction(UIAlertAction(title: "Сделать фото", style: .default) { _ in
+        addAction(UIAlertAction(title: "Сделать фото", style: .default) { _ in
             guard let picker = self.pickerController else {return}
             self.pickerController?.sourceType = .camera
             self.vc?.present(picker, animated: true) {
-                self.pickerController?.vc = self.vc
+                self.pickerController?.vc = self.vc as? ProfileViewController
             }
         })
 
-        self.addAction(UIAlertAction(title: "Выбрать из галереи", style: .default) { _ in
+        addAction(UIAlertAction(title: "Выбрать из галереи", style: .default) { _ in
             guard let picker = self.pickerController else {return}
             self.pickerController?.sourceType = .photoLibrary
             self.vc?.present(picker, animated: true) {
-                self.pickerController?.vc = self.vc
+                self.pickerController?.vc = self.vc as? ProfileViewController
             }
         })
 
-        self.addAction(UIAlertAction(title: "Отмена", style: .cancel))
+        addAction(UIAlertAction(title: "Отмена", style: .cancel))
     }
 }

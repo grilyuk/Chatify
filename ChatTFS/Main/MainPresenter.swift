@@ -8,15 +8,17 @@
 import UIKit
 
 protocol MainPresenterProtocol: AnyObject {
-    func viewDidLoaded()
-    func dataDidLoaded()
+    var profile: ProfileModel? { get set }
+    func viewReady()
+    func dataUploaded()
     func didTappedProfile()
 }
 
 class MainPresenter {
     weak var view: MainViewProtocol?
-    let router: MainRouterProtocol
+    let router: MainRouterProtocol?
     let interactor: MainInteractorProtocol
+    var profile: ProfileModel?
     
     init(router: MainRouterProtocol, interactor: MainInteractorProtocol) {
         self.router = router
@@ -25,16 +27,19 @@ class MainPresenter {
 }
 
 extension MainPresenter: MainPresenterProtocol {
-    func viewDidLoaded() {
+    func viewReady() {
         interactor.loadData()
     }
     
-    func dataDidLoaded() {
+    func dataUploaded() {
         view?.showMain()
+        profile = ProfileModel(profileImage: nil,
+                                          fullName: "Grigoriy Danilyuk",
+                                          statusText: "Almost iOS Developer \nSaint-Petersburg, Russia")
     }
     
     func didTappedProfile() {
-        guard let profile = interactor.profile else { return }
-        router.showProfile(profile: profile)
+        guard let profile = profile else { return }
+        router?.showProfile(profile: profile)
     }
 }

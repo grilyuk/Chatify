@@ -20,7 +20,6 @@ class ProfileInteractor: ProfileInteractorProtocol {
     }
 
     func loadData() {
-// здесь еще можно что то поменять в профиле
         presenter?.didLoad(data: profile )
     }
 }
