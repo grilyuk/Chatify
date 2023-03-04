@@ -24,12 +24,12 @@ class ModuleBuilder: ModuleBuilderProtocol {
         router.view = view
         return view
     }
-    
+
     static func buildProfile(profile: ProfileModel) -> ProfileViewController {
-        let interactor = ProfileInteractor(profile: profile)
+        let interactor = ProfileInteractor()
         let view = ProfileViewController()
         let router = Router()
-        let presenter = ProfilePresenter(router: router, interactor: interactor)
+        let presenter = ProfilePresenter(router: router, interactor: interactor, profile: profile)
         presenter.view = view
         view.presenter = presenter
         interactor.presenter = presenter
