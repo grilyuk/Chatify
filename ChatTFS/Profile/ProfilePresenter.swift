@@ -10,6 +10,7 @@ import UIKit
 protocol ProfilePresenterProtocol: AnyObject {
     func viewReady()
     func dataUploaded()
+    var profile: ProfileModel { get set }
 }
 
 class ProfilePresenter {

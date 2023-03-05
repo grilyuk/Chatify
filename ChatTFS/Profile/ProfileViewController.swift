@@ -30,16 +30,17 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
 
     //MARK: Public
+//    var complitionHandler: (() -> Void)?
     public let profileImageView = UIImageView()
     
     //MARK: Private
+
     private let navigationBar = UINavigationBar()
     private let gradient = CAGradientLayer()
     private let addPhotoButton = UIButton(type: .system)
     private let fullNameLabel = UILabel()
     private let statusText = UITextView()
     private let userInitialsLabel = UILabel()
-
 
     //MARK: Lifecycle
     override func viewDidLoad() {

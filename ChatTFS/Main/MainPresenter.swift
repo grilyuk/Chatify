@@ -9,6 +9,7 @@ import UIKit
 
 protocol MainPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
+    var completionHandler: (() -> Void)? { get set}
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
@@ -19,6 +20,7 @@ class MainPresenter {
     let router: RouterProtocol?
     let interactor: MainInteractorProtocol
     var profile: ProfileModel?
+    var completionHandler: (() -> Void)?
     
     init(router: RouterProtocol, interactor: MainInteractorProtocol) {
         self.router = router
@@ -32,10 +34,20 @@ extension MainPresenter: MainPresenterProtocol {
     }
     
     func dataUploaded() {
+        let vc = view as? MainViewController
+        vc?.users = [
+            ConversationListCellModel(name: "Jhon", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Ferb", message: nil, date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Stevene", message: "Some message", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Danil", message: "Привет", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Stefan", message: "How are you?", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Robert", message: "Go to shop", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Alex", message: "Are you busy?", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Nika", message: "Как дела?", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Lena", message: "Я с тобой не разговариваю...", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Alyona", message: "Ладно", date: nil, isOnline: true, hasUnreadMessages: nil)
+        ]
         view?.showMain()
-        profile = ProfileModel(profileImage: nil,
-                                          fullName: "Grigoriy Danilyuk",
-                                          statusText: "Almost iOS Developer \nSaint-Petersburg, Russia")
     }
     
     func didTappedProfile() {
