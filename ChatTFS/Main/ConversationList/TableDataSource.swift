@@ -13,22 +13,21 @@ enum Section: Hashable, CaseIterable {
 }
 
 struct User: Hashable {
-    let id = UUID()
+    let number: Int
 }
 
 //MARK: DataSource
 class DataSource: UITableViewDiffableDataSource<Section, User> {
     
-    
-    init(tableView: UITableView) {
+    init(tableView: UITableView, users: [ConversationListCellModel]) {
         super.init(tableView: tableView) { tableView, indexPath, itemIdentifier in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConverstionListCell.identifier, for: indexPath) as?  ConverstionListCell else {return UITableViewCell()}
             
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConverstionListCell.identifier, for: indexPath) as? ConverstionListCell else { return UITableViewCell() }
+            cell.accessoryType = .disclosureIndicator
+            cell.configure(with: users[itemIdentifier.number])
             return cell
         }
     }
-    
-    
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {

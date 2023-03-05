@@ -36,11 +36,9 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     //MARK: Private
 
     private let navigationBar = UINavigationBar()
-    private let gradient = CAGradientLayer()
     private let addPhotoButton = UIButton(type: .system)
     private let fullNameLabel = UILabel()
     private let statusText = UITextView()
-    private let userInitialsLabel = UILabel()
 
     //MARK: Lifecycle
     override func viewDidLoad() {
@@ -53,13 +51,8 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         if profileImageView.image == nil {
-            gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
-                               UIConstants.imageProfileBottomColor.cgColor]
-            gradient.frame = profileImageView.bounds
-            profileImageView.layer.addSublayer(gradient)
+            profileImageView.image = ImageRender(fullName: fullNameLabel.text ?? "Steve Jobs").render()
         } else {
-            gradient.removeFromSuperlayer()
-            userInitialsLabel.isHidden = true
             profileImageView.contentMode = .scaleAspectFill
         }
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
@@ -73,7 +66,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         setAddPhotoButton()
         setFullNameLabel()
         setInfoText()
-        setInitialsLabel()
     }
 
     private func setNavBar() {
@@ -141,6 +133,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
 
     private func setInfoText() {
         view.addSubview(statusText)
+        statusText.isEditable = false
         statusText.translatesAutoresizingMaskIntoConstraints = false
         statusText.textAlignment = .center
         statusText.font = UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)
@@ -150,25 +143,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         NSLayoutConstraint.activate([
             statusText.topAnchor.constraint(equalTo: fullNameLabel.bottomAnchor, constant: UIConstants.nameLabelToInfoText),
             statusText.centerXAnchor.constraint(equalTo: view.centerXAnchor)
-        ])
-    }
-
-    private func setInitialsLabel() {
-        view.addSubview(userInitialsLabel)
-        userInitialsLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        let formatter = PersonNameComponentsFormatter()
-        guard let initials = fullNameLabel.text,
-        let components = formatter.personNameComponents(from: initials) else { return }
-        formatter.style = .abbreviated
-        userInitialsLabel.text = formatter.string(from: components)
-        guard let descriptor = UIFont.systemFont(ofSize: UIConstants.initialsFontSize, weight: .semibold).fontDescriptor.withDesign(.rounded) else { return }
-        userInitialsLabel.font = UIFont(descriptor: descriptor, size: UIConstants.initialsFontSize)
-        userInitialsLabel.textColor = .white
-
-        NSLayoutConstraint.activate([
-            userInitialsLabel.centerXAnchor.constraint(equalTo: profileImageView.centerXAnchor),
-            userInitialsLabel.centerYAnchor.constraint(equalTo: profileImageView.centerYAnchor)
         ])
     }
 
@@ -193,6 +167,6 @@ extension ProfileViewController: ProfileViewProtocol {
     func showProfile(profile: ProfileModel) {
         self.fullNameLabel.text = profile.fullName
         self.statusText.text = profile.statusText
-        self.profileImageView.image = profile.profileImage
+//        self.profileImageView.image = profile.profileImage
     }
 }

@@ -26,7 +26,7 @@ class MainViewController: UIViewController {
     //MARK: Private
     private lazy var tableView = UITableView()
     private lazy var profileImageView = UIImageView()
-    private lazy var dataSource = DataSource(tableView: tableView)
+    private lazy var dataSource = DataSource(tableView: tableView, users: users)
     private lazy var onlineUsers: [User] = []
     private lazy var offlineUsers: [User] = []
     
@@ -71,11 +71,14 @@ class MainViewController: UIViewController {
 
     private func setDataSource() {
         var snapshot = dataSource.snapshot()
+        var number = 0
         for user in users {
             if user.isOnline == true {
-                onlineUsers.append(User())
+                onlineUsers.append(User(number: number))
+                number += 1
             } else {
-                offlineUsers.append(User())
+                offlineUsers.append(User(number: number))
+                number += 1
             }
         }
         snapshot.deleteAllItems()

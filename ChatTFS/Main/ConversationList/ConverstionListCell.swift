@@ -22,7 +22,7 @@ class ConverstionListCell: UITableViewCell {
     //MARK: UIConstants
     private enum UIConstants {
         static let avatarToContentEdge: CGFloat = 5
-        static let avatarSize: CGFloat = 76
+        static let avatarSize: CGFloat = 60
         static let nameTopToContentTop: CGFloat = 17
         static let nameLabelFontSize: CGFloat = 16
         static let lastMessageFontSize: CGFloat = 15
@@ -36,6 +36,16 @@ class ConverstionListCell: UITableViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .bold)
         return label
+    }()
+    
+//    private lazy var indicatorImage
+    
+    private lazy var onlineIndicator: UIImageView = {
+        let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 12, height: 12))
+        imageView.image = UIImage(systemName: "circle.fill")
+        imageView.tintColor = .green
+        imageView.contentMode = .scaleAspectFill
+        return imageView
     }()
     
     private lazy var lastMeassgeText: UILabel = {
@@ -55,11 +65,10 @@ class ConverstionListCell: UITableViewCell {
     }()
     
     private lazy var userAvatar: UIImageView = {
-        let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: contentView.frame.height, height: contentView.frame.height))
+        let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: UIConstants.avatarSize, height: UIConstants.avatarSize))
         imageView.contentMode = .scaleAspectFit
-        imageView.image = UIImage(systemName: "square")
-        imageView.layer.cornerRadius = 76/2
-        imageView.sizeToFit()
+        imageView.layer.cornerRadius = UIConstants.avatarSize/2
+        imageView.clipsToBounds = true
         return imageView
     }()
     
@@ -73,31 +82,38 @@ class ConverstionListCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    enum Section: Hashable, CaseIterable {
-        case online
-        case offline
-    }
-
-    struct User: Hashable {
-        let id = UUID()
-    }
-    
     //MARK: Configure
     func configure(with model: ConversationListCellModel) {
         if model.message == nil {
-            lastMeassgeText.font = .systemFont(ofSize: UIConstants.lastMessageFontSize, weight: .medium)
+            lastMeassgeText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
             lastMeassgeText.text = "No messages yet"
         } else {
             lastMeassgeText.text = model.message
         }
         
-        nameLabel.text = model.name
+        if model.isOnline == false {
+            onlineIndicator.removeFromSuperview()
+        } else {
+            contentView.addSubview(onlineIndicator)
+            onlineIndicator.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                onlineIndicator.topAnchor.constraint(equalTo: userAvatar.topAnchor),
+                onlineIndicator.trailingAnchor.constraint(equalTo: userAvatar.trailingAnchor)
+            ])
+        }
         
+        if userAvatar.image == nil {
+            DispatchQueue.main.async {
+                self.userAvatar.image = ImageRender(fullName: model.name ?? "Steve Jobs").render()
+            }
+        }
+        nameLabel.text = model.name
+        print(nameLabel.text!)
     }
     
     override func prepareForReuse() {
         super.prepareForReuse()
-        nameLabel.text = nil
+        print(nameLabel.text! + " reuse")
     }
     
     //MARK: Setup UI
@@ -113,16 +129,16 @@ class ConverstionListCell: UITableViewCell {
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            userAvatar.topAnchor.constraint(equalTo: contentView.topAnchor),
-            userAvatar.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            userAvatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            userAvatar.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
             userAvatar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: UIConstants.avatarToContentEdge),
             userAvatar.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
             
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.nameTopToContentTop),
-            nameLabel.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor),
+            nameLabel.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: 10),
             
             lastMeassgeText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: UIConstants.meesageBottomToContentBottom),
-            lastMeassgeText.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor),
+            lastMeassgeText.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: 10),
             
             dateLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: UIConstants.dateLabelToContentEdge),
             dateLabel.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor)

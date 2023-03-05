@@ -36,7 +36,7 @@ extension MainPresenter: MainPresenterProtocol {
     func dataUploaded() {
         let vc = view as? MainViewController
         vc?.users = [
-            ConversationListCellModel(name: "Jhon", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Jhon Travolta", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Ferb", message: nil, date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Stevene", message: "Some message", date: nil, isOnline: true, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Danil", message: "Привет", date: nil, isOnline: false, hasUnreadMessages: nil),
@@ -45,7 +45,18 @@ extension MainPresenter: MainPresenterProtocol {
             ConversationListCellModel(name: "Alex", message: "Are you busy?", date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Nika", message: "Как дела?", date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Lena", message: "Я с тобой не разговариваю...", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Alyona", message: "Ладно", date: nil, isOnline: true, hasUnreadMessages: nil)
+            ConversationListCellModel(name: "Alyona", message: "Ладно", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Sandra Safa", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Gret Fasf", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Dsd G", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Kdga", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Sanders Gasg", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Utodsg Fgdsga", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Zhora", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Fafe Fhe", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Geqrq", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Tewqg Wsf", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Iogw Ig", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil)
         ]
         view?.showMain()
     }
