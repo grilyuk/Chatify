@@ -15,8 +15,8 @@ protocol ModuleBuilderProtocol: AnyObject {
 class ModuleBuilder: ModuleBuilderProtocol {
     func buildMain(router: RouterProtocol) -> MainViewController {
         let interactor = MainInteractor()
-        let view = MainViewController()
         let presenter = MainPresenter(router: router, interactor: interactor)
+        let view = MainViewController()
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view

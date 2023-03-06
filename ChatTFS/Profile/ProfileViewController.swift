@@ -51,7 +51,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         if profileImageView.image == nil {
-            profileImageView.image = ImageRender(fullName: fullNameLabel.text ?? "Steve Jobs").render()
+            profileImageView.image = ImageRender(fullName: fullNameLabel.text ?? "Steve Jobs", size: CGSize(width: UIConstants.imageProfileSize, height: UIConstants.imageProfileSize)).render()
         } else {
             profileImageView.contentMode = .scaleAspectFill
         }
@@ -167,6 +167,6 @@ extension ProfileViewController: ProfileViewProtocol {
     func showProfile(profile: ProfileModel) {
         self.fullNameLabel.text = profile.fullName
         self.statusText.text = profile.statusText
-//        self.profileImageView.image = profile.profileImage
+        self.profileImageView.image = profile.profileImage
     }
 }

@@ -34,10 +34,10 @@ extension MainPresenter: MainPresenterProtocol {
     }
     
     func dataUploaded() {
-        let vc = view as? MainViewController
-        vc?.users = [
-            ConversationListCellModel(name: "Jhon Travolta", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Ferb", message: nil, date: nil, isOnline: false, hasUnreadMessages: nil),
+        let view = view as? MainViewController
+        view?.users = [
+            ConversationListCellModel(name: "Jhon Travolta", message: "Hello", date: Date.init(timeIntervalSinceNow: TimeInterval.init(floatLiteral: 20)), isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Ferb", message: nil, date: Date(timeIntervalSinceReferenceDate: 43225235), isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Stevene", message: "Some message", date: nil, isOnline: true, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Danil", message: "Привет", date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Stefan", message: "How are you?", date: nil, isOnline: false, hasUnreadMessages: nil),

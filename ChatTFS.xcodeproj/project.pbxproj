@@ -70,7 +70,6 @@
 		5E92E9ED29B505E40038EED2 /* ConversationList */ = {
 			isa = PBXGroup;
 			children = (
-				5EDC6596299ECEAD009B6586 /* MainViewController.swift */,
 				5E92E9EB29B505B10038EED2 /* TableDataSource.swift */,
 				5E92E9E529B4B4C60038EED2 /* ConverstionListCell.swift */,
 			);
@@ -81,6 +80,7 @@
 			isa = PBXGroup;
 			children = (
 				5E92E9ED29B505E40038EED2 /* ConversationList */,
+				5EDC6596299ECEAD009B6586 /* MainViewController.swift */,
 				5EB6218C29AB6FE800029FB8 /* MainInteractor.swift */,
 				5EB6218E29AB6FF100029FB8 /* MainPresenter.swift */,
 			);

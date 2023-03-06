@@ -39,7 +39,6 @@ class Router: RouterProtocol {
         if let navigationController = navigationController {
             guard let profileViewProtocol = moduleBuilder?.buildProfile(router: self, profile: profile) else { return }
             navigationController.present(profileViewProtocol, animated: true)
-            
         }
     }
 }

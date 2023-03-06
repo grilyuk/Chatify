@@ -29,8 +29,18 @@ class MainViewController: UIViewController {
     private lazy var dataSource = DataSource(tableView: tableView, users: users)
     private lazy var onlineUsers: [User] = []
     private lazy var offlineUsers: [User] = []
+    private lazy var imageButton = UIImage()
     
     //MARK: Lifeсycle
+    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        imageButton = ImageRender(fullName: "Grigoriy Danilyuk", size: CGSize(width: UIConstants.sectionHeight, height: UIConstants.sectionHeight)).render()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
@@ -58,17 +68,30 @@ class MainViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
-    
+
     private func setNavBar() {
         navigationItem.title = "Chat"
         navigationController?.navigationBar.prefersLargeTitles = true
+        
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: nil)
         navigationItem.leftBarButtonItem = settingButton
         
-        let profileButton = UIBarButtonItem(image: UIImage(systemName: "plus"), style: .plain, target: self, action: #selector(tappedProfile))
+        let button = UIButton(type: .custom)
+        button.setImage(imageButton, for: .normal)
+        button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
+        let profileButton = UIBarButtonItem(customView: button)
+        profileButton.customView?.contentMode = .scaleToFill
+        profileButton.customView?.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
+        profileButton.customView?.layer.cornerRadius = 22
+        profileButton.customView?.clipsToBounds = true
         navigationItem.rightBarButtonItem = profileButton
     }
 
+    @objc private func tappedProfile() {
+        presenter?.didTappedProfile()
+    }
+    
+    //MARK: SetDataSource
     private func setDataSource() {
         var snapshot = dataSource.snapshot()
         var number = 0
@@ -86,10 +109,6 @@ class MainViewController: UIViewController {
         snapshot.appendItems(offlineUsers, toSection: .offline)
         snapshot.appendItems(onlineUsers, toSection: .online)
         dataSource.apply(snapshot)
-    }
-    
-    @objc private func tappedProfile() {
-        presenter?.didTappedProfile()
     }
 }
 
