@@ -9,7 +9,6 @@ import UIKit
 
 protocol MainPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
-    var completionHandler: (() -> Void)? { get set}
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
@@ -20,7 +19,6 @@ class MainPresenter {
     let router: RouterProtocol?
     let interactor: MainInteractorProtocol
     var profile: ProfileModel?
-    var completionHandler: (() -> Void)?
     
     init(router: RouterProtocol, interactor: MainInteractorProtocol) {
         self.router = router
@@ -34,7 +32,6 @@ extension MainPresenter: MainPresenterProtocol {
     }
     
     func dataUploaded() {
-        let view = view as? MainViewController
         view?.users = [
             ConversationListCellModel(name: "Jhon Travolta", message: "Hello", date: Date.init(timeIntervalSinceNow: TimeInterval.init(floatLiteral: 20)), isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Ferb", message: nil, date: Date(timeIntervalSinceReferenceDate: 43225235), isOnline: false, hasUnreadMessages: nil),

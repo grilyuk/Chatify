@@ -85,22 +85,33 @@ class ConverstionListCell: UITableViewCell {
         return imageView
     }()
     
+    private lazy var separatorLine: UIView = {
+        let view = UIView(frame: CGRect(x: 0, y: 0, width: contentView.frame.width, height: 1))
+        view.backgroundColor = .systemGray5
+        return view
+    }()
+    
     //MARK: Initializater
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
     }
-    
+
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
+    func removeSeparator() {
+        separatorLine.removeFromSuperview()
+    }
+    
     //MARK: PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
         userAvatar.image = nil
         nameLabel.text = nil
         lastMessageText.text = nil
+        dateLabel.text = nil
     }
     
     //MARK: Setup UI
@@ -110,12 +121,14 @@ class ConverstionListCell: UITableViewCell {
         contentView.addSubview(lastMessageText)
         contentView.addSubview(dateLabel)
         contentView.addSubview(indicatorImage)
+        contentView.addSubview(separatorLine)
         
         userAvatar.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         lastMessageText.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         indicatorImage.translatesAutoresizingMaskIntoConstraints = false
+        separatorLine.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             userAvatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -133,14 +146,19 @@ class ConverstionListCell: UITableViewCell {
             indicatorImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: UIConstants.indicatorToContentTrailing),
             
             dateLabel.trailingAnchor.constraint(equalTo: indicatorImage.leadingAnchor, constant: UIConstants.dateLabelToContentEdge),
-            dateLabel.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor)
+            dateLabel.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
             
+            separatorLine.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            separatorLine.widthAnchor.constraint(equalToConstant: contentView.frame.width),
+            separatorLine.heightAnchor.constraint(equalToConstant: 1),
+            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
     }
 }
 
 //MARK: ConverstionListCell + ConfigurableViewProtocol
 extension ConverstionListCell: ConfigurableViewProtocol {
+    
     func configure(with model: ConversationListCellModel) {
         if model.message == nil {
             lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
@@ -180,7 +198,5 @@ extension ConverstionListCell: ConfigurableViewProtocol {
                                                            dateStyle: .short,
                                                            timeStyle: .none)
         }
-        
-        
     }
 }

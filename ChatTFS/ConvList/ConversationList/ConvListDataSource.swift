@@ -17,12 +17,20 @@ struct User: Hashable {
 }
 
 //MARK: DataSource
-class DataSource: UITableViewDiffableDataSource<Section, User> {
+class ConvListDataSource: UITableViewDiffableDataSource<Section, User> {
     
     init(tableView: UITableView, users: [ConversationListCellModel]) {
         super.init(tableView: tableView) {
             tableView, indexPath, itemIdentifier in
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConverstionListCell.identifier, for: indexPath) as? ConverstionListCell else { return UITableViewCell()}
+            
+            let onlineUsersCount = tableView.numberOfRows(inSection: 0)
+            let historyUsersCount = tableView.numberOfRows(inSection: 1)
+            
+            if indexPath == [0, onlineUsersCount - 1] || indexPath == [0, historyUsersCount - 1] {
+                cell.removeSeparator()
+            }
+            
             cell.configure(with: users[itemIdentifier.number])
             return cell
         }

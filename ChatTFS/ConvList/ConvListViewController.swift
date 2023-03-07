@@ -9,6 +9,7 @@ import UIKit
 
 protocol MainViewProtocol: AnyObject {
     func showMain()
+    var users: [ConversationListCellModel] {get set}
 }
 
 class MainViewController: UIViewController {
@@ -24,9 +25,9 @@ class MainViewController: UIViewController {
     var users: [ConversationListCellModel] = []
 
     //MARK: Private
-    private lazy var tableView = UITableView()
     private lazy var profileImageView = UIImageView()
-    private lazy var dataSource = DataSource(tableView: tableView, users: users)
+    private lazy var dataSource = ConvListDataSource(tableView: tableView, users: users)
+    private lazy var tableView = UITableView()
     private lazy var onlineUsers: [User] = []
     private lazy var offlineUsers: [User] = []
     private lazy var imageButton = UIImage()
@@ -46,7 +47,7 @@ class MainViewController: UIViewController {
         presenter?.viewReady()
         setupUI()
     }
-
+    
     //MARK: Setup UI
     private func setupUI() {
         setTableView()
@@ -60,6 +61,7 @@ class MainViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.register(ConverstionListCell.self, forCellReuseIdentifier: ConverstionListCell.identifier)
         tableView.delegate = self
+        tableView.separatorStyle = .none
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -125,6 +127,7 @@ extension MainViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
+        navigationController?.pushViewController(ConversationViewController(), animated: true)
     }
 }
 
