@@ -112,6 +112,7 @@ class ConverstionListCell: UITableViewCell {
         nameLabel.text = nil
         lastMessageText.text = nil
         dateLabel.text = nil
+        lastMessageText.font = .systemFont(ofSize: UIConstants.lastMessageFontSize)
     }
     
     //MARK: Setup UI

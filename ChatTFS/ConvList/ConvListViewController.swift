@@ -127,7 +127,7 @@ extension MainViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        presenter?.didTappedConversation()
+        presenter?.didTappedConversation(for: indexPath)
     }
 }
 

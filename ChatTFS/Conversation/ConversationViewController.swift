@@ -26,7 +26,11 @@ class ConversationViewController: UIViewController {
     var messages: [MessageCellModel] = [
         MessageCellModel(text: "Привет \nПривет \nПривет", date: Date(timeIntervalSinceReferenceDate: 1000), myMessage: false),
         MessageCellModel(text: "Нет, не получится.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
-        MessageCellModel(text: "Hello world", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: true)
+        MessageCellModel(text: "Hello world", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: true),
+        MessageCellModel(text: "Хорошо, думаю получится.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
+        MessageCellModel(text: "Нет, не получится.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
+        MessageCellModel(text: "Нет, не получится.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
+        MessageCellModel(text: "Нет, не получится.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
         ]
     var presenter: ConversationPresenterProtocol?
     

@@ -9,11 +9,10 @@ import UIKit
 
 protocol MainPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
-    var conversation: ConversationListCellModel? { get set }
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
-    func didTappedConversation()
+    func didTappedConversation(for indexPath: IndexPath)
 }
 
 class MainPresenter {
@@ -21,7 +20,6 @@ class MainPresenter {
     let router: RouterProtocol?
     let interactor: MainInteractorProtocol
     var profile: ProfileModel?
-    var conversation: ConversationListCellModel?
     
     init(router: RouterProtocol, interactor: MainInteractorProtocol) {
         self.router = router
@@ -36,9 +34,9 @@ extension MainPresenter: MainPresenterProtocol {
     
     func dataUploaded() {
         view?.users = [
-            ConversationListCellModel(name: "Charis Clay", message: "Hello", date: Date.init(timeIntervalSinceNow: TimeInterval.init(floatLiteral: 20)), isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Charis Clay", message: "I think Houdini did something like this once! Why, if I recall correctly, he was out of the hospital", date: Date.init(timeIntervalSinceNow: TimeInterval.init(floatLiteral: 20)), isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Lacey Finch", message: nil, date: Date(timeIntervalSinceReferenceDate: 43225235), isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Norma Carver", message: "Some message", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Norma Carver", message: nil, date: nil, isOnline: true, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Dawson Suarez", message: "Привет", date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Aminah Burch", message: "How are you?", date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Rodney Sharp", message: "Go to shop", date: nil, isOnline: true, hasUnreadMessages: nil),
@@ -47,8 +45,8 @@ extension MainPresenter: MainPresenterProtocol {
             ConversationListCellModel(name: "Malik Rios", message: "Я с тобой не разговариваю...", date: nil, isOnline: true, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Samantha Erickson", message: "Ладно", date: nil, isOnline: true, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Sid Terry", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Lochlan Alexander", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Ishaan Matthews", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Lochlan Alexander", message: "Well that's encouraging.", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Ishaan Matthews", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Jazmin Clayton", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Hamish Barker", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
             ConversationListCellModel(name: "Kezia Finley", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
@@ -65,8 +63,7 @@ extension MainPresenter: MainPresenterProtocol {
         router?.showProfile(profile: profile)
     }
     
-    func didTappedConversation() {
-//        guard let conversation = conversation else {return}
-        router?.showConversation(conversation: [0,1])
+    func didTappedConversation(for indexPath: IndexPath) {
+        router?.showConversation(conversation: indexPath)
     }
 }
