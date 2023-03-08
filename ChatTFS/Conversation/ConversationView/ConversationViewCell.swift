@@ -19,15 +19,16 @@ class ConversationViewCell: UITableViewCell {
     
     //MARK: UIConstants
     private enum UIConstants {
-        static let edge: CGFloat = 5
-        static let cornerRadius: CGFloat = 5
+        static let edge: CGFloat = 7
+        static let edgeToTable: CGFloat = 10
+        static let cornerRadius: CGFloat = 7
         static let fontSizeDate: CGFloat = 10
     }
     
     //MARK: Private
     private lazy var messageText: UILabel = {
         let message = UILabel()
-        message.textAlignment = .left
+        message.textAlignment = .natural
         message.backgroundColor = .clear
         message.numberOfLines = 0
         return message
@@ -36,7 +37,6 @@ class ConversationViewCell: UITableViewCell {
     private lazy var messageBubble: UIView = {
         let bubble = UIView()
         bubble.frame = contentView.frame
-        bubble.backgroundColor = .systemBlue
         bubble.layer.cornerRadius = UIConstants.cornerRadius
         bubble.clipsToBounds = true
         return bubble
@@ -44,7 +44,7 @@ class ConversationViewCell: UITableViewCell {
     
     private lazy var dateLabel: UILabel = {
         let date = UILabel()
-        date.textColor = .white
+        date.textColor = .gray
         date.font = .systemFont(ofSize: UIConstants.fontSizeDate, weight: .regular)
         date.text = "09:41"
         return date
@@ -58,6 +58,16 @@ class ConversationViewCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    //MARK: PrepareForReuse
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable).isActive = false
+        messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edgeToTable).isActive = false
+        messageBubble.backgroundColor = .clear
+        messageText.text = nil
+        dateLabel.text = nil
     }
     
     //MARK: SetupUI
@@ -82,20 +92,29 @@ class ConversationViewCell: UITableViewCell {
             dateLabel.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge)
         ])
     }
-    
+
+}
+
+extension ConversationViewCell: ConfigurableViewProtocol {
     //MARK: Configure
     func configure(with model: MessageCellModel) {
         if model.myMessage == true {
+            messageBubble.backgroundColor = .systemBlue
+            dateLabel.textColor = .systemGray5
             messageText.textColor = .white
-            NSLayoutConstraint.activate([
-                messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edge)
-            ])
-        } else {
+            messageText.text = model.text
+            messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edgeToTable).isActive = true
+        } else if model.myMessage == false {
+            messageText.textColor = .black
             messageBubble.backgroundColor = .systemGray5
-            NSLayoutConstraint.activate([
-                messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edge)
-            ])
+            messageText.text = model.text
+            messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable).isActive = true
         }
-        messageText.text = model.text
+        
+        let format = DateFormatter()
+        format.dateFormat = "HH:mm"
+        dateLabel.text = format.string(from: model.date)
     }
+    
+    
 }

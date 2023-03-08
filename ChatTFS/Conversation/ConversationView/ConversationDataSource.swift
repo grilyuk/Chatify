@@ -15,22 +15,10 @@ class ConversationDataSource: UITableViewDiffableDataSource<DaySection, Message>
             
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationViewCell.identifier, for: indexPath) as? ConversationViewCell else { return UITableViewCell()}
             
-            cell.configure(with: messages[indexPath.row])
+            cell.configure(with: messages[itemIdentifier.number])
+            print("configure from \(itemIdentifier.number)")
             cell.selectionStyle = .none
             return cell
-        }
-    }
-    
-    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        switch section {
-        case 0:
-            return "Date 1"
-        case 1:
-            return "Date 2"
-        case 2:
-            return "Date 3"
-        default:
-            return ""
         }
     }
 }

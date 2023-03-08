@@ -142,6 +142,7 @@ class ConverstionListCell: UITableViewCell {
             
             lastMessageText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: UIConstants.meesageBottomToContentBottom),
             lastMessageText.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToMessage),
+            lastMessageText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
             indicatorImage.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
             indicatorImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: UIConstants.indicatorToContentTrailing),
@@ -162,6 +163,7 @@ extension ConverstionListCell: ConfigurableViewProtocol {
     
     func configure(with model: ConversationListCellModel) {
         if model.message == nil {
+            dateLabel.text = nil
             lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
             lastMessageText.text = "No messages yet"
         } else {
@@ -190,14 +192,19 @@ extension ConverstionListCell: ConfigurableViewProtocol {
         nameLabel.text = model.name
         
         guard let date = model.date else { return }
-        if date.timeIntervalSinceNow <= 24*60*60 {
-            dateLabel.text = DateFormatter.localizedString(from: date,
-                                                           dateStyle: .none,
-                                                           timeStyle: .short)
-        } else {
-            dateLabel.text = DateFormatter.localizedString(from: date,
-                                                           dateStyle: .short,
-                                                           timeStyle: .none)
+        let nowDate = Date()
+        let formatterNow = DateFormatter()
+        formatterNow.dateFormat = "dd:MM:yyyy"
+        let actualDate = formatterNow.string(from: nowDate)
+        if formatterNow.string(from: date) == actualDate {
+            let formatterToday = DateFormatter()
+            formatterToday.dateFormat = "HH:mm"
+            dateLabel.text = formatterToday.string(from: date)
+        } else if formatterNow.string(from: date) != actualDate {
+            let formatterNotToday = DateFormatter()
+            formatterNotToday.locale = Locale(identifier: "en_US_POSIX")
+            formatterNotToday.dateFormat = "dd, MMM"
+            dateLabel.text = formatterNotToday.string(from: date)
         }
     }
 }
