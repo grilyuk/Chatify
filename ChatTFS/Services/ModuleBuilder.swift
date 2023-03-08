@@ -10,6 +10,7 @@ import Foundation
 protocol ModuleBuilderProtocol: AnyObject {
     func buildMain(router: RouterProtocol) -> MainViewController
     func buildProfile(router: RouterProtocol, profile: ProfileModel) -> ProfileViewController
+    func buildConversation(router: RouterProtocol, conversation: IndexPath) -> ConversationViewController
 }
 
 class ModuleBuilder: ModuleBuilderProtocol {
@@ -27,6 +28,16 @@ class ModuleBuilder: ModuleBuilderProtocol {
         let interactor = ProfileInteractor()
         let view = ProfileViewController()
         let presenter = ProfilePresenter(router: router, interactor: interactor, profile: profile)
+        view.presenter = presenter
+        interactor.presenter = presenter
+        presenter.view = view
+        return view
+    }
+    
+    func buildConversation(router: RouterProtocol, conversation: IndexPath) -> ConversationViewController {
+        let interactor = ConversationInteractor()
+        let presenter = ConversationPresenter(router: router, interactor: interactor, conversation: conversation)
+        let view = ConversationViewController()
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view

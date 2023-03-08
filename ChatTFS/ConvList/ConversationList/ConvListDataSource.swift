@@ -14,6 +14,7 @@ enum Section: Hashable, CaseIterable {
 
 struct User: Hashable {
     let number: Int
+    let id = UUID()
 }
 
 //MARK: DataSource

@@ -16,6 +16,7 @@ protocol RouterMain: AnyObject {
 protocol RouterProtocol: RouterMain {
     func initialViewController()
     func showProfile(profile: ProfileModel)
+    func showConversation(conversation: IndexPath)
 }
 
 class Router: RouterProtocol {
@@ -30,15 +31,22 @@ class Router: RouterProtocol {
     
     func initialViewController() {
         if let navigationController = navigationController {
-            guard let mainViewProtocol = moduleBuilder?.buildMain(router: self) else { return }
-            navigationController.viewControllers = [mainViewProtocol]
+            guard let mainViewController = moduleBuilder?.buildMain(router: self) else { return }
+            navigationController.viewControllers = [mainViewController]
         }
     }
     
     func showProfile(profile: ProfileModel) {
         if let navigationController = navigationController {
-            guard let profileViewProtocol = moduleBuilder?.buildProfile(router: self, profile: profile) else { return }
-            navigationController.present(profileViewProtocol, animated: true)
+            guard let profileViewController = moduleBuilder?.buildProfile(router: self, profile: profile) else { return }
+            navigationController.present(profileViewController, animated: true)
+        }
+    }
+    
+    func showConversation(conversation: IndexPath) {
+        if let navigationController = navigationController {
+            guard let conversationViewController = moduleBuilder?.buildConversation(router: self, conversation: conversation) else { return }
+            navigationController.pushViewController(conversationViewController, animated: true)
         }
     }
 }

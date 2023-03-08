@@ -9,9 +9,11 @@ import UIKit
 
 protocol MainPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
+    var conversation: ConversationListCellModel? { get set }
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
+    func didTappedConversation()
 }
 
 class MainPresenter {
@@ -19,6 +21,7 @@ class MainPresenter {
     let router: RouterProtocol?
     let interactor: MainInteractorProtocol
     var profile: ProfileModel?
+    var conversation: ConversationListCellModel?
     
     init(router: RouterProtocol, interactor: MainInteractorProtocol) {
         self.router = router
@@ -33,27 +36,26 @@ extension MainPresenter: MainPresenterProtocol {
     
     func dataUploaded() {
         view?.users = [
-            ConversationListCellModel(name: "Jhon Travolta", message: "Hello", date: Date.init(timeIntervalSinceNow: TimeInterval.init(floatLiteral: 20)), isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Ferb", message: nil, date: Date(timeIntervalSinceReferenceDate: 43225235), isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Stevene", message: "Some message", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Danil", message: "Привет", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Stefan", message: "How are you?", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Robert", message: "Go to shop", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Alex", message: "Are you busy?", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Nika", message: "Как дела?", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Lena", message: "Я с тобой не разговариваю...", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Alyona", message: "Ладно", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Sandra Safa", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Gret Fasf", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Dsd G", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Kdga", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Sanders Gasg", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Utodsg Fgdsga", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Zhora", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Fafe Fhe", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Geqrq", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Tewqg Wsf", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Iogw Ig", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil)
+            ConversationListCellModel(name: "Charis Clay", message: "Hello", date: Date.init(timeIntervalSinceNow: TimeInterval.init(floatLiteral: 20)), isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Lacey Finch", message: nil, date: Date(timeIntervalSinceReferenceDate: 43225235), isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Norma Carver", message: "Some message", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Dawson Suarez", message: "Привет", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Aminah Burch", message: "How are you?", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Rodney Sharp", message: "Go to shop", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Erin Duke", message: "Are you busy?", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Mehmet Matthams", message: "Как дела?", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Malik Rios", message: "Я с тобой не разговариваю...", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Samantha Erickson", message: "Ладно", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Sid Terry", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Lochlan Alexander", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Ishaan Matthews", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Jazmin Clayton", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Hamish Barker", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Kezia Finley", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Sylvia Cooper", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Erica Tate", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Liana Fitzgerald", message: "Hello", date: nil, isOnline: true, hasUnreadMessages: nil),
+            ConversationListCellModel(name: "Aiza Fischer", message: "Hello", date: nil, isOnline: false, hasUnreadMessages: nil)
         ]
         view?.showMain()
     }
@@ -61,5 +63,10 @@ extension MainPresenter: MainPresenterProtocol {
     func didTappedProfile() {
         guard let profile = profile else { return }
         router?.showProfile(profile: profile)
+    }
+    
+    func didTappedConversation() {
+//        guard let conversation = conversation else {return}
+        router?.showConversation(conversation: [0,1])
     }
 }

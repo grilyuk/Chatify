@@ -65,7 +65,7 @@ class ConverstionListCell: UITableViewCell {
     private lazy var lastMessageText: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.lastMessageFontSize, weight: .regular)
-        label.numberOfLines = 0
+        label.numberOfLines = 1
         label.textColor = .gray
         return label
     }()

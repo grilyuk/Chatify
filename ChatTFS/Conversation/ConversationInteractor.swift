@@ -6,3 +6,15 @@
 //
 
 import Foundation
+
+protocol ConversationInteractorProtocol: AnyObject {
+    func loadData()
+}
+
+class ConversationInteractor: ConversationInteractorProtocol {
+    var presenter: ConversationPresenterProtocol?
+    
+    func loadData() {
+        presenter?.dataUploaded()
+    }
+}

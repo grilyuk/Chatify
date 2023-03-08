@@ -7,40 +7,48 @@
 
 import UIKit
 
-struct Dates: Hashable {
+protocol ConversationViewProtocol: AnyObject {
+    func showConversation()
+    var messages: [MessageCellModel] {get set}
+}
+
+struct DaySection: Hashable {
     let dateOfDay: Date
 }
 
 struct Message: Hashable {
-    let sendTime: Date
+    let date: Date
+    let id = UUID()
 }
 
 class ConversationViewController: UIViewController {
     
-    var messageData: [MessageCellModel] = [
-    MessageCellModel(text: "My", date: Date(), myMessage: true),
-    MessageCellModel(text: "Not", date: Date(), myMessage: false),
-    MessageCellModel(text: "trw", date: Date(), myMessage: true)
-    ]
+    var messages: [MessageCellModel] = [
+        MessageCellModel(text: "Привет \nПривет \nПривет", date: Date(timeIntervalSinceReferenceDate: 1000), myMessage: false),
+        MessageCellModel(text: "Нет, не получится.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
+        MessageCellModel(text: "Hello world", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: true)
+        ]
+    var presenter: ConversationPresenterProtocol?
     
     private lazy var tableView = UITableView()
-    private lazy var dataSource = ConversationDataSource(tableView: tableView, messages: messageData)
+    private lazy var dataSource = ConversationDataSource(tableView: tableView, messages: messages)
     let dates = [
-    Dates(dateOfDay: Date(timeIntervalSinceReferenceDate: 1000)),
-    Dates(dateOfDay: Date(timeIntervalSinceReferenceDate: 10000)),
-    Dates(dateOfDay: Date(timeIntervalSinceReferenceDate: 100000))
+    DaySection(dateOfDay: Date(timeIntervalSinceReferenceDate: 1000)),
+    DaySection(dateOfDay: Date(timeIntervalSinceReferenceDate: 10000)),
+    DaySection(dateOfDay: Date(timeIntervalSinceReferenceDate: 100000))
     ]
     
-    let messages = [
-        Message(sendTime: Date(timeIntervalSinceReferenceDate: 1000)),
-        Message(sendTime: Date(timeIntervalSinceReferenceDate: 10000)),
-        Message(sendTime: Date(timeIntervalSinceReferenceDate: 10000)),
-        Message(sendTime: Date(timeIntervalSinceReferenceDate: 100000))
+    let messagesModels = [
+        Message(date: Date(timeIntervalSinceReferenceDate: 1000)),
+        Message(date: Date(timeIntervalSinceReferenceDate: 10000)),
+        Message(date: Date(timeIntervalSinceReferenceDate: 10000)),
+        Message(date: Date(timeIntervalSinceReferenceDate: 10000)),
+        Message(date: Date(timeIntervalSinceReferenceDate: 100000))
     ]
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        presenter?.viewReady()
         setupUI()
     }
     
@@ -53,15 +61,15 @@ class ConversationViewController: UIViewController {
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
         snapshot.appendSections(dates)
-
         for date in dates {
-            for message in messages {
-                if message.sendTime == date.dateOfDay {
-                    var arrMsg: [Message] = []
+            var arrMsg: [Message] = []
+            for message in messagesModels {
+                if message.date == date.dateOfDay {
                     arrMsg.append(message)
-                    snapshot.appendItems(arrMsg, toSection: date)
+                    print(arrMsg.count)
                 }
             }
+            snapshot.appendItems(arrMsg, toSection: date)
         }
         dataSource.apply(snapshot)
     }
@@ -73,8 +81,7 @@ class ConversationViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 80
-        
-//        tableView.separatorStyle = .none
+        tableView.separatorStyle = .none
         
         NSLayoutConstraint.activate([
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -93,8 +100,14 @@ extension ConversationViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-
         tableView.deselectRow(at: indexPath, animated: false)
     }
     
 }
+
+extension ConversationViewController: ConversationViewProtocol {
+    func showConversation() {
+        view.backgroundColor = .white
+    }
+}
+

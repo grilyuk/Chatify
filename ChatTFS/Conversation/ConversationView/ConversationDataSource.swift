@@ -7,20 +7,19 @@
 
 import UIKit
 
-class ConversationDataSource: UITableViewDiffableDataSource<Dates, Message> {
+class ConversationDataSource: UITableViewDiffableDataSource<DaySection, Message> {
     
     init(tableView: UITableView, messages: [MessageCellModel]) {
         super.init(tableView: tableView) {
             tableView, indexPath, itemIdentifier in
+            
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationViewCell.identifier, for: indexPath) as? ConversationViewCell else { return UITableViewCell()}
             
-            cell.configure(with: messages[indexPath.section])
-            
+            cell.configure(with: messages[indexPath.row])
+            cell.selectionStyle = .none
             return cell
         }
     }
-    
-    
     
     override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         switch section {
