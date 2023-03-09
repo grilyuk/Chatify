@@ -7,12 +7,12 @@
 
 import UIKit
 
-protocol MainViewProtocol: AnyObject {
+protocol ConvListViewProtocol: AnyObject {
     func showMain()
     var users: [ConversationListCellModel] {get set}
 }
 
-class MainViewController: UIViewController {
+class ConvListViewController: UIViewController {
 
     //MARK: UIConstants
     private enum UIConstants {
@@ -21,7 +21,7 @@ class MainViewController: UIViewController {
     }
     
     //MARK: Public
-    var presenter: MainPresenterProtocol?
+    var presenter: ConvListPresenterProtocol?
     var users: [ConversationListCellModel] = []
 
     //MARK: Private
@@ -115,7 +115,7 @@ class MainViewController: UIViewController {
 }
 
 //MARK: MainViewController + UITableViewDelegate
-extension MainViewController: UITableViewDelegate {
+extension ConvListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         UIConstants.sectionHeight
@@ -132,7 +132,7 @@ extension MainViewController: UITableViewDelegate {
 }
 
 //MARK: MainViewController + MainViewProtocol
-extension MainViewController: MainViewProtocol {
+extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
         view.backgroundColor = .white
     }

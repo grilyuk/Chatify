@@ -7,13 +7,13 @@
 
 import UIKit
 
-protocol MainInteractorProtocol: AnyObject {
+protocol ConvListInteractorProtocol: AnyObject {
     func loadData()
 
 }
 
-class MainInteractor: MainInteractorProtocol {
-    var presenter: MainPresenterProtocol?
+class ConvListInteractor: ConvListInteractorProtocol {
+    var presenter: ConvListPresenterProtocol?
     
     func loadData() {
         presenter?.profile = ProfileModel(profileImage: nil,
@@ -21,5 +21,4 @@ class MainInteractor: MainInteractorProtocol {
                                           statusText: "Almost iOS Developer \nSaint-Petersburg, Russia")
         presenter?.dataUploaded()
     }
-    
 }

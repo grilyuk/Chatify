@@ -83,11 +83,11 @@ class ConversationViewCell: UITableViewCell {
         NSLayoutConstraint.activate([
             messageBubble.topAnchor.constraint(equalTo: contentView.topAnchor,constant: UIConstants.edge),
             messageBubble.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -UIConstants.edge),
+            messageBubble.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, multiplier: 3/4),
             messageText.leadingAnchor.constraint(equalTo: messageBubble.leadingAnchor, constant: UIConstants.edge),
             messageText.trailingAnchor.constraint(equalTo: dateLabel.leadingAnchor, constant: -UIConstants.edge),
             messageText.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edge),
             messageText.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant:  -UIConstants.edge),
-            messageBubble.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, multiplier: 3/4),
             dateLabel.bottomAnchor.constraint(equalTo: messageText.bottomAnchor),
             dateLabel.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge)
         ])

@@ -31,7 +31,7 @@ class Router: RouterProtocol {
     
     func initialViewController() {
         if let navigationController = navigationController {
-            guard let mainViewController = moduleBuilder?.buildMain(router: self) else { return }
+            guard let mainViewController = moduleBuilder?.buildConvList(router: self) else { return }
             navigationController.viewControllers = [mainViewController]
         }
     }

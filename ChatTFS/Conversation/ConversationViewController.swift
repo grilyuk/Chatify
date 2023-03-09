@@ -14,6 +14,7 @@ protocol ConversationViewProtocol: AnyObject {
 
 struct DaySection: Hashable {
     let dateOfDay: Date
+//    let id = UUID()
 }
 
 struct Message: Hashable {
@@ -32,20 +33,46 @@ class ConversationViewController: UIViewController {
     //    но я в любом случае это допилю, челов с кофекода спрошу, надеюсь помогут
     
     static var messages: [MessageCellModel] = [
-        MessageCellModel(text: "Привет", date: Date(timeIntervalSinceReferenceDate: 1000), myMessage: false),
-        MessageCellModel(text: "Нет, не получится.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
-        MessageCellModel(text: "Hello world", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: false),
-        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
-        MessageCellModel(text: "ММмм как же превосходно работаем таблица", date: Date(timeIntervalSinceReferenceDate: 1000), myMessage: true),
-        MessageCellModel(text: "Why? I'm pretty good at cursing already.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: false),
-        MessageCellModel(text: "Test", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
-        MessageCellModel(text: "Ok.", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: true),
-        MessageCellModel(text: "Why? I'm pretty good at cursing already.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: false),
-        MessageCellModel(text: "Why? I'm pretty good at cursing already.", date: Date(timeIntervalSinceReferenceDate: 10000), myMessage: true),
-        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: false),
-        MessageCellModel(text: "We've got to work on your cursing.", date: Date(timeIntervalSinceReferenceDate: 1000), myMessage: true),
-        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: false),
-        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?", date: Date(timeIntervalSinceReferenceDate: 100000), myMessage: true)
+        MessageCellModel(text: "Привет",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: false),
+        MessageCellModel(text: "Нет, не получится.",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: true),
+        MessageCellModel(text: "Hello world",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: false),
+        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: true),
+        MessageCellModel(text: "ММмм как же превосходно работаем таблица",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: true),
+        MessageCellModel(text: "Why? I'm pretty good at cursing already.",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: false),
+        MessageCellModel(text: "Test", date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: true),
+        MessageCellModel(text: "Ok.", date: Date(timeIntervalSinceReferenceDate: 100000),
+                         myMessage: true),
+        MessageCellModel(text: "Why? I'm pretty good at cursing already.",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: false),
+        MessageCellModel(text: "Why? I'm pretty good at cursing already.",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: true),
+        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: false),
+        MessageCellModel(text: "We've got to work on your cursing.",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: true),
+        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?",
+                         date: Date(timeIntervalSinceReferenceDate: 10000),
+                         myMessage: false),
+        MessageCellModel(text: "Я в своем познании настолько преисполнился, что я как будто бы уже сто триллионов миллиардов лет проживаю на триллионах и триллионах таких же планет, как эта Земля, мне этот мир абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения и вот этой гармонии, от слияния с бесконечно вечным, от созерцания великого фрактального подобия и от вот этого замечательного всеединства существа, бесконечно вечного, куда ни посмотри, хоть вглубь - бесконечно малое, хоть ввысь - бесконечное большое, понимаешь?",
+                         date: Date(timeIntervalSinceReferenceDate: 1000000),
+                         myMessage: true)
     ]
     
     let dates = [
@@ -54,7 +81,42 @@ class ConversationViewController: UIViewController {
         DaySection(dateOfDay: Date(timeIntervalSinceReferenceDate: 100000))
     ]
     
-    let sectionsArray = ["Dec, 31, 2022", "Jan, 10", "Today"]
+    let sectionsArray: Set<String> = {
+        var array: Set<String> = []
+        var i: Int = 0
+        var k: Int = 0
+        while i != messages.count {
+            while k != messages.count {
+                if messages[i].date == messages[k].date {
+                    let date = messages[k].date
+                    let format = DateFormatter()
+                    format.dateFormat = "dd:MM:yyyy"
+                    array.insert(format.string(from: date))
+                }
+                k += 1
+            }
+            i += 1
+        }
+        return array
+    }()
+    
+//    let dates: Set<DaySection> = {
+//        var array: Set<DaySection> = []
+//        var i: Int = 0
+//        var k: Int = 0
+//        while i != messages.count {
+//            while k != messages.count {
+//                if messages[i].date == messages[k].date {
+//                    let date = messages[k].date
+//                    array.insert(DaySection(dateOfDay: date))
+//                }
+//                k += 1
+//            }
+//            i += 1
+//        }
+//        print(array.count)
+//        return array
+//    }()
     
     let messagesModels: [Message] = {
         var array: [Message] = []
@@ -116,18 +178,22 @@ class ConversationViewController: UIViewController {
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
 
         let keyboardHeight = keyboardFrame.height
-        view.frame.origin.y = -keyboardHeight
+        let viewYMax = view.frame.maxY
+        let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
+        let height = viewYMax - safeAreaYMax
+        let offset = keyboardHeight - height
+        additionalSafeAreaInsets.bottom = offset
     }
 
     @objc private func keyboardWillHide(_ notification: Notification) {
-        view.frame.origin.y = 0
+        additionalSafeAreaInsets.bottom = 0
     }
                             
     //MARK: DataSource
     private func setDataSource() {
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
-        snapshot.appendSections(dates)
+        snapshot.appendSections(Array(dates))
         for date in dates {
             var arrMsg: [Message] = []
             for message in messagesModels {
@@ -142,7 +208,6 @@ class ConversationViewController: UIViewController {
     
     //MARK: Setup UI
     private func setupUI() {
-        
         setTableView()
         setDataSource()
         setNavBar()
@@ -222,7 +287,7 @@ extension ConversationViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let title = UILabel()
-        title.text = sectionsArray[section]
+        title.text = "Section"
         title.backgroundColor = .init(white: 1, alpha: 0.8)
         title.font = .systemFont(ofSize: 12)
         title.textAlignment = .center

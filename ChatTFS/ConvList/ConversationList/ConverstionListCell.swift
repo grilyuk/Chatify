@@ -37,6 +37,9 @@ class ConverstionListCell: UITableViewCell {
         static let avatarToName: CGFloat = 10
         static let avatarToMessage: CGFloat = 10
         static let indicatorToContentTrailing: CGFloat = -10
+        static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
+        static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
+        
     }
     
     //MARK: Private
@@ -79,10 +82,23 @@ class ConverstionListCell: UITableViewCell {
     
     private lazy var userAvatar: UIImageView = {
         let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: UIConstants.avatarSize, height: UIConstants.avatarSize))
-        imageView.contentMode = .scaleAspectFit
+        let gradient = CAGradientLayer()
+        gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
+                           UIConstants.imageProfileBottomColor.cgColor]
+        gradient.frame = imageView.bounds
+        imageView.layer.addSublayer(gradient)
         imageView.layer.cornerRadius = UIConstants.avatarSize/2
         imageView.clipsToBounds = true
         return imageView
+    }()
+    
+    private lazy var initialsLabel: UILabel = {
+        let label = UILabel()
+        let initialFontSizeCalc = UIConstants.avatarSize * 0.45
+        let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
+        label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
+        label.textColor = .white
+        return label
     }()
     
     private lazy var separatorLine: UIView = {
@@ -101,8 +117,16 @@ class ConverstionListCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: Methods
     func removeSeparator() {
         separatorLine.removeFromSuperview()
+    }
+    
+    private func setInitials(from name: String) {
+        let formatter = PersonNameComponentsFormatter()
+        let components = formatter.personNameComponents(from: name)
+        formatter.style = .abbreviated
+        initialsLabel.text = formatter.string(from: components!)
     }
     
     //MARK: PrepareForReuse
@@ -112,6 +136,7 @@ class ConverstionListCell: UITableViewCell {
         nameLabel.text = nil
         lastMessageText.text = nil
         dateLabel.text = nil
+        initialsLabel.text = nil
         lastMessageText.font = .systemFont(ofSize: UIConstants.lastMessageFontSize)
     }
     
@@ -123,6 +148,7 @@ class ConverstionListCell: UITableViewCell {
         contentView.addSubview(dateLabel)
         contentView.addSubview(indicatorImage)
         contentView.addSubview(separatorLine)
+        contentView.addSubview(initialsLabel)
         
         userAvatar.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -130,6 +156,7 @@ class ConverstionListCell: UITableViewCell {
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         indicatorImage.translatesAutoresizingMaskIntoConstraints = false
         separatorLine.translatesAutoresizingMaskIntoConstraints = false
+        initialsLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             userAvatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -153,7 +180,10 @@ class ConverstionListCell: UITableViewCell {
             separatorLine.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             separatorLine.widthAnchor.constraint(equalToConstant: contentView.frame.width),
             separatorLine.heightAnchor.constraint(equalToConstant: 1),
-            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            initialsLabel.centerXAnchor.constraint(equalTo: userAvatar.centerXAnchor),
+            initialsLabel.centerYAnchor.constraint(equalTo: userAvatar.centerYAnchor)
         ])
     }
 }
@@ -182,11 +212,7 @@ extension ConverstionListCell: ConfigurableViewProtocol {
         }
         
         if userAvatar.image == nil {
-            DispatchQueue.main.async {
-                self.userAvatar.image = ImageRender(fullName: model.name ?? "Steve Jobs",
-                                                    size: CGSize(width: UIConstants.avatarSize,
-                                                                 height: UIConstants.avatarSize)).render()
-            }
+            setInitials(from: model.name ?? "Steve Jobs")
         }
         
         nameLabel.text = model.name

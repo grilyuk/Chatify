@@ -7,7 +7,7 @@
 
 import UIKit
 
-protocol MainPresenterProtocol: AnyObject {
+protocol ConvListPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
     func viewReady()
     func dataUploaded()
@@ -15,19 +15,19 @@ protocol MainPresenterProtocol: AnyObject {
     func didTappedConversation(for indexPath: IndexPath)
 }
 
-class MainPresenter {
-    weak var view: MainViewProtocol?
+class ConvListPresenter {
+    weak var view: ConvListViewProtocol?
     let router: RouterProtocol?
-    let interactor: MainInteractorProtocol
+    let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
     
-    init(router: RouterProtocol, interactor: MainInteractorProtocol) {
+    init(router: RouterProtocol, interactor: ConvListInteractorProtocol) {
         self.router = router
         self.interactor = interactor
     }
 }
 
-extension MainPresenter: MainPresenterProtocol {
+extension ConvListPresenter: ConvListPresenterProtocol {
     func viewReady() {
         interactor.loadData()
     }

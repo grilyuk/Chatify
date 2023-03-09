@@ -8,16 +8,16 @@
 import Foundation
 
 protocol ModuleBuilderProtocol: AnyObject {
-    func buildMain(router: RouterProtocol) -> MainViewController
+    func buildConvList(router: RouterProtocol) -> ConvListViewController
     func buildProfile(router: RouterProtocol, profile: ProfileModel) -> ProfileViewController
     func buildConversation(router: RouterProtocol, conversation: IndexPath) -> ConversationViewController
 }
 
 class ModuleBuilder: ModuleBuilderProtocol {
-    func buildMain(router: RouterProtocol) -> MainViewController {
-        let interactor = MainInteractor()
-        let presenter = MainPresenter(router: router, interactor: interactor)
-        let view = MainViewController()
+    func buildConvList(router: RouterProtocol) -> ConvListViewController {
+        let interactor = ConvListInteractor()
+        let presenter = ConvListPresenter(router: router, interactor: interactor)
+        let view = ConvListViewController()
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view
