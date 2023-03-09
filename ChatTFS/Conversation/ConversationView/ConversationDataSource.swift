@@ -7,14 +7,21 @@
 
 import UIKit
 
-class ConversationDataSource: UITableViewDiffableDataSource<DaySection, Message> {
+struct MessageCellModel: Hashable {
+    let text: String
+    let date: Date
+    let myMessage: Bool
+    let id = UUID()
+}
+
+class ConversationDataSource: UITableViewDiffableDataSource<Date, MessageCellModel> {
     
-    init(tableView: UITableView, messages: [MessageCellModel]) {
-        super.init(tableView: tableView) { tableView, indexPath, itemIdentifier in
+    init(tableView: UITableView) {
+        super.init(tableView: tableView) { tableView, indexPath, message in
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationViewCell.identifier,
                                                            for: indexPath) as? ConversationViewCell else { return UITableViewCell() }
             
-            cell.configure(with: messages[itemIdentifier.number])
+            cell.configure(with: message)
             cell.selectionStyle = .none
             return cell
         }

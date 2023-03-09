@@ -7,11 +7,7 @@
 
 import UIKit
 
-struct MessageCellModel {
-    let text: String
-    let date: Date
-    let myMessage: Bool
-}
+
 
 class ConversationViewCell: UITableViewCell {
     
@@ -28,6 +24,7 @@ class ConversationViewCell: UITableViewCell {
     //MARK: Private
     private lazy var messageText: UILabel = {
         let message = UILabel()
+        message.isUserInteractionEnabled = true
         message.textAlignment = .natural
         message.backgroundColor = .clear
         message.numberOfLines = 0
@@ -63,11 +60,8 @@ class ConversationViewCell: UITableViewCell {
     //MARK: PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
-        messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable).isActive = false
-        messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edgeToTable).isActive = false
-        messageBubble.backgroundColor = .clear
-        messageText.text = nil
-        dateLabel.text = nil
+        messageText.text = ""
+        dateLabel.text = ""
     }
     
     //MARK: SetupUI
@@ -80,41 +74,44 @@ class ConversationViewCell: UITableViewCell {
         messageText.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         
+        let maxBubbleWidht = messageBubble.widthAnchor.constraint(lessThanOrEqualToConstant: contentView.frame.width * (3/4))
+        maxBubbleWidht.priority = .defaultHigh
+        maxBubbleWidht.isActive = true
+        dateLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        
         NSLayoutConstraint.activate([
-            messageBubble.topAnchor.constraint(equalTo: contentView.topAnchor,constant: UIConstants.edge),
             messageBubble.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -UIConstants.edge),
-            messageBubble.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, multiplier: 3/4),
+            messageBubble.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.edge),
+            dateLabel.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge),
+            dateLabel.leadingAnchor.constraint(equalTo: messageText.trailingAnchor, constant: UIConstants.edge),
+            dateLabel.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant: -UIConstants.edge),
             messageText.leadingAnchor.constraint(equalTo: messageBubble.leadingAnchor, constant: UIConstants.edge),
-            messageText.trailingAnchor.constraint(equalTo: dateLabel.leadingAnchor, constant: -UIConstants.edge),
+            messageText.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant: -UIConstants.edge),
             messageText.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edge),
-            messageText.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant:  -UIConstants.edge),
-            dateLabel.bottomAnchor.constraint(equalTo: messageText.bottomAnchor),
-            dateLabel.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge)
         ])
     }
-
 }
 
+//MARK: ConversationViewCell + ConfigurableViewProtocol
 extension ConversationViewCell: ConfigurableViewProtocol {
-    //MARK: Configure
+    
     func configure(with model: MessageCellModel) {
         if model.myMessage == true {
+            messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edgeToTable).isActive = true
             messageBubble.backgroundColor = .systemBlue
             dateLabel.textColor = .systemGray5
             messageText.textColor = .white
             messageText.text = model.text
-            messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edgeToTable).isActive = true
         } else if model.myMessage == false {
+            messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 100).isActive = false
+            dateLabel.textColor = .white
             messageText.textColor = .black
             messageBubble.backgroundColor = .systemGray5
             messageText.text = model.text
-            messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable).isActive = true
         }
         
         let format = DateFormatter()
         format.dateFormat = "HH:mm"
         dateLabel.text = format.string(from: model.date)
     }
-    
-    
 }
