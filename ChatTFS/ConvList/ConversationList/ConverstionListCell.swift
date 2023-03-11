@@ -12,12 +12,13 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-struct ConversationListCellModel {
+struct ConversationListCellModel: Hashable {
     let name: String?
     let message: String?
     let date: Date?
-    let isOnline: Bool?
+    let isOnline: Bool
     let hasUnreadMessages: Bool?
+    let id = UUID()
 }
 
 class ConverstionListCell: UITableViewCell {
@@ -39,7 +40,6 @@ class ConverstionListCell: UITableViewCell {
         static let indicatorToContentTrailing: CGFloat = -10
         static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
         static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
-        
     }
     
     //MARK: Private

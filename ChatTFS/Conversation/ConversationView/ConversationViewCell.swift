@@ -43,7 +43,6 @@ class ConversationViewCell: UITableViewCell {
         let date = UILabel()
         date.textColor = .gray
         date.font = .systemFont(ofSize: UIConstants.fontSizeDate, weight: .regular)
-        date.text = "09:41"
         return date
     }()
     
@@ -60,12 +59,12 @@ class ConversationViewCell: UITableViewCell {
     //MARK: PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
-        messageText.text = ""
-        dateLabel.text = ""
+        messageText.text = nil
+        dateLabel.text = nil
     }
     
     //MARK: SetupUI
-    private func setupUI() {
+    func setupUI() {
         contentView.addSubview(messageBubble)
         messageBubble.addSubview(messageText)
         messageBubble.addSubview(dateLabel)
@@ -73,9 +72,9 @@ class ConversationViewCell: UITableViewCell {
         messageBubble.translatesAutoresizingMaskIntoConstraints = false
         messageText.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
-        
-        let maxBubbleWidht = messageBubble.widthAnchor.constraint(lessThanOrEqualToConstant: contentView.frame.width * (3/4))
-        maxBubbleWidht.priority = .defaultHigh
+
+        let maxBubbleWidht = messageBubble.widthAnchor.constraint(lessThanOrEqualTo: self.contentView.widthAnchor, multiplier: 0.75)
+        maxBubbleWidht.priority = .required
         maxBubbleWidht.isActive = true
         dateLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         
@@ -87,7 +86,7 @@ class ConversationViewCell: UITableViewCell {
             dateLabel.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant: -UIConstants.edge),
             messageText.leadingAnchor.constraint(equalTo: messageBubble.leadingAnchor, constant: UIConstants.edge),
             messageText.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant: -UIConstants.edge),
-            messageText.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edge),
+            messageText.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edge)
         ])
     }
 }
@@ -96,14 +95,12 @@ class ConversationViewCell: UITableViewCell {
 extension ConversationViewCell: ConfigurableViewProtocol {
     
     func configure(with model: MessageCellModel) {
-        if model.myMessage == true {
-            messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edgeToTable).isActive = true
+        if model.myMessage {
             messageBubble.backgroundColor = .systemBlue
             dateLabel.textColor = .systemGray5
             messageText.textColor = .white
             messageText.text = model.text
-        } else if model.myMessage == false {
-            messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 100).isActive = false
+        } else {
             dateLabel.textColor = .white
             messageText.textColor = .black
             messageBubble.backgroundColor = .systemGray5

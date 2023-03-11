@@ -20,7 +20,6 @@ class ConversationDataSource: UITableViewDiffableDataSource<Date, MessageCellMod
         super.init(tableView: tableView) { tableView, indexPath, message in
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationViewCell.identifier,
                                                            for: indexPath) as? ConversationViewCell else { return UITableViewCell() }
-            
             cell.configure(with: message)
             cell.selectionStyle = .none
             return cell

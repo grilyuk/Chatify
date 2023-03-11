@@ -26,10 +26,8 @@ class ConvListViewController: UIViewController {
 
     //MARK: Private
     private lazy var profileImageView = UIImageView()
-    private lazy var dataSource = ConvListDataSource(tableView: tableView, users: users)
+    private lazy var dataSource = ConvListDataSource(tableView: tableView)
     private lazy var tableView = UITableView()
-    private lazy var onlineUsers: [User] = []
-    private lazy var offlineUsers: [User] = []
     private lazy var imageButton = UIImage()
     
     //MARK: Lifeсycle
@@ -41,7 +39,7 @@ class ConvListViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
@@ -53,7 +51,6 @@ class ConvListViewController: UIViewController {
         setTableView()
         setNavBar()
         setDataSource()
-        tableView.showsVerticalScrollIndicator = false
     }
     
     private func setTableView() {
@@ -62,6 +59,7 @@ class ConvListViewController: UIViewController {
         tableView.register(ConverstionListCell.self, forCellReuseIdentifier: ConverstionListCell.identifier)
         tableView.delegate = self
         tableView.separatorStyle = .none
+        tableView.showsVerticalScrollIndicator = false
         
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -96,20 +94,28 @@ class ConvListViewController: UIViewController {
     //MARK: SetDataSource
     private func setDataSource() {
         var snapshot = dataSource.snapshot()
-        var number = 0
+        snapshot.deleteAllItems()
+        snapshot.appendSections([Section.online, Section.offline])
+        var usersWithMessages: [ConversationListCellModel] = []
+        var usersWithoutMessages: [ConversationListCellModel] = []
         for user in users {
-            if user.isOnline == true {
-                onlineUsers.append(User(number: number))
-                number += 1
-            } else {
-                offlineUsers.append(User(number: number))
-                number += 1
+            switch user.date != nil {
+            case true: usersWithMessages.append(user)
+            case false: usersWithoutMessages.append(user)
             }
         }
-        snapshot.deleteAllItems()
-        snapshot.appendSections(Section.allCases)
-        snapshot.appendItems(offlineUsers, toSection: .offline)
-        snapshot.appendItems(onlineUsers, toSection: .online)
+        
+        var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
+        sortedUsers.append(contentsOf: usersWithoutMessages)
+        
+        for user in sortedUsers {
+            switch user.isOnline {
+            case true:
+                snapshot.appendItems([user], toSection: .online)
+            case false:
+                snapshot.appendItems([user], toSection: .offline)
+            }
+        }
         dataSource.apply(snapshot)
     }
 }
@@ -124,16 +130,27 @@ extension ConvListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         UIConstants.rowHeight
     }
-    
+
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        presenter?.didTappedConversation(for: indexPath)
+        
+        var section = Section.offline
+        switch indexPath.section {
+        case 0:
+            section = .online
+        case 1:
+            section = .offline
+        default:
+            break
+        }
+        let usersInSection = dataSource.snapshot().itemIdentifiers(inSection: section)
+        presenter?.didTappedConversation(for: usersInSection[indexPath.row])
     }
 }
 
 //MARK: MainViewController + MainViewProtocol
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
     }
 }

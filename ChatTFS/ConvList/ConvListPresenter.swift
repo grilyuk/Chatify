@@ -12,7 +12,7 @@ protocol ConvListPresenterProtocol: AnyObject {
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
-    func didTappedConversation(for indexPath: IndexPath)
+    func didTappedConversation(for conversation: ConversationListCellModel)
 }
 
 class ConvListPresenter {
@@ -143,7 +143,7 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         router?.showProfile(profile: profile)
     }
     
-    func didTappedConversation(for indexPath: IndexPath) {
-        router?.showConversation(conversation: indexPath)
+    func didTappedConversation(for conversation: ConversationListCellModel) {
+        router?.showConversation(conversation: conversation)
     }
 }

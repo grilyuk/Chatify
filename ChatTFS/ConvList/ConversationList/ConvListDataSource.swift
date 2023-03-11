@@ -12,17 +12,11 @@ enum Section: Hashable, CaseIterable {
     case offline
 }
 
-struct User: Hashable {
-    let number: Int
-    let id = UUID()
-}
-
 //MARK: DataSource
-class ConvListDataSource: UITableViewDiffableDataSource<Section, User> {
+class ConvListDataSource: UITableViewDiffableDataSource<Section, ConversationListCellModel> {
     
-    init(tableView: UITableView, users: [ConversationListCellModel]) {
-        super.init(tableView: tableView) {
-            tableView, indexPath, itemIdentifier in
+    init(tableView: UITableView) {
+        super.init(tableView: tableView) { tableView, indexPath, user in
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConverstionListCell.identifier, for: indexPath) as? ConverstionListCell else { return UITableViewCell()}
             
             let onlineUsersCount = tableView.numberOfRows(inSection: 0)
@@ -32,7 +26,7 @@ class ConvListDataSource: UITableViewDiffableDataSource<Section, User> {
                 cell.removeSeparator()
             }
             
-            cell.configure(with: users[itemIdentifier.number])
+            cell.configure(with: user)
             return cell
         }
     }
