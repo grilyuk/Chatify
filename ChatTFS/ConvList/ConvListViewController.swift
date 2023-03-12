@@ -9,7 +9,8 @@ import UIKit
 
 protocol ConvListViewProtocol: AnyObject {
     func showMain()
-    var users: [ConversationListCellModel] {get set}
+    var users: [ConversationListCellModel]? { get set }
+    var handler:(([ConversationListCellModel]) -> Void)? { get set }
 }
 
 class ConvListViewController: UIViewController {
@@ -22,7 +23,8 @@ class ConvListViewController: UIViewController {
     
     //MARK: Public
     var presenter: ConvListPresenterProtocol?
-    var users: [ConversationListCellModel] = []
+    var users: [ConversationListCellModel]?
+    var handler: (([ConversationListCellModel]) -> Void)?
 
     //MARK: Private
     private lazy var profileImageView = UIImageView()
@@ -87,12 +89,13 @@ class ConvListViewController: UIViewController {
         navigationItem.rightBarButtonItem = profileButton
     }
 
-    @objc private func chooseThemes() {
-        
-        navigationController?.pushViewController( ThemesViewController() , animated: true)
+    @objc
+    private func chooseThemes() {
+        navigationController?.pushViewController(ThemesViewController() , animated: true)
     }
     
-    @objc private func tappedProfile() {
+    @objc
+    private func tappedProfile() {
         presenter?.didTappedProfile()
     }
     
@@ -101,19 +104,8 @@ class ConvListViewController: UIViewController {
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
         snapshot.appendSections([Section.online, Section.offline])
-        var usersWithMessages: [ConversationListCellModel] = []
-        var usersWithoutMessages: [ConversationListCellModel] = []
+        guard let users = users else { return }
         for user in users {
-            switch user.date != nil {
-            case true: usersWithMessages.append(user)
-            case false: usersWithoutMessages.append(user)
-            }
-        }
-        
-        var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
-        sortedUsers.append(contentsOf: usersWithoutMessages)
-        
-        for user in sortedUsers {
             switch user.isOnline {
             case true:
                 snapshot.appendItems([user], toSection: .online)
@@ -138,7 +130,6 @@ extension ConvListViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        
         var section = Section.offline
         switch indexPath.section {
         case 0:

@@ -9,21 +9,22 @@ import UIKit
 
 protocol ConversationViewProtocol: AnyObject {
     func showConversation()
-    var historyChat: [MessageCellModel] {get set}
+    var historyChat: [MessageCellModel] { get set }
 }
 
 class ConversationViewController: UIViewController {
     var historyChat: [MessageCellModel] = []
     var titlesSections: [String] = []
     var userName: String = "Grigoriy Danilyuk"
+    var themeController = ThemesViewController()
     
     //MARK: UIConstants
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
         static let textFieldHeight: CGFloat = 36
         static let avatarSize: CGFloat = 50
-        static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
-        static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
+        static let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
+        static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.6705197704, green: 0.6906016156, blue: 0.8105463435, alpha: 1)
     }
     
     //MARK: Public
@@ -31,16 +32,16 @@ class ConversationViewController: UIViewController {
     
     //MARK: Private
     private lazy var dataSource = ConversationDataSource(tableView: tableView)
+    private var imageProfileBottomColor: UIColor?
     
     private lazy var tableView: UITableView = {
         let table = UITableView()
-        table.register(ConversationViewCell.self, forCellReuseIdentifier: ConversationViewCell.identifier)
+        table.register(IncomingConversationViewCell.self, forCellReuseIdentifier: IncomingConversationViewCell.identifier)
+        table.register(OutgoingConversationViewCell.self, forCellReuseIdentifier: OutgoingConversationViewCell.identifier)
         table.delegate = self
         table.rowHeight = UITableView.automaticDimension
-        table.sectionHeaderHeight = UITableView.automaticDimension
-        table.estimatedRowHeight = 100
-        table.estimatedSectionHeaderHeight = 80
         table.separatorStyle = .none
+        table.allowsSelection = false
         return table
     }()
     
@@ -81,6 +82,7 @@ class ConversationViewController: UIViewController {
     
     private lazy var companionAvatar: UIView = {
         let view = UIView(frame: CGRect(origin: .zero, size: .init(width: UIConstants.avatarSize, height: UIConstants.avatarSize)))
+
         let gradient = CAGradientLayer()
         gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
                            UIConstants.imageProfileBottomColor.cgColor]
@@ -299,5 +301,10 @@ extension ConversationViewController: UITableViewDelegate {
 extension ConversationViewController: ConversationViewProtocol {
     func showConversation() {
         view.backgroundColor = .systemBackground
+//        
+//        colorHandler = { [weak self] color in
+//            self?.tableView.backgroundColor = color
+//            self?.imageProfileBottomColor = color
+//        }
     }
 }

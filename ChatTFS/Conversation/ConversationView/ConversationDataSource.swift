@@ -15,21 +15,17 @@ struct MessageCellModel: Hashable {
 }
 
 class ConversationDataSource: UITableViewDiffableDataSource<Date, MessageCellModel> {
-    
     init(tableView: UITableView) {
         super.init(tableView: tableView) { tableView, indexPath, message in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationViewCell.identifier,
-                                                           for: indexPath) as? ConversationViewCell else { return UITableViewCell() }
-            
-            for constraint in cell.contentView.constraints {
-                if constraint.firstAttribute == .left || constraint.firstAttribute == .right || constraint.firstAttribute == .leading || constraint.firstAttribute == .trailing {
-                    
-                    cell.contentView.removeConstraint(constraint)
-                }
+            if message.myMessage {
+                guard let outgoingMessage = tableView.dequeueReusableCell(withIdentifier: OutgoingConversationViewCell.identifier, for: indexPath) as? OutgoingConversationViewCell else { return UITableViewCell() }
+                outgoingMessage.configure(with: message)
+                return outgoingMessage
+            } else {
+                guard let incomingMessage = tableView.dequeueReusableCell(withIdentifier: IncomingConversationViewCell.identifier, for: indexPath) as? IncomingConversationViewCell else { return UITableViewCell() }
+                incomingMessage.configure(with: message)
+                return incomingMessage
             }
-            cell.configure(with: message)
-            cell.selectionStyle = .none
-            return cell
         }
     }
 }

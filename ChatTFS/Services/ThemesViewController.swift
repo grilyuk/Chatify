@@ -10,10 +10,9 @@ import UIKit
 class ThemesViewController: UIViewController {
     
     //MARK: UIConstants
-    
     enum UIConstants {
         static let cornerRadius: CGFloat = 16
-        static let borderOnExample: CGFloat = 2
+        static let borderOnExample: CGFloat = 1.5
         static let fontSize: CGFloat = 15
     }
     
@@ -74,14 +73,13 @@ class ThemesViewController: UIViewController {
     
     private lazy var nightTickButton: UIButton = {
         let checkmarkButton = UIButton(type: .custom)
-        let img = UIImage(systemName: "circle")
         checkmarkButton.setImage(UIImage(systemName: "circle"), for: .normal)
         checkmarkButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
         checkmarkButton.addTarget(self, action: #selector(selectedNightButton), for: .touchUpInside)
         return checkmarkButton
     }()
-    
-    //MARK: Lifecycle
+
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
@@ -90,7 +88,7 @@ class ThemesViewController: UIViewController {
         setupConstraints()
     }
     
-    //MARK: Private methods
+    //MARK: - Private methods
     private func themeChanged(to theme: UIUserInterfaceStyle ) {
         guard let window = UIApplication.shared.windows.first else { return }
         UIView.transition (with: window, duration: 0.2, options: .transitionCrossDissolve, animations: {
@@ -128,13 +126,7 @@ class ThemesViewController: UIViewController {
     
     private func setupConstraints() {
         view.addSubview(bubble)
-        bubble.addSubview(lightExample)
-        bubble.addSubview(darkExample)
-        bubble.addSubview(dayTickButton)
-        bubble.addSubview(nightTickButton)
-        bubble.addSubview(dayLabel)
-        bubble.addSubview(nightLabel)
-        
+        bubble.addSubviews(lightExample, darkExample, dayTickButton, nightTickButton, dayLabel, nightLabel)
         bubble.translatesAutoresizingMaskIntoConstraints = false
         lightExample.translatesAutoresizingMaskIntoConstraints = false
         darkExample.translatesAutoresizingMaskIntoConstraints = false
@@ -166,15 +158,14 @@ class ThemesViewController: UIViewController {
             nightLabel.topAnchor.constraint(equalTo: darkExample.bottomAnchor, constant: 20),
 
             dayTickButton.centerXAnchor.constraint(equalTo: lightExample.centerXAnchor),
-            dayTickButton.topAnchor.constraint(equalTo: dayLabel.bottomAnchor, constant: -20),
-            dayTickButton.widthAnchor.constraint(equalToConstant: 100),
-            dayTickButton.heightAnchor.constraint(equalToConstant: 100),
+            dayTickButton.widthAnchor.constraint(equalTo: lightExample.widthAnchor),
+            dayTickButton.heightAnchor.constraint(equalTo: view.heightAnchor),
+            dayTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor,constant: -30),
             
             nightTickButton.centerXAnchor.constraint(equalTo: darkExample.centerXAnchor),
-            nightTickButton.topAnchor.constraint(equalTo: nightLabel.bottomAnchor, constant: -20),
-            nightTickButton.widthAnchor.constraint(equalToConstant: 100),
-            nightTickButton.heightAnchor.constraint(equalToConstant: 100)
+            nightTickButton.widthAnchor.constraint(equalTo: darkExample.widthAnchor),
+            nightTickButton.heightAnchor.constraint(equalTo: view.heightAnchor),
+            nightTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -30)
         ])
     }
-    
 }

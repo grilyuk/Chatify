@@ -8,7 +8,6 @@
 import UIKit
 
 class ImageRender {
-    
     init(fullName: String, size: CGSize) {
         self.fullName = fullName
         self.size = size
@@ -18,8 +17,8 @@ class ImageRender {
     var fullName: String
     private let userInitialsLabel = UILabel()
     private let gradient = CAGradientLayer()
-    private let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
-    private let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
+    private let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
+    private let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.1823898468, green: 0.5700650811, blue: 0.6495155096, alpha: 1)
     
     func render() -> UIImage {
         let view = UIView(frame: CGRect(origin: CGPoint(x: 0, y: 0), size: size))

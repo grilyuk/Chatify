@@ -25,7 +25,7 @@ class ConverstionListCell: UITableViewCell {
     
     static let identifier = "conListCell"
     
-    //MARK: UIConstants
+    //MARK: - UIConstants
     private enum UIConstants {
         static let avatarToContentEdge: CGFloat = 5
         static let avatarSize: CGFloat = 60
@@ -38,11 +38,11 @@ class ConverstionListCell: UITableViewCell {
         static let avatarToName: CGFloat = 10
         static let avatarToMessage: CGFloat = 10
         static let indicatorToContentTrailing: CGFloat = -10
-        static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
-        static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
+        static let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
+        static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.1823898468, green: 0.5700650811, blue: 0.6495155096, alpha: 1)
     }
     
-    //MARK: Private
+    //MARK: - Private
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .bold)
@@ -107,7 +107,7 @@ class ConverstionListCell: UITableViewCell {
         return view
     }()
     
-    //MARK: Initializater
+    //MARK: - Initializater
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -117,7 +117,7 @@ class ConverstionListCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: Methods
+    //MARK: - Methods
     func removeSeparator() {
         separatorLine.removeFromSuperview()
     }
@@ -129,7 +129,7 @@ class ConverstionListCell: UITableViewCell {
         initialsLabel.text = formatter.string(from: components!)
     }
     
-    //MARK: PrepareForReuse
+    //MARK: - PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
         userAvatar.image = nil
@@ -140,15 +140,9 @@ class ConverstionListCell: UITableViewCell {
         lastMessageText.font = .systemFont(ofSize: UIConstants.lastMessageFontSize)
     }
     
-    //MARK: Setup UI
+    //MARK: - Setup UI
     private func setupUI() {
-        contentView.addSubview(userAvatar)
-        contentView.addSubview(nameLabel)
-        contentView.addSubview(lastMessageText)
-        contentView.addSubview(dateLabel)
-        contentView.addSubview(indicatorImage)
-        contentView.addSubview(separatorLine)
-        contentView.addSubview(initialsLabel)
+        contentView.addSubviews(userAvatar, nameLabel, lastMessageText, dateLabel, initialsLabel, indicatorImage, separatorLine)
         
         userAvatar.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -188,7 +182,7 @@ class ConverstionListCell: UITableViewCell {
     }
 }
 
-//MARK: ConverstionListCell + ConfigurableViewProtocol
+//MARK: - ConverstionListCell + ConfigurableViewProtocol
 extension ConverstionListCell: ConfigurableViewProtocol {
     
     func configure(with model: ConversationListCellModel) {

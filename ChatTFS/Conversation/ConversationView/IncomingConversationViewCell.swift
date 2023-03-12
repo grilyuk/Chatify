@@ -7,9 +7,9 @@
 
 import UIKit
 
-class ConversationViewCell: UITableViewCell {
+class IncomingConversationViewCell: UITableViewCell {
     
-    static let identifier = "conCell"
+    static let identifier = "incomingCell"
     
     //MARK: UIConstants
     private enum UIConstants {
@@ -64,13 +64,12 @@ class ConversationViewCell: UITableViewCell {
     //MARK: SetupUI
     func setupUI() {
         contentView.addSubview(messageBubble)
-        messageBubble.addSubview(messageText)
-        messageBubble.addSubview(dateLabel)
+        messageBubble.addSubviews(messageText,dateLabel)
         
         messageBubble.translatesAutoresizingMaskIntoConstraints = false
         messageText.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
-
+        
         let maxBubbleWidht = messageBubble.widthAnchor.constraint(lessThanOrEqualTo: self.contentView.widthAnchor, multiplier: 0.75)
         maxBubbleWidht.priority = .required
         maxBubbleWidht.isActive = true
@@ -84,39 +83,25 @@ class ConversationViewCell: UITableViewCell {
             dateLabel.bottomAnchor.constraint(equalTo: messageText.bottomAnchor),
             messageText.leadingAnchor.constraint(equalTo: messageBubble.leadingAnchor, constant: UIConstants.edge),
             messageText.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant: -UIConstants.edge + 2),
-            messageText.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edgeVertical)
+            messageText.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edgeVertical),
+            messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable)
         ])
     }
 }
 
 //MARK: ConversationViewCell + ConfigurableViewProtocol
-extension ConversationViewCell: ConfigurableViewProtocol {
+extension IncomingConversationViewCell: ConfigurableViewProtocol {
     func configure(with model: MessageCellModel) {
-        if model.myMessage {
-            if traitCollection.userInterfaceStyle == .light {
-                messageText.textColor = .white
-                dateLabel.textColor = #colorLiteral(red: 0.9215686275, green: 0.9215686275, blue: 0.9607843137, alpha: 1)
-                messageBubble.backgroundColor = #colorLiteral(red: 0.2666666667, green: 0.5411764706, blue: 0.968627451, alpha: 1)
-            } else {
-                messageText.textColor = .white
-                dateLabel.textColor = #colorLiteral(red: 0.9215686275, green: 0.9215686275, blue: 0.9607843137, alpha: 1)
-                messageBubble.backgroundColor = #colorLiteral(red: 0.2666666667, green: 0.5411764706, blue: 0.968627451, alpha: 1)
-            }
-            messageText.text = model.text
-            messageBubble.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -UIConstants.edgeToTable).isActive = true
+        if traitCollection.userInterfaceStyle == .light {
+            messageText.textColor = .black
+            dateLabel.textColor = #colorLiteral(red: 0.2352941176, green: 0.2352941176, blue: 0.262745098, alpha: 0.59)
+            messageBubble.backgroundColor = #colorLiteral(red: 0.9137254902, green: 0.9137254902, blue: 0.9215686275, alpha: 1)
         } else {
-            if traitCollection.userInterfaceStyle == .light {
-                messageText.textColor = .black
-                dateLabel.textColor = #colorLiteral(red: 0.2352941176, green: 0.2352941176, blue: 0.262745098, alpha: 0.59)
-                messageBubble.backgroundColor = #colorLiteral(red: 0.9137254902, green: 0.9137254902, blue: 0.9215686275, alpha: 1)
-            } else {
-                messageText.textColor = .white
-                dateLabel.textColor = #colorLiteral(red: 0.9215686275, green: 0.9215686275, blue: 0.9607843137, alpha: 1)
-                messageBubble.backgroundColor = #colorLiteral(red: 0.1490196078, green: 0.1490196078, blue: 0.1568627451, alpha: 1)
-            }
-            messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable).isActive = true
-            messageText.text = model.text
+            messageText.textColor = .white
+            dateLabel.textColor = #colorLiteral(red: 0.9215686275, green: 0.9215686275, blue: 0.9607843137, alpha: 1)
+            messageBubble.backgroundColor = #colorLiteral(red: 0.1490196078, green: 0.1490196078, blue: 0.1568627451, alpha: 1)
         }
+        messageText.text = model.text
         
         let format = DateFormatter()
         format.dateFormat = "HH:mm"
