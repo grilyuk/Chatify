@@ -20,6 +20,7 @@ class ConvListPresenter {
     let router: RouterProtocol?
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
+    var handler: ((ProfileModel) -> Void)?
     
     init(router: RouterProtocol, interactor: ConvListInteractorProtocol) {
         self.router = router
@@ -29,10 +30,14 @@ class ConvListPresenter {
 
 extension ConvListPresenter: ConvListPresenterProtocol {
     func viewReady() {
+        handler = { [weak self] value in
+            self?.profile = value
+        }
         interactor.loadData()
     }
     
     func dataUploaded() {
+        
         view?.users = [
             ConversationListCellModel(name: "Charis Clay",
                                       message: "I think Houdini did something like this once! Why, if I recall correctly, he was out of the hospital",
@@ -139,6 +144,7 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     }
     
     func didTappedProfile() {
+        
         guard let profile = profile else { return }
         router?.showProfile(profile: profile)
     }

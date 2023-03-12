@@ -73,7 +73,7 @@ class ConvListViewController: UIViewController {
         navigationItem.title = "Chat"
         navigationController?.navigationBar.prefersLargeTitles = true
         
-        let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: nil)
+        let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
         navigationItem.leftBarButtonItem = settingButton
         
         let button = UIButton(type: .custom)
@@ -87,6 +87,11 @@ class ConvListViewController: UIViewController {
         navigationItem.rightBarButtonItem = profileButton
     }
 
+    @objc private func chooseThemes() {
+        
+        navigationController?.pushViewController( ThemesViewController() , animated: true)
+    }
+    
     @objc private func tappedProfile() {
         presenter?.didTappedProfile()
     }

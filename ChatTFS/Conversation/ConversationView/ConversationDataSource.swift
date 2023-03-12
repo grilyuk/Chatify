@@ -20,6 +20,13 @@ class ConversationDataSource: UITableViewDiffableDataSource<Date, MessageCellMod
         super.init(tableView: tableView) { tableView, indexPath, message in
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationViewCell.identifier,
                                                            for: indexPath) as? ConversationViewCell else { return UITableViewCell() }
+            
+            for constraint in cell.contentView.constraints {
+                if constraint.firstAttribute == .left || constraint.firstAttribute == .right || constraint.firstAttribute == .leading || constraint.firstAttribute == .trailing {
+                    
+                    cell.contentView.removeConstraint(constraint)
+                }
+            }
             cell.configure(with: message)
             cell.selectionStyle = .none
             return cell

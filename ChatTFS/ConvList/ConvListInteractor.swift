@@ -16,9 +16,12 @@ class ConvListInteractor: ConvListInteractorProtocol {
     var presenter: ConvListPresenterProtocol?
     
     func loadData() {
-        presenter?.profile = ProfileModel(profileImage: nil,
-                                          fullName: "Grigoriy Danilyuk",
-                                          statusText: "Almost iOS Developer \nSaint-Petersburg, Russia")
         presenter?.dataUploaded()
+        guard let presenter = presenter as? ConvListPresenter else { return }
+        let profile = ProfileModel(profileImage: nil,
+                                   fullName: "Grigoriy Danilyuk",
+                                   statusText: "Almost iOS Developer \nSaint-Petersburg, Russia")
+        presenter.handler?(profile)
+        
     }
 }

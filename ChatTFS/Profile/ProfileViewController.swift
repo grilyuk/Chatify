@@ -44,7 +44,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         setupUI()
     }
 

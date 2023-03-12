@@ -20,6 +20,7 @@
 		5E92E9F429B72B9F0038EED2 /* ConversationPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9F329B72B9F0038EED2 /* ConversationPresenter.swift */; };
 		5E92E9F629B72C6E0038EED2 /* ConversationViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9F529B72C6E0038EED2 /* ConversationViewCell.swift */; };
 		5E92E9F829B7C4550038EED2 /* ConversationDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9F729B7C4550038EED2 /* ConversationDataSource.swift */; };
+		5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */; };
 		5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218229AB609700029FB8 /* ProfilePresenter.swift */; };
 		5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */; };
 		5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218A29AB683B00029FB8 /* ProfileModel.swift */; };
@@ -45,6 +46,7 @@
 		5E92E9F329B72B9F0038EED2 /* ConversationPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationPresenter.swift; sourceTree = "<group>"; };
 		5E92E9F529B72C6E0038EED2 /* ConversationViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationViewCell.swift; sourceTree = "<group>"; };
 		5E92E9F729B7C4550038EED2 /* ConversationDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationDataSource.swift; sourceTree = "<group>"; };
+		5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesViewController.swift; sourceTree = "<group>"; };
 		5EB6218229AB609700029FB8 /* ProfilePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePresenter.swift; sourceTree = "<group>"; };
 		5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInteractor.swift; sourceTree = "<group>"; };
 		5EB6218A29AB683B00029FB8 /* ProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileModel.swift; sourceTree = "<group>"; };
@@ -133,6 +135,7 @@
 			children = (
 				5E74BCB329A8DCA3009236A1 /* AlertController.swift */,
 				5E74BCB529A8E438009236A1 /* ImagePickerController.swift */,
+				5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */,
 				5E92E9DF29B2A7570038EED2 /* Router.swift */,
 				5E92E9E129B33C900038EED2 /* ModuleBuilder.swift */,
 				5E92E9E329B3ED500038EED2 /* RenderingImage.swift */,
@@ -262,6 +265,7 @@
 				5E74BCB429A8DCA3009236A1 /* AlertController.swift in Sources */,
 				5E92E9F229B72B930038EED2 /* ConversationInteractor.swift in Sources */,
 				5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */,
+				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ConversationViewController.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ConvListPresenter.swift in Sources */,
 				5E74BCB629A8E438009236A1 /* ImagePickerController.swift in Sources */,
