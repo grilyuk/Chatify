@@ -28,7 +28,8 @@
 		5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218A29AB683B00029FB8 /* ProfileModel.swift */; };
 		5EB6218D29AB6FE800029FB8 /* ConvListInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218C29AB6FE800029FB8 /* ConvListInteractor.swift */; };
 		5EB6218F29AB6FF100029FB8 /* ConvListPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218E29AB6FF100029FB8 /* ConvListPresenter.swift */; };
-		5EB624AE29C07086006D19B2 /* ThemesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB624AD29C07086006D19B2 /* ThemesProvider.swift */; };
+		5EB624B029C0CAD7006D19B2 /* ThemeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */; };
+		5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB624B129C0CB44006D19B2 /* Theme.swift */; };
 		5EDC6593299ECEAD009B6586 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDC6592299ECEAD009B6586 /* AppDelegate.swift */; };
 		5EDC6597299ECEAD009B6586 /* ConvListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDC6596299ECEAD009B6586 /* ConvListViewController.swift */; };
 		5EDC659C299ECEAE009B6586 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EDC659B299ECEAE009B6586 /* Assets.xcassets */; };
@@ -57,7 +58,8 @@
 		5EB6218A29AB683B00029FB8 /* ProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileModel.swift; sourceTree = "<group>"; };
 		5EB6218C29AB6FE800029FB8 /* ConvListInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvListInteractor.swift; sourceTree = "<group>"; };
 		5EB6218E29AB6FF100029FB8 /* ConvListPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvListPresenter.swift; sourceTree = "<group>"; };
-		5EB624AD29C07086006D19B2 /* ThemesProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesProvider.swift; sourceTree = "<group>"; };
+		5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeService.swift; sourceTree = "<group>"; };
+		5EB624B129C0CB44006D19B2 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		5EDC658F299ECEAD009B6586 /* ChatTFS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatTFS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EDC6592299ECEAD009B6586 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5EDC6596299ECEAD009B6586 /* ConvListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvListViewController.swift; sourceTree = "<group>"; };
@@ -153,8 +155,9 @@
 				5E74BCB329A8DCA3009236A1 /* AlertController.swift */,
 				5E74BCB529A8E438009236A1 /* ImagePickerController.swift */,
 				5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */,
-				5EB624AD29C07086006D19B2 /* ThemesProvider.swift */,
 				5E92E9E329B3ED500038EED2 /* RenderingImage.swift */,
+				5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */,
+				5EB624B129C0CB44006D19B2 /* Theme.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -269,6 +272,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5EB624B029C0CAD7006D19B2 /* ThemeService.swift in Sources */,
 				5E92E9E629B4B4C60038EED2 /* ConverstionListCell.swift in Sources */,
 				5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */,
 				5E97BF3729BE33B3003BBA1B /* UIViewExtension.swift in Sources */,
@@ -277,7 +281,6 @@
 				5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */,
 				5EB6218D29AB6FE800029FB8 /* ConvListInteractor.swift in Sources */,
 				5EDC6597299ECEAD009B6586 /* ConvListViewController.swift in Sources */,
-				5EB624AE29C07086006D19B2 /* ThemesProvider.swift in Sources */,
 				5E92E9F829B7C4550038EED2 /* ConversationDataSource.swift in Sources */,
 				5E92E9F429B72B9F0038EED2 /* ConversationPresenter.swift in Sources */,
 				5E97BF3D29BE8542003BBA1B /* OutgoingConversationViewCell.swift in Sources */,
@@ -285,6 +288,7 @@
 				5E74BCB429A8DCA3009236A1 /* AlertController.swift in Sources */,
 				5E92E9F229B72B930038EED2 /* ConversationInteractor.swift in Sources */,
 				5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */,
+				5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */,
 				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ConversationViewController.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ConvListPresenter.swift in Sources */,

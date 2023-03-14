@@ -7,7 +7,26 @@
 
 import UIKit
 
+
+
 class ThemesViewController: UIViewController {
+    
+    init(themeService: ThemeServiceProtocol) {
+        self.themeService = themeService
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    var themeService: ThemeServiceProtocol?
+    
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
+    }
     
     //MARK: UIConstants
     enum UIConstants {
@@ -82,22 +101,50 @@ class ThemesViewController: UIViewController {
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemGray6
+        guard let currentTheme = themeService?.currentTheme else { return }
+        fetchTheme(currentTheme: currentTheme)
         setNavigationBar()
         setupConstraints()
     }
     
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
+    }
+    
     //MARK: - Private methods
+    
+    private func fetchTheme(currentTheme: Theme) {
+        switch currentTheme {
+        case .light:
+            dayTickButton.isSelected = true
+        case .dark:
+            nightTickButton.isSelected = true
+        }
+    }
+    
     @objc
     private func tappedDayButton(_ sender: UIButton) {
         sender.isSelected = true
         nightTickButton.isSelected = false
+        let lightTheme = Theme.light
+        navigationController?.navigationBar.backgroundColor = lightTheme.backgroundColor
+        guard let themeService = themeService as? ThemeService else { return }
+        themeService.updateTheme()
+        themeService.themeDelegate?.changeTheme(theme: lightTheme)
+//        themeService.themeHandler?(lightTheme)
     }
     
     @objc
     private func tappedNightButton(_ sender: UIButton) {
         sender.isSelected = true
         dayTickButton.isSelected = false
+        let darkTheme = Theme.dark
+        navigationController?.navigationBar.backgroundColor = darkTheme.backgroundColor
+        guard let themeService = themeService as? ThemeService else { return }
+        themeService.updateTheme()
+        themeService.themeDelegate?.changeTheme(theme: darkTheme)
+//        themeService.themeHandler?(darkTheme)
     }
     
     private func setNavigationBar() {

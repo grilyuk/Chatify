@@ -10,12 +10,14 @@ import UIKit
 protocol ConversationViewProtocol: AnyObject {
     func showConversation()
     var historyChat: [MessageCellModel] { get set }
+    var handler: (([MessageCellModel], String) -> Void)? { get set }
 }
 
 class ConversationViewController: UIViewController {
+    var handler: (([MessageCellModel], String) -> Void)?
     var historyChat: [MessageCellModel] = []
     var titlesSections: [String] = []
-    var userName: String = ""
+    var userName: String = "Steve Jobs"
     
     //MARK: UIConstants
     private enum UIConstants {
@@ -28,6 +30,7 @@ class ConversationViewController: UIViewController {
     
     //MARK: Public
     var presenter: ConversationPresenterProtocol?
+    var themeService: ThemeServiceProtocol?
     
     //MARK: Private
     private lazy var dataSource = ConversationDataSource(tableView: tableView)
@@ -120,7 +123,16 @@ class ConversationViewController: UIViewController {
         return button
     }()
     
-    //MARK: Lifecycle
+    //MARK: - Lifecycle
+    init(themeService: ThemeServiceProtocol) {
+        self.themeService = themeService
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
@@ -139,6 +151,9 @@ class ConversationViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        guard let themeService = themeService as? ThemeService else {return}
+        self.tableView.backgroundColor = themeService.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
     }
     
@@ -173,7 +188,7 @@ class ConversationViewController: UIViewController {
         dataSource.apply(snapshot)
     }
     
-    //MARK: Setup UI
+    //MARK: - Setup UI
     private func setTableView() {
         view.addSubview(tableView)
         view.addSubview(textFieldView)
@@ -270,7 +285,7 @@ class ConversationViewController: UIViewController {
     }
 }
 
-//MARK: ConversationViewController + UITableViewDelegate
+//MARK: - ConversationViewController + UITableViewDelegate
 extension ConversationViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let title = UILabel()
@@ -290,15 +305,14 @@ extension ConversationViewController: UITableViewDelegate {
         title.textAlignment = .center
         return blurEffectView
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: false)
-    }
 }
 
-//MARK: ConversationViewController + ConversationViewProtocol
+//MARK: - ConversationViewController + ConversationViewProtocol
 extension ConversationViewController: ConversationViewProtocol {
     func showConversation() {
-        view.backgroundColor = .systemBackground
+        handler = { [weak self] history, name in
+            self?.historyChat = history
+            self?.userName = name
+        }
     }
 }

@@ -24,7 +24,8 @@ struct ConversationListCellModel: Hashable {
 class ConverstionListCell: UITableViewCell {
     
     static let identifier = "conListCell"
-    
+    var themeService: ThemeServiceProtocol?
+
     //MARK: - UIConstants
     private enum UIConstants {
         static let avatarToContentEdge: CGFloat = 5
@@ -65,7 +66,7 @@ class ConverstionListCell: UITableViewCell {
         return imageView
     }()
     
-    private lazy var lastMessageText: UILabel = {
+    lazy var lastMessageText: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.lastMessageFontSize, weight: .regular)
         label.numberOfLines = 1
@@ -112,7 +113,7 @@ class ConverstionListCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }

@@ -25,7 +25,7 @@ class ConvListViewController: UIViewController {
     var presenter: ConvListPresenterProtocol?
     var users: [ConversationListCellModel]?
     var handler: (([ConversationListCellModel]) -> Void)?
-    var colorhandler: ((UIColor) -> Void)?
+    var themeService: ThemeServiceProtocol?
 
     //MARK: Private
     private lazy var profileImageView = UIImageView()
@@ -34,8 +34,9 @@ class ConvListViewController: UIViewController {
     private lazy var imageButton = UIImage()
     
     //MARK: Lifeсycle
-    override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
-        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+    init(themeService: ThemeServiceProtocol) {
+        self.themeService = themeService
+        super.init(nibName: nil, bundle: nil)
         imageButton = ImageRender(fullName: "Grigoriy Danilyuk", size: CGSize(width: UIConstants.sectionHeight, height: UIConstants.sectionHeight)).render()
     }
     
@@ -45,16 +46,15 @@ class ConvListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
         presenter?.viewReady()
         setupUI()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        colorhandler = { [weak self] color in
-            self?.tableView.backgroundColor = color
-        }
+        self.tableView.reloadData()
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
+        self.tableView.backgroundColor = themeService?.currentTheme.backgroundColor
     }
     
     //MARK: Setup UI
@@ -100,7 +100,8 @@ class ConvListViewController: UIViewController {
 
     @objc
     private func chooseThemes() {
-        navigationController?.pushViewController(ThemesViewController() , animated: true)
+        guard let themeService = themeService else { return }
+        navigationController?.pushViewController(ThemesViewController(themeService: themeService) , animated: true)
     }
     
     @objc
@@ -128,6 +129,12 @@ class ConvListViewController: UIViewController {
 
 //MARK: MainViewController + UITableViewDelegate
 extension ConvListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard let convListCell = cell as? ConverstionListCell else { return }
+        convListCell.contentView.backgroundColor = themeService?.currentTheme.backgroundColor
+        convListCell.lastMessageText.textColor = themeService?.currentTheme.textColor
+    }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         UIConstants.sectionHeight
@@ -159,12 +166,6 @@ extension ConvListViewController: ConvListViewProtocol {
         handler = { [weak self] value in
             self?.users = value
         }
-        view.backgroundColor = .systemBackground
-    }
-}
-
-extension ConvListViewController: ViewSubscriber {
-    func changeTheme(theme: ThemeProtocol) {
-        view.backgroundColor = theme.backgroundColor
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
     }
 }

@@ -19,7 +19,7 @@ protocol ConvListPresenterProtocol: AnyObject {
 
 class ConvListPresenter {
     weak var view: ConvListViewProtocol?
-    let router: RouterProtocol?
+    var router: RouterProtocol?
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
     var users: [ConversationListCellModel]?
