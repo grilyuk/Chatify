@@ -25,6 +25,7 @@ class ConvListViewController: UIViewController {
     var presenter: ConvListPresenterProtocol?
     var users: [ConversationListCellModel]?
     var handler: (([ConversationListCellModel]) -> Void)?
+    var colorhandler: ((UIColor) -> Void)?
 
     //MARK: Private
     private lazy var profileImageView = UIImageView()
@@ -44,8 +45,16 @@ class ConvListViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+
         presenter?.viewReady()
         setupUI()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        colorhandler = { [weak self] color in
+            self?.tableView.backgroundColor = color
+        }
     }
     
     //MARK: Setup UI
@@ -54,7 +63,7 @@ class ConvListViewController: UIViewController {
         setNavBar()
         setDataSource()
     }
-    
+
     private func setTableView() {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -147,6 +156,15 @@ extension ConvListViewController: UITableViewDelegate {
 //MARK: MainViewController + MainViewProtocol
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
+        handler = { [weak self] value in
+            self?.users = value
+        }
         view.backgroundColor = .systemBackground
+    }
+}
+
+extension ConvListViewController: ViewSubscriber {
+    func changeTheme(theme: ThemeProtocol) {
+        view.backgroundColor = theme.backgroundColor
     }
 }

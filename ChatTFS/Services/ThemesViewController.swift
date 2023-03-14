@@ -67,7 +67,7 @@ class ThemesViewController: UIViewController {
         let checkmarkButton = UIButton(type: .custom)
         checkmarkButton.setImage(UIImage(systemName: "circle"), for: .normal)
         checkmarkButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
-        checkmarkButton.addTarget(self, action: #selector(selectedDayButton), for: .touchUpInside)
+        checkmarkButton.addTarget(self, action: #selector(tappedDayButton), for: .touchUpInside)
         return checkmarkButton
     }()
     
@@ -75,7 +75,7 @@ class ThemesViewController: UIViewController {
         let checkmarkButton = UIButton(type: .custom)
         checkmarkButton.setImage(UIImage(systemName: "circle"), for: .normal)
         checkmarkButton.setImage(UIImage(systemName: "checkmark.circle.fill"), for: .selected)
-        checkmarkButton.addTarget(self, action: #selector(selectedNightButton), for: .touchUpInside)
+        checkmarkButton.addTarget(self, action: #selector(tappedNightButton), for: .touchUpInside)
         return checkmarkButton
     }()
 
@@ -83,39 +83,21 @@ class ThemesViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGray6
-        fetchTheme()
         setNavigationBar()
         setupConstraints()
     }
     
     //MARK: - Private methods
-    private func themeChanged(to theme: UIUserInterfaceStyle ) {
-        guard let window = UIApplication.shared.windows.first else { return }
-        UIView.transition (with: window, duration: 0.2, options: .transitionCrossDissolve, animations: {
-            window.overrideUserInterfaceStyle = theme
-        })
-    }
-    
-    private func fetchTheme() {
-        if traitCollection.userInterfaceStyle == .light {
-            dayTickButton.isSelected = true
-        } else {
-            nightTickButton.isSelected = true
-        }
-    }
-
     @objc
-    private func selectedDayButton(_ sender: UIButton) {
+    private func tappedDayButton(_ sender: UIButton) {
         sender.isSelected = true
         nightTickButton.isSelected = false
-        themeChanged(to: .light)
     }
     
     @objc
-    private func selectedNightButton(_ sender: UIButton) {
+    private func tappedNightButton(_ sender: UIButton) {
         sender.isSelected = true
         dayTickButton.isSelected = false
-        themeChanged(to: .dark)
     }
     
     private func setNavigationBar() {

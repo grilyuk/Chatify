@@ -15,8 +15,7 @@ protocol ConversationViewProtocol: AnyObject {
 class ConversationViewController: UIViewController {
     var historyChat: [MessageCellModel] = []
     var titlesSections: [String] = []
-    var userName: String = "Grigoriy Danilyuk"
-    var themeController = ThemesViewController()
+    var userName: String = ""
     
     //MARK: UIConstants
     private enum UIConstants {
@@ -301,10 +300,5 @@ extension ConversationViewController: UITableViewDelegate {
 extension ConversationViewController: ConversationViewProtocol {
     func showConversation() {
         view.backgroundColor = .systemBackground
-//        
-//        colorHandler = { [weak self] color in
-//            self?.tableView.backgroundColor = color
-//            self?.imageProfileBottomColor = color
-//        }
     }
 }
