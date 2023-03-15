@@ -1,10 +1,3 @@
-//
-//  ConversationViewController.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 07.03.2023.
-//
-
 import UIKit
 
 protocol ConversationViewProtocol: AnyObject {
@@ -14,12 +7,8 @@ protocol ConversationViewProtocol: AnyObject {
 }
 
 class ConversationViewController: UIViewController {
-    var handler: (([MessageCellModel], String) -> Void)?
-    var historyChat: [MessageCellModel] = []
-    var titlesSections: [String] = []
-    var userName: String = "Steve Jobs"
     
-    //MARK: UIConstants
+    //MARK: - UIConstants
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
         static let textFieldHeight: CGFloat = 36
@@ -28,12 +17,17 @@ class ConversationViewController: UIViewController {
         static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.6705197704, green: 0.6906016156, blue: 0.8105463435, alpha: 1)
     }
     
-    //MARK: Public
+    //MARK: - Public
     var presenter: ConversationPresenterProtocol?
-    var themeService: ThemeServiceProtocol?
+    var handler: (([MessageCellModel], String) -> Void)?
+    var historyChat: [MessageCellModel] = []
+    var titlesSections: [String] = []
+    var userName: String = "Steve Jobs"
+    weak var themeService: ThemeServiceProtocol?
     
-    //MARK: Private
-    private lazy var dataSource = ConversationDataSource(tableView: tableView)
+    //MARK: - Private
+// еще раз прошу прощения за форс...
+    private lazy var dataSource = ConversationDataSource(tableView: tableView, themeService: themeService!)
     private var imageProfileBottomColor: UIColor?
     
     private lazy var tableView: UITableView = {
@@ -78,7 +72,7 @@ class ConversationViewController: UIViewController {
         blurEffectView.alpha = 0.2
         blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         navBar.addSubview(blurEffectView)
-        navBar.backgroundColor = .systemGray6
+        navBar.backgroundColor = themeService?.currentTheme.backgroundColor
         return navBar
     }()
     
@@ -112,6 +106,7 @@ class ConversationViewController: UIViewController {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13)
         label.text = userName
+        label.textColor = themeService?.currentTheme.textColor
         return label
     }()
     
@@ -123,7 +118,7 @@ class ConversationViewController: UIViewController {
         return button
     }()
     
-    //MARK: - Lifecycle
+    //MARK: - Initializer
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
@@ -133,6 +128,7 @@ class ConversationViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
@@ -151,9 +147,7 @@ class ConversationViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        guard let themeService = themeService as? ThemeService else {return}
-        self.tableView.backgroundColor = themeService.currentTheme.backgroundColor
+        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
     }
     
@@ -161,14 +155,8 @@ class ConversationViewController: UIViewController {
         super.viewWillDisappear(animated)
         navigationController?.navigationBar.isHidden = false
     }
-    
-    private func setGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
-    }
 
-    //MARK: Set DataSource
+    //MARK: - Set DataSource
     private func setDataSource() {
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
@@ -186,6 +174,45 @@ class ConversationViewController: UIViewController {
             snapshot.appendItems(messages)
         }
         dataSource.apply(snapshot)
+    }
+    
+    //MARK: - Methods
+    private func setGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self,
+                                                action: #selector(dismissKeyboard))
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc
+    private func showKeyboard(_ notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
+
+        let keyboardHeight = keyboardFrame.height
+        let viewYMax = view.frame.maxY
+        let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
+        let height = viewYMax - safeAreaYMax
+        let offset = keyboardHeight - height
+        let sections = tableView.numberOfSections
+        let rowCount = tableView.numberOfRows(inSection: sections - 1)
+        additionalSafeAreaInsets.bottom = offset
+        tableView.scrollToRow(at: IndexPath(row: rowCount - 1, section: sections - 1), at: .bottom, animated: true)
+        tableView.scrollsToTop = true
+    }
+
+    @objc
+    private func hideKeyboard(_ notification: Notification) {
+        additionalSafeAreaInsets.bottom = 0
+    }
+    
+    @objc
+    private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+    
+    @objc
+    private func popToRoot() {
+        navigationController?.popToRootViewController(animated: true)
     }
     
     //MARK: - Setup UI
@@ -251,38 +278,7 @@ class ConversationViewController: UIViewController {
             backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18)
         ])
     }
-    
-    @objc
-    private func showKeyboard(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
 
-        let keyboardHeight = keyboardFrame.height
-        let viewYMax = view.frame.maxY
-        let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
-        let height = viewYMax - safeAreaYMax
-        let offset = keyboardHeight - height
-        let sections = tableView.numberOfSections
-        let rowCount = tableView.numberOfRows(inSection: sections - 1)
-        additionalSafeAreaInsets.bottom = offset
-        tableView.scrollToRow(at: IndexPath(row: rowCount - 1, section: sections - 1), at: .bottom, animated: true)
-        tableView.scrollsToTop = true
-    }
-
-    @objc
-    private func hideKeyboard(_ notification: Notification) {
-        additionalSafeAreaInsets.bottom = 0
-    }
-    
-    @objc
-    private func dismissKeyboard() {
-        view.endEditing(true)
-    }
-    
-    @objc
-    private func popToRoot() {
-        navigationController?.popToRootViewController(animated: true)
-    }
 }
 
 //MARK: - ConversationViewController + UITableViewDelegate
@@ -303,6 +299,8 @@ extension ConversationViewController: UITableViewDelegate {
         title.text = titlesSections[section]
         title.font = .systemFont(ofSize: 12)
         title.textAlignment = .center
+        title.textColor = themeService?.currentTheme.textColor
+        blurEffectView.contentView.backgroundColor = themeService?.currentTheme.backgroundColor
         return blurEffectView
     }
 }
@@ -314,5 +312,6 @@ extension ConversationViewController: ConversationViewProtocol {
             self?.historyChat = history
             self?.userName = name
         }
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
     }
 }

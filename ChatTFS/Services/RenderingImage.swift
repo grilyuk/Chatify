@@ -1,20 +1,14 @@
-//
-//  RenderingImage.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 05.03.2023.
-//
-
 import UIKit
 
 class ImageRender {
+    
     init(fullName: String, size: CGSize) {
         self.fullName = fullName
         self.size = size
     }
     
-    var size: CGSize
-    var fullName: String
+    private var size: CGSize
+    private var fullName: String
     private let userInitialsLabel = UILabel()
     private let gradient = CAGradientLayer()
     private let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)

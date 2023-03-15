@@ -1,38 +1,37 @@
-//
-//  MainPresenter.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 26.02.2023.
-//
-
 import UIKit
 
 protocol ConvListPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
-    var users: [ConversationListCellModel]? { get set }
-    var handler: ((ProfileModel, [ConversationListCellModel]) -> Void)? { get set }
+    var users: [ConversationListModel]? { get set }
+    var handler: ((ProfileModel, [ConversationListModel]) -> Void)? { get set }
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
-    func didTappedConversation(for conversation: ConversationListCellModel)
+    func didTappedThemesPicker()
+    func didTappedConversation(for conversation: ConversationListModel)
 }
 
 class ConvListPresenter {
+    
+    //MARK: - Public
     weak var view: ConvListViewProtocol?
     var router: RouterProtocol?
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
-    var users: [ConversationListCellModel]?
-    var handler: ((ProfileModel, [ConversationListCellModel]) -> Void)?
+    var users: [ConversationListModel]?
+    var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
     
+    //MARK: - Initializer
     init(router: RouterProtocol, interactor: ConvListInteractorProtocol) {
         self.router = router
         self.interactor = interactor
     }
 }
 
+//MARK: - ConvListPresenter + ConvListPresenterProtocol
 extension ConvListPresenter: ConvListPresenterProtocol {
     
+    //MARK: - Methods
     func viewReady() {
         handler = { [weak self] meProfile, unsortUsers in
             self?.profile = meProfile
@@ -41,8 +40,8 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         
         interactor.loadData()
 
-        var usersWithMessages: [ConversationListCellModel] = []
-        var usersWithoutMessages: [ConversationListCellModel] = []
+        var usersWithMessages: [ConversationListModel] = []
+        var usersWithoutMessages: [ConversationListModel] = []
         guard let users = users else { return }
         for user in users {
             switch user.date != nil {
@@ -66,7 +65,11 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         router?.showProfile(profile: profile)
     }
     
-    func didTappedConversation(for conversation: ConversationListCellModel) {
+    func didTappedConversation(for conversation: ConversationListModel) {
         router?.showConversation(conversation: conversation)
+    }
+    
+    func didTappedThemesPicker() {
+        router?.showThemePicker()
     }
 }

@@ -1,16 +1,19 @@
-//
-//  ThemesViewController.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 11.03.2023.
-//
-
 import UIKit
-
-
 
 class ThemesViewController: UIViewController {
     
+    //MARK: - UIConstants
+    enum UIConstants {
+        static let cornerRadius: CGFloat = 16
+        static let borderOnExample: CGFloat = 1.5
+        static let fontSize: CGFloat = 15
+        static let bubbleToTopSafe: CGFloat = 26
+        static let bubbleWidth: CGFloat = -32
+        static let edgeToExample: CGFloat = 30
+        static let labelSpace: CGFloat = 20
+    }
+    
+    //MARK: - Init
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
@@ -20,22 +23,14 @@ class ThemesViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    var themeService: ThemeServiceProtocol?
-    
-    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         view.backgroundColor = themeService?.currentTheme.backgroundColor
     }
     
-    //MARK: UIConstants
-    enum UIConstants {
-        static let cornerRadius: CGFloat = 16
-        static let borderOnExample: CGFloat = 1.5
-        static let fontSize: CGFloat = 15
-    }
+    //MARK: - Private properties
+    private var themeService: ThemeServiceProtocol?
     
-    //MARK: Private properties
     private lazy var bubble: UIView = {
         let view = UIView()
         view.layer.cornerRadius = UIConstants.cornerRadius
@@ -97,7 +92,7 @@ class ThemesViewController: UIViewController {
         checkmarkButton.addTarget(self, action: #selector(tappedNightButton), for: .touchUpInside)
         return checkmarkButton
     }()
-
+    
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -109,48 +104,77 @@ class ThemesViewController: UIViewController {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
+        self.bubble.backgroundColor = themeService?.currentTheme.themeBubble
+        self.dayLabel.textColor = themeService?.currentTheme.textColor
+        self.nightLabel.textColor = themeService?.currentTheme.textColor
         view.backgroundColor = themeService?.currentTheme.backgroundColor
     }
     
     //MARK: - Private methods
-    
     private func fetchTheme(currentTheme: Theme) {
         switch currentTheme {
         case .light:
             dayTickButton.isSelected = true
+            nightTickButton.imageView?.tintColor = .gray
         case .dark:
             nightTickButton.isSelected = true
+            dayTickButton.imageView?.tintColor = .gray
         }
+    }
+    
+    private func setNavigationBar() {
+        self.title = "Settings"
+        navigationController?.navigationBar.prefersLargeTitles = false
     }
     
     @objc
     private func tappedDayButton(_ sender: UIButton) {
         sender.isSelected = true
+        sender.imageView?.tintColor = .systemBlue
         nightTickButton.isSelected = false
+        nightTickButton.imageView?.tintColor = .gray
         let lightTheme = Theme.light
-        navigationController?.navigationBar.backgroundColor = lightTheme.backgroundColor
+        let navBarStyle = UINavigationBarAppearance()
+        navBarStyle.backgroundColor = lightTheme.backgroundColor
+        navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
+        navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
+        changeNavBar(appearance: navBarStyle)
+        
+//пояснения в Services -> ThemeService
         guard let themeService = themeService as? ThemeService else { return }
         themeService.updateTheme()
         themeService.themeDelegate?.changeTheme(theme: lightTheme)
-//        themeService.themeHandler?(lightTheme)
+        //        themeService.themeHandler?(lightTheme)
     }
     
     @objc
     private func tappedNightButton(_ sender: UIButton) {
         sender.isSelected = true
+        sender.imageView?.tintColor = .systemBlue
         dayTickButton.isSelected = false
+        dayTickButton.imageView?.tintColor = .gray
         let darkTheme = Theme.dark
+        let navBarStyle = UINavigationBarAppearance()
+        navBarStyle.backgroundColor = darkTheme.backgroundColor
+        navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
+        navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
+        changeNavBar(appearance: navBarStyle)
         navigationController?.navigationBar.backgroundColor = darkTheme.backgroundColor
+        
+//пояснения в Services -> ThemeService
         guard let themeService = themeService as? ThemeService else { return }
         themeService.updateTheme()
         themeService.themeDelegate?.changeTheme(theme: darkTheme)
-//        themeService.themeHandler?(darkTheme)
+        //        themeService.themeHandler?(darkTheme)
     }
     
-    private func setNavigationBar() {
-        self.title = "Settings"
-        navigationController?.navigationItem.largeTitleDisplayMode = .never
-        navigationController?.navigationBar.prefersLargeTitles = false
+    private func changeNavBar(appearance: UINavigationBarAppearance) {
+        navigationController?.navigationItem.scrollEdgeAppearance = appearance
+        navigationController?.navigationItem.standardAppearance = appearance
+        navigationController?.navigationItem.compactAppearance = appearance
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
     }
     
     private func setupConstraints() {
@@ -165,36 +189,36 @@ class ThemesViewController: UIViewController {
         nightLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            bubble.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 26),
+            bubble.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: UIConstants.bubbleToTopSafe),
             bubble.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            bubble.widthAnchor.constraint(equalTo: view.widthAnchor,constant: -32),
-            bubble.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 1/4),
+            bubble.widthAnchor.constraint(equalTo: view.widthAnchor,constant: UIConstants.bubbleWidth),
+            bubble.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 2/7),
             
             lightExample.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 1/3),
             lightExample.heightAnchor.constraint(equalTo: bubble.heightAnchor, multiplier: 1/3),
-            lightExample.leadingAnchor.constraint(equalTo: bubble.leadingAnchor, constant: 30),
-            lightExample.topAnchor.constraint(equalTo: bubble.topAnchor, constant: 30),
+            lightExample.leadingAnchor.constraint(equalTo: bubble.leadingAnchor, constant: UIConstants.edgeToExample),
+            lightExample.topAnchor.constraint(equalTo: bubble.topAnchor, constant: UIConstants.edgeToExample),
             
             darkExample.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 1/3),
             darkExample.heightAnchor.constraint(equalTo: bubble.heightAnchor, multiplier: 1/3),
-            darkExample.trailingAnchor.constraint(equalTo: bubble.trailingAnchor, constant: -30),
-            darkExample.topAnchor.constraint(equalTo: bubble.topAnchor, constant: 30),
+            darkExample.trailingAnchor.constraint(equalTo: bubble.trailingAnchor, constant: -UIConstants.edgeToExample),
+            darkExample.topAnchor.constraint(equalTo: bubble.topAnchor, constant: UIConstants.edgeToExample),
             
             dayLabel.centerXAnchor.constraint(equalTo: lightExample.centerXAnchor),
-            dayLabel.topAnchor.constraint(equalTo: lightExample.bottomAnchor, constant: 20),
+            dayLabel.topAnchor.constraint(equalTo: lightExample.bottomAnchor, constant: UIConstants.labelSpace),
             
             nightLabel.centerXAnchor.constraint(equalTo: darkExample.centerXAnchor),
-            nightLabel.topAnchor.constraint(equalTo: darkExample.bottomAnchor, constant: 20),
-
+            nightLabel.topAnchor.constraint(equalTo: darkExample.bottomAnchor, constant: UIConstants.labelSpace),
+            
             dayTickButton.centerXAnchor.constraint(equalTo: lightExample.centerXAnchor),
             dayTickButton.widthAnchor.constraint(equalTo: lightExample.widthAnchor),
             dayTickButton.heightAnchor.constraint(equalTo: view.heightAnchor),
-            dayTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor,constant: -30),
+            dayTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor,constant: -UIConstants.edgeToExample),
             
             nightTickButton.centerXAnchor.constraint(equalTo: darkExample.centerXAnchor),
             nightTickButton.widthAnchor.constraint(equalTo: darkExample.widthAnchor),
             nightTickButton.heightAnchor.constraint(equalTo: view.heightAnchor),
-            nightTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -30)
+            nightTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -UIConstants.edgeToExample)
         ])
     }
 }

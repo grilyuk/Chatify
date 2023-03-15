@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E08ADC229A16B10004510A6 /* ProfileViewController.swift */; };
+		5E42B9D629C24FF700F472D1 /* MessageCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */; };
+		5E42B9D829C2502900F472D1 /* ConversationListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42B9D729C2502900F472D1 /* ConversationListModel.swift */; };
 		5E74BCB429A8DCA3009236A1 /* AlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB329A8DCA3009236A1 /* AlertController.swift */; };
 		5E74BCB629A8E438009236A1 /* ImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB529A8E438009236A1 /* ImagePickerController.swift */; };
 		5E92E9E029B2A7570038EED2 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9DF29B2A7570038EED2 /* Router.swift */; };
@@ -38,6 +40,8 @@
 
 /* Begin PBXFileReference section */
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCellModel.swift; sourceTree = "<group>"; };
+		5E42B9D729C2502900F472D1 /* ConversationListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListModel.swift; sourceTree = "<group>"; };
 		5E74BCB329A8DCA3009236A1 /* AlertController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertController.swift; sourceTree = "<group>"; };
 		5E74BCB529A8E438009236A1 /* ImagePickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerController.swift; sourceTree = "<group>"; };
 		5E92E9DF29B2A7570038EED2 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
@@ -87,6 +91,15 @@
 				5E92E9DF29B2A7570038EED2 /* Router.swift */,
 			);
 			path = Application;
+			sourceTree = "<group>";
+		};
+		5E42B9D429C24FE800F472D1 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */,
+				5E42B9D729C2502900F472D1 /* ConversationListModel.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		5E92E9ED29B505E40038EED2 /* ConversationList */ = {
@@ -153,9 +166,9 @@
 			isa = PBXGroup;
 			children = (
 				5E74BCB329A8DCA3009236A1 /* AlertController.swift */,
+				5E92E9E329B3ED500038EED2 /* RenderingImage.swift */,
 				5E74BCB529A8E438009236A1 /* ImagePickerController.swift */,
 				5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */,
-				5E92E9E329B3ED500038EED2 /* RenderingImage.swift */,
 				5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */,
 				5EB624B129C0CB44006D19B2 /* Theme.swift */,
 			);
@@ -185,6 +198,7 @@
 				5EB6218029AB600500029FB8 /* ConvList */,
 				5E92E9F029B693A80038EED2 /* Conversation */,
 				5EB6218129AB601B00029FB8 /* Profile */,
+				5E42B9D429C24FE800F472D1 /* Models */,
 				5EB621A029ABBA6700029FB8 /* Services */,
 				5E97BF3529BE3397003BBA1B /* Extension */,
 				5EDC65A6299EE2C3009B6586 /* Resources */,
@@ -281,10 +295,12 @@
 				5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */,
 				5EB6218D29AB6FE800029FB8 /* ConvListInteractor.swift in Sources */,
 				5EDC6597299ECEAD009B6586 /* ConvListViewController.swift in Sources */,
+				5E42B9D629C24FF700F472D1 /* MessageCellModel.swift in Sources */,
 				5E92E9F829B7C4550038EED2 /* ConversationDataSource.swift in Sources */,
 				5E92E9F429B72B9F0038EED2 /* ConversationPresenter.swift in Sources */,
 				5E97BF3D29BE8542003BBA1B /* OutgoingConversationViewCell.swift in Sources */,
 				5EDC6593299ECEAD009B6586 /* AppDelegate.swift in Sources */,
+				5E42B9D829C2502900F472D1 /* ConversationListModel.swift in Sources */,
 				5E74BCB429A8DCA3009236A1 /* AlertController.swift in Sources */,
 				5E92E9F229B72B930038EED2 /* ConversationInteractor.swift in Sources */,
 				5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */,

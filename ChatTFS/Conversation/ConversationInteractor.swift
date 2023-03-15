@@ -1,10 +1,3 @@
-//
-//  ConversationInteractor.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 07.03.2023.
-//
-
 import Foundation
 
 protocol ConversationInteractorProtocol: AnyObject {
@@ -12,8 +5,11 @@ protocol ConversationInteractorProtocol: AnyObject {
 }
 
 class ConversationInteractor: ConversationInteractorProtocol {
+    
+    //MARK: - Public
     weak var presenter: ConversationPresenterProtocol?
     
+    //MARK: - Methods
     func loadData() {
         let historyChat = [
             MessageCellModel(text: "я в своем познании настолько преисполнился, что перешагнул через бытие и познание, - в том числе, и через бытие, и познание. А вот как, каким образом я это сделал - это другой вопрос. Но Вы, совершенно верно, правы - я ничего не знаю о том, как я это это сделал.", date: Date(timeIntervalSinceNow: 0), myMessage: true),

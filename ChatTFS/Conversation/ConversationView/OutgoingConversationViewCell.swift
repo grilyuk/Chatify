@@ -1,17 +1,9 @@
-//
-//  OutgoingConversationViewCell.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 13.03.2023.
-//
-
 import UIKit
 
 class OutgoingConversationViewCell: UITableViewCell {
-    
     static let identifier = "outgoingCell"
     
-    //MARK: UIConstants
+    //MARK: - UIConstants
     private enum UIConstants {
         static let edge: CGFloat = 12
         static let edgeVertical: CGFloat = 8
@@ -20,7 +12,7 @@ class OutgoingConversationViewCell: UITableViewCell {
         static let fontSizeDate: CGFloat = 10
     }
     
-    //MARK: Private
+    //MARK: - Private
     private lazy var messageText: UILabel = {
         let message = UILabel()
         message.isUserInteractionEnabled = true
@@ -44,7 +36,7 @@ class OutgoingConversationViewCell: UITableViewCell {
         return date
     }()
     
-    //MARK: Lifecycle
+    //MARK: - Lifecycle
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -54,14 +46,14 @@ class OutgoingConversationViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: PrepareForReuse
+    //MARK: - PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
         messageText.text = nil
         dateLabel.text = nil
     }
     
-    //MARK: SetupUI
+    //MARK: - SetupUI
     func setupUI() {
         contentView.addSubview(messageBubble)
         messageBubble.addSubviews(messageText,dateLabel)
@@ -89,22 +81,19 @@ class OutgoingConversationViewCell: UITableViewCell {
     }
 }
 
-//MARK: ConversationViewCell + ConfigurableViewProtocol
+//MARK: - ConversationViewCell + ConfigurableViewProtocol
 extension OutgoingConversationViewCell: ConfigurableViewProtocol {
     func configure(with model: MessageCellModel) {
-        if traitCollection.userInterfaceStyle == .light {
-            messageText.textColor = .white
-            dateLabel.textColor = #colorLiteral(red: 0.9215686275, green: 0.9215686275, blue: 0.9607843137, alpha: 1)
-            messageBubble.backgroundColor = #colorLiteral(red: 0.2666666667, green: 0.5411764706, blue: 0.968627451, alpha: 1)
-        } else {
-            messageText.textColor = .white
-            dateLabel.textColor = #colorLiteral(red: 0.9215686275, green: 0.9215686275, blue: 0.9607843137, alpha: 1)
-            messageBubble.backgroundColor = #colorLiteral(red: 0.2666666667, green: 0.5411764706, blue: 0.968627451, alpha: 1)
-        }
         messageText.text = model.text
-        
         let format = DateFormatter()
         format.dateFormat = "HH:mm"
         dateLabel.text = format.string(from: model.date)
+    }
+    
+    func configureTheme(theme: ThemeServiceProtocol) {
+        messageText.textColor = theme.currentTheme.outgoingTextColor
+        dateLabel.textColor = theme.currentTheme.outgoingTextColor
+        messageBubble.backgroundColor = theme.currentTheme.outgoingBubbleColor
+        contentView.backgroundColor = theme.currentTheme.backgroundColor
     }
 }

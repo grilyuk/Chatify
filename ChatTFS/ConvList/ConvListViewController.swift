@@ -1,43 +1,37 @@
-//
-//  FirstViewController.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 16.02.2023.
-//
-
 import UIKit
 
 protocol ConvListViewProtocol: AnyObject {
     func showMain()
-    var users: [ConversationListCellModel]? { get set }
-    var handler:(([ConversationListCellModel]) -> Void)? { get set }
+    var users: [ConversationListModel]? { get set }
+    var handler:(([ConversationListModel]) -> Void)? { get set }
 }
 
 class ConvListViewController: UIViewController {
-
-    //MARK: UIConstants
+    //MARK: - UIConstants
     private enum UIConstants {
         static let rowHeight: CGFloat = 76
         static let sectionHeight: CGFloat = 44
     }
     
-    //MARK: Public
+    //MARK: - Public
     var presenter: ConvListPresenterProtocol?
-    var users: [ConversationListCellModel]?
-    var handler: (([ConversationListCellModel]) -> Void)?
-    var themeService: ThemeServiceProtocol?
-
-    //MARK: Private
+    var users: [ConversationListModel]?
+    var handler: (([ConversationListModel]) -> Void)?
+    weak var themeService: ThemeServiceProtocol?
+    
+    //MARK: - Private
     private lazy var profileImageView = UIImageView()
-    private lazy var dataSource = ConvListDataSource(tableView: tableView)
+    // извиняюсь за force unwrap, честно, не осталось времени подумать как его убрать
+    private lazy var dataSource = ConvListDataSource(tableView: tableView, themeService: themeService!)
     private lazy var tableView = UITableView()
     private lazy var imageButton = UIImage()
     
-    //MARK: Lifeсycle
+    //MARK: - Lifeсycle
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
-        imageButton = ImageRender(fullName: "Grigoriy Danilyuk", size: CGSize(width: UIConstants.sectionHeight, height: UIConstants.sectionHeight)).render()
+        imageButton = ImageRender(fullName: "Grigoriy Danilyuk",
+                                  size: CGSize(width: UIConstants.sectionHeight, height: UIConstants.sectionHeight)).render()
     }
     
     required init?(coder: NSCoder) {
@@ -52,18 +46,19 @@ class ConvListViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.tableView.reloadData()
+        setNavBar()
         view.backgroundColor = themeService?.currentTheme.backgroundColor
-        self.tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+        updateColorsCells()
     }
     
-    //MARK: Setup UI
+    //MARK: - Setup UI
     private func setupUI() {
         setTableView()
-        setNavBar()
         setDataSource()
     }
-
+    
+    //MARK: - Methods
     private func setTableView() {
         view.addSubview(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -79,10 +74,9 @@ class ConvListViewController: UIViewController {
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
-
+    
     private func setNavBar() {
         navigationItem.title = "Chat"
-        navigationController?.navigationBar.prefersLargeTitles = true
         
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
         navigationItem.leftBarButtonItem = settingButton
@@ -96,12 +90,46 @@ class ConvListViewController: UIViewController {
         profileButton.customView?.layer.cornerRadius = 22
         profileButton.customView?.clipsToBounds = true
         navigationItem.rightBarButtonItem = profileButton
+        
+        navigationController?.navigationBar.prefersLargeTitles = true
+        let navBarStyle = UINavigationBarAppearance()
+        guard let currentTheme = themeService?.currentTheme else { return }
+        switch currentTheme {
+        case .light:
+            navBarStyle.backgroundColor = currentTheme.backgroundColor
+            navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
+            navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor ]
+        case .dark:
+            navBarStyle.backgroundColor = currentTheme.backgroundColor
+            navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
+            navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor ]
+            changeNavBar(appearance: navBarStyle)
+        }
     }
-
+    
+    private func changeNavBar(appearance: UINavigationBarAppearance) {
+        navigationController?.navigationItem.scrollEdgeAppearance = appearance
+        navigationController?.navigationItem.standardAppearance = appearance
+        navigationController?.navigationItem.compactAppearance = appearance
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.compactAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    }
+    
+    private func updateColorsCells() {
+        var snapshot = dataSource.snapshot()
+        snapshot.sectionIdentifiers.forEach { section in
+            snapshot.reloadSections([section])
+        }
+        snapshot.itemIdentifiers.forEach { item in
+            snapshot.reloadItems([item])
+        }
+        dataSource.apply(snapshot, animatingDifferences: true)
+    }
+    
     @objc
     private func chooseThemes() {
-        guard let themeService = themeService else { return }
-        navigationController?.pushViewController(ThemesViewController(themeService: themeService) , animated: true)
+        presenter?.didTappedThemesPicker()
     }
     
     @objc
@@ -109,7 +137,7 @@ class ConvListViewController: UIViewController {
         presenter?.didTappedProfile()
     }
     
-    //MARK: SetDataSource
+    //MARK: - SetDataSource
     private func setDataSource() {
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
@@ -127,14 +155,8 @@ class ConvListViewController: UIViewController {
     }
 }
 
-//MARK: MainViewController + UITableViewDelegate
+//MARK: - MainViewController + UITableViewDelegate
 extension ConvListViewController: UITableViewDelegate {
-    
-    func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        guard let convListCell = cell as? ConverstionListCell else { return }
-        convListCell.contentView.backgroundColor = themeService?.currentTheme.backgroundColor
-        convListCell.lastMessageText.textColor = themeService?.currentTheme.textColor
-    }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         UIConstants.sectionHeight
@@ -143,7 +165,14 @@ extension ConvListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         UIConstants.rowHeight
     }
-
+    
+    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+        if let headerView = view as? UITableViewHeaderFooterView {
+            headerView.tintColor = themeService?.currentTheme.backgroundColor
+            headerView.textLabel?.textColor = themeService?.currentTheme.incomingTextColor
+        }
+    }
+    
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
         var section = Section.offline
@@ -160,7 +189,7 @@ extension ConvListViewController: UITableViewDelegate {
     }
 }
 
-//MARK: MainViewController + MainViewProtocol
+//MARK: - MainViewController + MainViewProtocol
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
         handler = { [weak self] value in

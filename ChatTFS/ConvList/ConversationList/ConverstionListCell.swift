@@ -1,10 +1,3 @@
-//
-//  ConverstionListCell.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 05.03.2023.
-//
-
 import UIKit
 
 protocol ConfigurableViewProtocol {
@@ -12,19 +5,8 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-struct ConversationListCellModel: Hashable {
-    let name: String?
-    let message: String?
-    let date: Date?
-    let isOnline: Bool
-    let hasUnreadMessages: Bool?
-    let id = UUID()
-}
-
 class ConverstionListCell: UITableViewCell {
-    
     static let identifier = "conListCell"
-    var themeService: ThemeServiceProtocol?
 
     //MARK: - UIConstants
     private enum UIConstants {
@@ -66,11 +48,10 @@ class ConverstionListCell: UITableViewCell {
         return imageView
     }()
     
-    lazy var lastMessageText: UILabel = {
+    private lazy var lastMessageText: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.lastMessageFontSize, weight: .regular)
         label.numberOfLines = 1
-        label.textColor = .gray
         return label
     }()
     
@@ -185,8 +166,7 @@ class ConverstionListCell: UITableViewCell {
 
 //MARK: - ConverstionListCell + ConfigurableViewProtocol
 extension ConverstionListCell: ConfigurableViewProtocol {
-    
-    func configure(with model: ConversationListCellModel) {
+    func configure(with model: ConversationListModel) {
         if model.message == nil {
             dateLabel.text = nil
             lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
@@ -227,5 +207,11 @@ extension ConverstionListCell: ConfigurableViewProtocol {
             formatterNotToday.dateFormat = "dd, MMM"
             dateLabel.text = formatterNotToday.string(from: date)
         }
+    }
+    
+    func configureTheme(theme: ThemeServiceProtocol) {
+        nameLabel.textColor = theme.currentTheme.textColor
+        lastMessageText.textColor = theme.currentTheme.incomingTextColor
+        contentView.backgroundColor = theme.currentTheme.backgroundColor
     }
 }
