@@ -13,14 +13,8 @@ protocol ProfileInteractorProtocol: AnyObject {
 
 class ProfileInteractor: ProfileInteractorProtocol {
     weak var presenter: ProfilePresenterProtocol?
-    var profile: ProfileModel
-
-    init(profile: ProfileModel) {
-        self.profile = profile
-    }
 
     func loadData() {
-// здесь еще можно что то поменять в профиле
-        presenter?.didLoad(data: profile )
+        presenter?.dataUploaded()
     }
 }
