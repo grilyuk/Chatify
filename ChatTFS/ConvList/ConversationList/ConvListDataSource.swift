@@ -14,14 +14,15 @@ class ConvListDataSource: UITableViewDiffableDataSource<Section, ConversationLis
             
             let onlineUsersCount = tableView.numberOfRows(inSection: 0)
             let historyUsersCount = tableView.numberOfRows(inSection: 1)
-            
+
+            cell.configureTheme(theme: themeService)
+            cell.configure(with: user)
             if indexPath == [0, onlineUsersCount - 1] {
                 cell.removeSeparator()
             } else if indexPath == [1, historyUsersCount - 1] {
                 cell.removeSeparator()
             }
-            cell.configureTheme(theme: themeService)
-            cell.configure(with: user)
+            
             return cell
         }
     }

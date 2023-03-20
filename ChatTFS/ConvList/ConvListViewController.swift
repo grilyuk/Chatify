@@ -24,14 +24,11 @@ class ConvListViewController: UIViewController {
     // извиняюсь за force unwrap, честно, не осталось времени подумать как его убрать
     private lazy var dataSource = ConvListDataSource(tableView: tableView, themeService: themeService!)
     private lazy var tableView = UITableView()
-    private lazy var imageButton = UIImage()
-    
+    private lazy var imageButton = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(30, 30)).withTintColor(.gray)
     //MARK: - Lifeсycle
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
-        imageButton = ImageRender(fullName: "Grigoriy Danilyuk",
-                                  size: CGSize(width: UIConstants.sectionHeight, height: UIConstants.sectionHeight)).render()
     }
     
     required init?(coder: NSCoder) {
@@ -47,8 +44,8 @@ class ConvListViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setNavBar()
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
-        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+//        view.backgroundColor = themeService?.currentTheme.backgroundColor
+        
         updateColorsCells()
     }
     
@@ -85,7 +82,7 @@ class ConvListViewController: UIViewController {
         button.setImage(imageButton, for: .normal)
         button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
         let profileButton = UIBarButtonItem(customView: button)
-        profileButton.customView?.contentMode = .scaleToFill
+        profileButton.customView?.contentMode = .scaleAspectFit
         profileButton.customView?.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
         profileButton.customView?.layer.cornerRadius = 22
         profileButton.customView?.clipsToBounds = true
@@ -194,7 +191,9 @@ extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
         handler = { [weak self] value in
             self?.users = value
+            self?.setDataSource()
         }
         view.backgroundColor = themeService?.currentTheme.backgroundColor
+        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
     }
 }

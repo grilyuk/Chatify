@@ -15,7 +15,7 @@ protocol RouterProtocol: RouterMain {
 class Router: RouterProtocol {
     
     //MARK: - Public
-    var navigationController: UINavigationController?
+    weak var navigationController: UINavigationController?
     var moduleBuilder: ModuleBuilderProtocol?
     
     //MARK: - Init

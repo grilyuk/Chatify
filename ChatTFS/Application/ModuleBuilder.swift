@@ -25,7 +25,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
 
     func buildProfile(router: RouterProtocol, profile: ProfileModel) -> ProfileViewController {
         let interactor = ProfileInteractor()
-        let view = ProfileViewController()
+        let view = ProfileViewController(themeService: themeService)
         let presenter = ProfilePresenter(router: router, interactor: interactor, profile: profile)
         view.presenter = presenter
         interactor.presenter = presenter
