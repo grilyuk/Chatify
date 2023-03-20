@@ -32,12 +32,6 @@ class ThemeService: ThemeServiceProtocol {
     
     //MARK: - Methods
     func updateTheme() {
-        
-// retain cycle может возникнуть в ситуации, когда мы не пропишем weak в списке захвата клоужера или в проперти делегата
-// в такой ситуации, будет возникать лишняя ссылка на этот ThemeService, при чем на себя самого
-// конкретно в моем приложении данный сервис применяется на всех контроллерах поэтому он не высвободится из памяти
-// но например, если мы хотим красить только ConversationViewController, то при его закрытии ThemeService удалится из памяти, так как ConversationViewController ссылается слабо на ThemeService
-        
         themeDelegate = self
         themeHandler = { [weak self] theme in
             self?.currentTheme = theme

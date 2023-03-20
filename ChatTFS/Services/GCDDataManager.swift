@@ -9,6 +9,7 @@ class GCDDataManager {
     //MARK: - Methods
     func writeData(name: String?, statusText: String?, profileImage: UIImage?, completion: @escaping (Result<Bool, Error>) -> Void) {
         queue.async {
+            sleep(5)
             if profileImage == nil {
                 self.imageData = nil
             } else {

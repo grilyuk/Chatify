@@ -34,6 +34,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     var profileImageView = UIImageView()
     var presenter: ProfilePresenterProtocol?
     weak var themeService: ThemeServiceProtocol?
+    var convListPresenter: ConvListPresenterProtocol?
     
     //MARK: - Private
     private lazy var navigationBar = UINavigationBar()
@@ -145,7 +146,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         } else if profileImageView.image == placeholderImage && fullNameLabel.text == "No name" {
             profileImageView = userAvatar
         } else {
-            profileImageView.contentMode = .scaleAspectFill
+            profileImageView.contentMode = .scaleAspectFit
         }
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
         profileImageView.clipsToBounds = true
@@ -167,12 +168,10 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
     
     private func setNavBarButtons() {
-        
         let navCloseButton = UIBarButtonItem(title: "Close",
                                              style: .plain,
                                              target: self,
                                              action: #selector(closeProfileTapped))
-        
         let navEditProfile = UIBarButtonItem(customView: editButton)
         navTitle.leftBarButtonItem = navCloseButton
         navTitle.rightBarButtonItem = navEditProfile
@@ -180,7 +179,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     
     private func setNavBar() {
         navTitle.title = "My Profile"
-        
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
         appearance.titleTextAttributes = [NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .bold)]
@@ -204,6 +202,10 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         let saveGCD = UIAction(title: "Save GCD") { _ in
             guard let nameText = self.editableNameSection.text,
                   let statusText = self.editableBioSection.text else { return }
+            self.editableNameSection.isEnabled = false
+            self.editableBioSection.isEnabled = false
+            self.activityIndicator.startAnimating()
+            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
             self.dispatch.writeData(name: nameText, statusText: statusText, profileImage: nil) { result in
                 switch result {
                 case .success(true):
@@ -213,6 +215,9 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
                         alert.addAction(okAction)
                         self.fullNameLabel.text = nameText
                         self.bioText.text = statusText
+                        self.activityIndicator.stopAnimating()
+                        self.setNavBarButtons()
+                        self.setEditFinished()
                         self.present(alert, animated: true)
                     }
                 case .success(false):
@@ -222,8 +227,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
                     print(error.localizedDescription)
                 }
             }
-            self.setNavBarButtons()
-            self.setEditFinished()
         }
         
         let saveOpeartion = UIAction(title: "Save Operations") { _ in
@@ -240,6 +243,8 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         bioCell.isHidden = true
         editableNameSection.isHidden = true
         editableBioSection.isHidden = true
+        editableNameSection.isEnabled = true
+        editableBioSection.isEnabled = true
         fullNameLabel.isHidden = false
         bioText.isHidden = false
         navTitle.title = "My Profile"
@@ -331,21 +336,21 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
 extension ProfileViewController: ProfileViewProtocol {
     func showProfile(profile: ProfileModel) {
         self.fullNameLabel.text = {
-            if profile.fullName == nil {
+            if profile.fullName == nil || profile.fullName == "" {
                 return "No name"
             } else {
                 return profile.fullName
             }
         }()
         self.bioText.text = {
-            if profile.statusText == nil {
+            if profile.statusText == nil || profile.statusText == "" {
                 return "No bio specified"
             } else {
                 return profile.statusText
             }
         }()
         if profile.profileImageData == nil {
-            self.profileImageView.image = nil
+            self.profileImageView.image = placeholderImage
         } else {
             guard let imageData = profile.profileImageData else { return }
             self.profileImageView.image = UIImage(data: imageData)

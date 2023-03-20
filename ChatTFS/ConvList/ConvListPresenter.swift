@@ -37,9 +37,11 @@ extension ConvListPresenter: ConvListPresenterProtocol {
             self?.profile = meProfile
             self?.users = unsortUsers
         }
-        
         interactor.loadData()
-        
+    }
+    
+    func dataUploaded() {
+        view?.showMain()
         var usersWithMessages: [ConversationListModel] = []
         var usersWithoutMessages: [ConversationListModel] = []
         guard let users = users else { return }
@@ -49,16 +51,9 @@ extension ConvListPresenter: ConvListPresenterProtocol {
             case false: usersWithoutMessages.append(user)
             }
         }
-        
         var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
         sortedUsers.append(contentsOf: usersWithoutMessages)
-        self.users = sortedUsers
-    }
-    
-    func dataUploaded() {
-        guard let users = users else { return }
-        view?.showMain()
-        view?.handler?(users)
+        view?.handler?(sortedUsers)
     }
     
     func didTappedProfile() {
