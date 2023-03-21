@@ -34,7 +34,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     var profileImageView = UIImageView()
     var presenter: ProfilePresenterProtocol?
     weak var themeService: ThemeServiceProtocol?
-    var convListPresenter: ConvListPresenterProtocol?
+    weak var dataManager: DataManagerProtocol?
     
     //MARK: - Private
     private lazy var navigationBar = UINavigationBar()
@@ -42,8 +42,12 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     private lazy var navSaveProfile = UIBarButtonItem(image: UIImage(systemName: "ellipsis.circle"))
     private lazy var activity = UIActivityIndicatorView.init(style: .medium)
     private lazy var placeholderImage = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(100, 100)).withTintColor(.gray)
-    private lazy var dispatch = GCDDataManager()
+    private lazy var okAction = UIAlertAction(title: "OK", style: .default)
+    
+    private lazy var successAlert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
+    private lazy var failureAlert = UIAlertController(title: "Failure", message: "Can't saved data", preferredStyle: .alert)
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
+    
     
     private lazy var fullNameLabel: UILabel = {
         let label = UILabel()
@@ -120,6 +124,19 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         return button
     }()
     
+    private lazy var initials: UILabel = {
+        let label = UILabel()
+        let initialFontSizeCalc = 150 * 0.45
+        let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
+        label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
+        label.textColor = .white
+        let formatter = PersonNameComponentsFormatter()
+        let components = formatter.personNameComponents(from: fullNameLabel.text ?? "")
+        formatter.style = .abbreviated
+        label.text = formatter.string(from: components!)
+        return label
+    }()
+    
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -139,15 +156,15 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        if fullNameLabel.text == "No name" {
-            profileImageView.image = placeholderImage
-            profileImageView.backgroundColor = .systemGray4
-            profileImageView.contentMode = .center
-        } else if profileImageView.image == placeholderImage && fullNameLabel.text == "No name" {
-            profileImageView = userAvatar
-        } else {
-            profileImageView.contentMode = .scaleAspectFit
-        }
+        //        if fullNameLabel.text == "No name" {
+        //            profileImageView.image = placeholderImage
+        //            profileImageView.backgroundColor = .systemGray4
+        //            profileImageView.contentMode = .center
+        //        } else if profileImageView.image == placeholderImage && fullNameLabel.text == "No name" {
+        //            profileImageView = userAvatar
+        //        } else {
+        //            profileImageView.contentMode = .scaleAspectFit
+        //        }
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
         profileImageView.clipsToBounds = true
     }
@@ -189,7 +206,71 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         navigationBar.setItems([navTitle], animated: false)
     }
     
+    private func setContextMenu() {
+        successAlert.addAction(okAction)
+        failureAlert.addAction(okAction)
+        
+        let saveGCD = UIAction(title: "Save GCD") { [ weak self ] _ in
+            guard let self = self,
+                  let nameText = self.editableNameSection.text,
+                  let bioText = self.editableBioSection.text
+            else { return }
+            
+            let imageData: Data? = {
+                if self.profileImageView.image != nil {
+                    return self.profileImageView.image?.jpegData(compressionQuality: 1)
+                } else {
+                    return nil
+                }
+            }()
+            self.editableBioSection.isEnabled = false
+            self.editableNameSection.isEnabled = false
+            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
+            self.activityIndicator.startAnimating()
+            let savingProfile = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
+            guard let dataManager = self.dataManager as? GCDDataManager else { return }
+            dataManager.asyncWriteData(profileData: savingProfile) { result in
+                switch result {
+                case .success(let result):
+                    switch result {
+                    case true:
+                        DispatchQueue.main.async {
+                            self.activityIndicator.stopAnimating()
+                            self.setEditFinished()
+                            self.fullNameLabel.text = savingProfile.fullName
+                            self.bioText.text = savingProfile.statusText
+                            self.present(self.successAlert, animated: true)
+                        }
+                    case false:
+                        DispatchQueue.main.async {
+                            let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
+                            }
+                            self.failureAlert.addAction(tryAction)
+                            self.present(self.failureAlert, animated: true)
+                        }
+                    }
+                case .failure(_):
+                    print("some error")
+                }
+            }
+        }
+        
+        let saveOpeartion = UIAction(title: "Save Operations") { _ in
+            //Opearations
+        }
+        
+        navSaveProfile.menu = UIMenu(children: [saveGCD, saveOpeartion])
+        navTitle.rightBarButtonItem = navSaveProfile
+    }
+    
+    
     private func editableMode() {
+        if let bioText = dataManager?.currentProfile.statusText {
+            editableBioSection.text = bioText
+        }
+        if let nameText = dataManager?.currentProfile.fullName {
+            editableNameSection.text = nameText
+        }
         fullNameLabel.isHidden = true
         bioText.isHidden = true
         editableNameSection.isHidden = false
@@ -198,44 +279,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         nameCell.isHidden = false
         bioCell.isHidden = false
         editableNameSection.becomeFirstResponder()
-        
-        let saveGCD = UIAction(title: "Save GCD") { _ in
-            guard let nameText = self.editableNameSection.text,
-                  let statusText = self.editableBioSection.text else { return }
-            self.editableNameSection.isEnabled = false
-            self.editableBioSection.isEnabled = false
-            self.activityIndicator.startAnimating()
-            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
-            self.dispatch.writeData(name: nameText, statusText: statusText, profileImage: nil) { result in
-                switch result {
-                case .success(true):
-                    DispatchQueue.main.async {
-                        let alert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
-                        let okAction = UIAlertAction(title: "OK", style: .default)
-                        alert.addAction(okAction)
-                        self.fullNameLabel.text = nameText
-                        self.bioText.text = statusText
-                        self.activityIndicator.stopAnimating()
-                        self.setNavBarButtons()
-                        self.setEditFinished()
-                        self.present(alert, animated: true)
-                    }
-                case .success(false):
-                    DispatchQueue.main.async {
-                    }
-                case .failure(let error):
-                    print(error.localizedDescription)
-                }
-            }
-        }
-        
-        let saveOpeartion = UIAction(title: "Save Operations") { _ in
-            //Opearations
-            self.setNavBarButtons()
-            self.setEditFinished()
-        }
-        navSaveProfile.menu = UIMenu(children: [saveGCD, saveOpeartion])
-        navTitle.rightBarButtonItem = navSaveProfile
+        setContextMenu()
     }
     
     private func setEditFinished() {
@@ -265,7 +309,10 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     
     @objc
     private func closeProfileTapped() {
-        if editableNameSection.isHidden == false {
+        if activityIndicator.isAnimating == true {
+            
+            setEditFinished()
+        } else if editableNameSection.isHidden == false {
             setEditFinished()
         } else {
             self.dismiss(animated: true)
@@ -349,10 +396,14 @@ extension ProfileViewController: ProfileViewProtocol {
                 return profile.statusText
             }
         }()
-        if profile.profileImageData == nil {
+        if profile.profileImageData == nil && profile.fullName == nil {
             self.profileImageView.image = placeholderImage
+        } else if profile.profileImageData == nil {
+            self.profileImageView = userAvatar
+            
         } else {
             guard let imageData = profile.profileImageData else { return }
+            self.userAvatar.removeFromSuperview()
             self.profileImageView.image = UIImage(data: imageData)
         }
     }

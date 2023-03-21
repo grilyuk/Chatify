@@ -7,10 +7,12 @@ protocol ConvListViewProtocol: AnyObject {
 }
 
 class ConvListViewController: UIViewController {
+    
     //MARK: - UIConstants
     private enum UIConstants {
         static let rowHeight: CGFloat = 76
         static let sectionHeight: CGFloat = 44
+        static let imageSize: CGSize = CGSize(width: 44, height: 44)
     }
     
     //MARK: - Public
@@ -24,7 +26,8 @@ class ConvListViewController: UIViewController {
     // извиняюсь за force unwrap, честно, не осталось времени подумать как его убрать
     private lazy var dataSource = ConvListDataSource(tableView: tableView, themeService: themeService!)
     private lazy var tableView = UITableView()
-    private lazy var imageButton = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(30, 30)).withTintColor(.gray)
+    private lazy var button = UIButton(type: .custom)
+    
     //MARK: - Lifeсycle
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
@@ -44,8 +47,6 @@ class ConvListViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setNavBar()
-//        view.backgroundColor = themeService?.currentTheme.backgroundColor
-        
         updateColorsCells()
     }
     
@@ -78,13 +79,12 @@ class ConvListViewController: UIViewController {
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
         navigationItem.leftBarButtonItem = settingButton
         
-        let button = UIButton(type: .custom)
-        button.setImage(imageButton, for: .normal)
         button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
+        button.contentMode = .scaleToFill
         let profileButton = UIBarButtonItem(customView: button)
-        profileButton.customView?.contentMode = .scaleAspectFit
-        profileButton.customView?.frame = CGRect(x: 0, y: 0, width: 44, height: 44)
-        profileButton.customView?.layer.cornerRadius = 22
+        profileButton.customView?.contentMode = .scaleAspectFill
+        profileButton.customView?.frame = CGRect(origin: .zero, size: UIConstants.imageSize)
+        profileButton.customView?.layer.cornerRadius = UIConstants.imageSize.height / 2
         profileButton.customView?.clipsToBounds = true
         navigationItem.rightBarButtonItem = profileButton
         
@@ -195,5 +195,22 @@ extension ConvListViewController: ConvListViewProtocol {
         }
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+        guard let imageData = self.presenter?.profile?.profileImageData else { return }
+        let imageButton = UIImage(data: imageData)?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
+        button.setImage(imageButton, for: .normal)
+    }
+}
+
+//MARK: - MainViewController + DataManagerSubscriber
+extension ConvListViewController: DataManagerSubscriber {
+    func updateProfile(profile: ProfileModel) {
+        presenter?.profile = profile
+        if profile.profileImageData == nil {
+            button.setImage(UIImage(systemName: "heart"), for: .normal)
+        } else {
+            guard let imageData = profile.profileImageData else { return }
+            let image = UIImage(data: imageData)
+            button.setImage(image?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize), for: .normal)
+        }
     }
 }

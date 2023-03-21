@@ -22,7 +22,6 @@ extension UIImage {
                 size: scaledImageSize
             ))
         }
-        
         return scaledImage
     }
 }

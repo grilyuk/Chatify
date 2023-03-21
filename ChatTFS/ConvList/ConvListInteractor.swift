@@ -1,14 +1,16 @@
 import UIKit
 
 protocol ConvListInteractorProtocol: AnyObject {
+    var currentProfile: ProfileModel? { get set }
     func loadData()
 }
 
 class ConvListInteractor: ConvListInteractorProtocol {
-    
+
     //MARK: - Public
     weak var presenter: ConvListPresenterProtocol?
-    let dataManager = GCDDataManager()
+    weak var dataManager: DataManagerProtocol?
+    var currentProfile: ProfileModel?
     
     //MARK: - Methods
     func loadData() {
@@ -114,26 +116,19 @@ class ConvListInteractor: ConvListInteractorProtocol {
                                   isOnline: false,
                                   hasUnreadMessages: nil)
         ]
-        let defaultProfile = ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
-        let fileManager = FileManager.default
         
-        guard let filePath = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json").path else { return }
+        guard let dataManager = dataManager else { return }
+        let pathExist = dataManager.checkPath()
         
-        if fileManager.fileExists(atPath: filePath) {
-            dataManager.readData { profile in
-                switch profile {
-                case .success(let profileData):
-                    DispatchQueue.main.async {
-                        self.presenter?.handler?(profileData, users)
-                        self.presenter?.profile = profileData
-                        self.presenter?.dataUploaded()
-                    }
-                case .failure(let error):
-                    print(error.localizedDescription)
-                }
-            }
+        if pathExist {
+            currentProfile = dataManager.currentProfile
+            presenter?.profile = currentProfile
+            presenter?.users = users
+            presenter?.dataUploaded()
         } else {
-            presenter?.handler?(defaultProfile, users)
+            currentProfile = dataManager.currentProfile
+            presenter?.profile = currentProfile
+            presenter?.users = users
             presenter?.dataUploaded()
         }
     }

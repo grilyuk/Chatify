@@ -41,7 +41,6 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     }
     
     func dataUploaded() {
-        view?.showMain()
         var usersWithMessages: [ConversationListModel] = []
         var usersWithoutMessages: [ConversationListModel] = []
         guard let users = users else { return }
@@ -53,23 +52,13 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         }
         var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
         sortedUsers.append(contentsOf: usersWithoutMessages)
+        view?.showMain()
         view?.handler?(sortedUsers)
     }
     
     func didTappedProfile() {
         guard let profile = profile else { return }
         router?.showProfile(profile: profile)
-        GCDDataManager().readData { profile in
-            switch profile {
-            case .success(let profileData):
-                DispatchQueue.main.async {
-                    self.router?.showProfile(profile: profileData)
-                }
-            case .failure(let error):
-                print(error.localizedDescription)
-            }
-        }
-        
     }
     
     func didTappedConversation(for conversation: ConversationListModel) {
