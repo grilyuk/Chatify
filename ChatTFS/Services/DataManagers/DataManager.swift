@@ -31,6 +31,7 @@ class DataManager: DataManagerProtocol {
         guard let filePath = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json").path else { return false }
         
         if FileManager.default.fileExists(atPath: filePath) {
+            print(filePath)
             return true
         } else {
             return false
@@ -56,6 +57,7 @@ class DataManager: DataManagerProtocol {
                     self.currentProfile = profileData
                 }
                 result = true
+//                result = false
             } catch {
                 print("Error writeData \(error.localizedDescription)")
                 result = false
@@ -65,10 +67,12 @@ class DataManager: DataManagerProtocol {
     }
     
     func readData() -> ProfileModel {
+//        sleep(5)
         guard let fileURL = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json"),
               let jsonData = try? Data(contentsOf: fileURL) else { return defaultProfile }
         do {
             let profile = try JSONDecoder().decode(ProfileModel.self, from: jsonData)
+//            print(fileURL)
             return profile
         } catch {
             print("Error read data \(error.localizedDescription)")

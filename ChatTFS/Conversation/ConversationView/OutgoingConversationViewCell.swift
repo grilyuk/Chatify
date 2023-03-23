@@ -1,7 +1,7 @@
 import UIKit
 
 class OutgoingConversationViewCell: UITableViewCell {
-    static let identifier = "outgoingCell"
+    static let identifier = String(describing: OutgoingConversationViewCell.self)
     
     //MARK: - UIConstants
     private enum UIConstants {

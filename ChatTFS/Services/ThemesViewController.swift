@@ -139,12 +139,9 @@ class ThemesViewController: UIViewController {
         navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
-        
-//пояснения в Services -> ThemeService
         guard let themeService = themeService as? ThemeService else { return }
         themeService.updateTheme()
-        themeService.themeDelegate?.changeTheme(theme: lightTheme)
-        //        themeService.themeHandler?(lightTheme)
+        themeService.themeHandler?(lightTheme)
     }
     
     @objc
@@ -160,12 +157,9 @@ class ThemesViewController: UIViewController {
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
         navigationController?.navigationBar.backgroundColor = darkTheme.backgroundColor
-        
-//пояснения в Services -> ThemeService
         guard let themeService = themeService as? ThemeService else { return }
         themeService.updateTheme()
-        themeService.themeDelegate?.changeTheme(theme: darkTheme)
-        //        themeService.themeHandler?(darkTheme)
+        themeService.themeHandler?(darkTheme)
     }
     
     private func changeNavBar(appearance: UINavigationBarAppearance) {

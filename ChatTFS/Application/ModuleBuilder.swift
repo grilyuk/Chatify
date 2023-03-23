@@ -11,6 +11,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     
     //MARK: - Private
     private lazy var themeService = ThemeService()
+//    private lazy var dataManager = DataManager()
     private lazy var dataManager = GCDDataManager()
     
     //MARK: - Methods

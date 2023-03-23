@@ -43,9 +43,8 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     private lazy var activity = UIActivityIndicatorView.init(style: .medium)
     private lazy var placeholderImage = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(100, 100)).withTintColor(.gray)
     private lazy var okAction = UIAlertAction(title: "OK", style: .default)
-    
     private lazy var successAlert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
-    private lazy var failureAlert = UIAlertController(title: "Failure", message: "Can't saved data", preferredStyle: .alert)
+    private lazy var failureAlert = UIAlertController(title: "Failure...", message: "Can't saved data", preferredStyle: .alert)
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     
     
@@ -156,15 +155,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        //        if fullNameLabel.text == "No name" {
-        //            profileImageView.image = placeholderImage
-        //            profileImageView.backgroundColor = .systemGray4
-        //            profileImageView.contentMode = .center
-        //        } else if profileImageView.image == placeholderImage && fullNameLabel.text == "No name" {
-        //            profileImageView = userAvatar
-        //        } else {
-        //            profileImageView.contentMode = .scaleAspectFit
-        //        }
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
         profileImageView.clipsToBounds = true
     }
@@ -185,10 +175,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
     
     private func setNavBarButtons() {
-        let navCloseButton = UIBarButtonItem(title: "Close",
-                                             style: .plain,
-                                             target: self,
-                                             action: #selector(closeProfileTapped))
+        let navCloseButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(closeProfileTapped))
         let navEditProfile = UIBarButtonItem(customView: editButton)
         navTitle.leftBarButtonItem = navCloseButton
         navTitle.rightBarButtonItem = navEditProfile
@@ -208,7 +195,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     
     private func setContextMenu() {
         successAlert.addAction(okAction)
-        failureAlert.addAction(okAction)
         
         let saveGCD = UIAction(title: "Save GCD") { [ weak self ] _ in
             guard let self = self,
@@ -217,52 +203,103 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
             else { return }
             
             let imageData: Data? = {
-                if self.profileImageView.image != nil {
+                if self.profileImageView.image != self.placeholderImage {
                     return self.profileImageView.image?.jpegData(compressionQuality: 1)
-                } else {
-                    return nil
-                }
+                } else {return nil}
             }()
             self.editableBioSection.isEnabled = false
             self.editableNameSection.isEnabled = false
+            self.addPhotoButton.isEnabled = false
             self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
             self.activityIndicator.startAnimating()
             let savingProfile = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
-            guard let dataManager = self.dataManager as? GCDDataManager else { return }
-            dataManager.asyncWriteData(profileData: savingProfile) { result in
-                switch result {
-                case .success(let result):
-                    switch result {
-                    case true:
-                        DispatchQueue.main.async {
-                            self.activityIndicator.stopAnimating()
-                            self.setEditFinished()
-                            self.fullNameLabel.text = savingProfile.fullName
-                            self.bioText.text = savingProfile.statusText
-                            self.present(self.successAlert, animated: true)
-                        }
-                    case false:
-                        DispatchQueue.main.async {
-                            let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
-                            }
-                            self.failureAlert.addAction(tryAction)
-                            self.present(self.failureAlert, animated: true)
-                        }
-                    }
-                case .failure(_):
-                    print("some error")
-                }
-            }
+            self.saveProfileGCD(profile: savingProfile)
         }
         
-        let saveOpeartion = UIAction(title: "Save Operations") { _ in
-            //Opearations
+        
+        let saveOpeartion = UIAction(title: "Save Operations") { [ weak self ] _ in
+            guard let self = self,
+                  let nameText = self.editableNameSection.text,
+                  let bioText = self.editableBioSection.text
+            else { return }
+            
+            let imageData: Data? = {
+                if self.profileImageView.image != self.placeholderImage {
+                    return self.profileImageView.image?.jpegData(compressionQuality: 1)
+                } else {return nil}
+            }()
+            self.editableBioSection.isEnabled = false
+            self.editableNameSection.isEnabled = false
+            self.addPhotoButton.isEnabled = false
+            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
+            self.activityIndicator.startAnimating()
+            let savingProfile = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
+            self.saveProfileOperation(profile: savingProfile)
         }
         
         navSaveProfile.menu = UIMenu(children: [saveGCD, saveOpeartion])
         navTitle.rightBarButtonItem = navSaveProfile
     }
     
+    private func saveProfileGCD(profile: ProfileModel) {
+        guard let dataManager = self.dataManager as? GCDDataManager else { return }
+        dataManager.asyncWriteData(profileData: profile) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case true:
+                self.activityIndicator.stopAnimating()
+                self.setEditFinished()
+                self.fullNameLabel.text = profile.fullName
+                self.bioText.text = profile.statusText
+                self.present(self.successAlert, animated: true)
+            case false:
+                let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
+                    self.saveProfileGCD(profile: profile)
+                }
+                let okFailureAction = UIAlertAction(title: "OK", style: .default) {_ in
+                    self.setEditFinished()
+                }
+                if self.failureAlert.actions.count <= 1 {
+                    self.failureAlert.addAction(okFailureAction)
+                    self.failureAlert.addAction(tryAction)
+                }
+                self.present(self.failureAlert, animated: true)
+            }
+        }
+    }
+    
+    private func saveProfileOperation(profile: ProfileModel) {
+        guard let dataManager = self.dataManager as? DataManager else { return }
+        let saveOperation = SaveProfileOperation(profile: profile, dataManager: dataManager)
+        saveOperation.completionBlock = { [weak self] in
+            guard let self = self
+            else { return }
+            OperationQueue.main.addOperation {
+                if saveOperation.isSuccess {
+                    self.activityIndicator.stopAnimating()
+                    self.setEditFinished()
+                    self.fullNameLabel.text = profile.fullName
+                    self.bioText.text = profile.statusText
+                    self.present(self.successAlert, animated: true)
+                } else {
+                    let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
+                        self.saveProfileOperation(profile: profile)
+                    }
+                    let okFailureAction = UIAlertAction(title: "OK", style: .default) {_ in
+                        self.setEditFinished()
+                    }
+                    if self.failureAlert.actions.count <= 1 {
+                        self.failureAlert.addAction(okFailureAction)
+                        self.failureAlert.addAction(tryAction)
+                    }
+                    self.present(self.failureAlert, animated: true)
+                }
+            }
+        }
+        let operationQueue = OperationQueue()
+        operationQueue.addOperation(saveOperation)
+    }
+
     
     private func editableMode() {
         if let bioText = dataManager?.currentProfile.statusText {
@@ -289,6 +326,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         editableBioSection.isHidden = true
         editableNameSection.isEnabled = true
         editableBioSection.isEnabled = true
+        addPhotoButton.isEnabled = true
         fullNameLabel.isHidden = false
         bioText.isHidden = false
         navTitle.title = "My Profile"
@@ -310,7 +348,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     @objc
     private func closeProfileTapped() {
         if activityIndicator.isAnimating == true {
-            
+            //canceling
             setEditFinished()
         } else if editableNameSection.isHidden == false {
             setEditFinished()
@@ -389,6 +427,7 @@ extension ProfileViewController: ProfileViewProtocol {
                 return profile.fullName
             }
         }()
+        
         self.bioText.text = {
             if profile.statusText == nil || profile.statusText == "" {
                 return "No bio specified"
@@ -396,11 +435,9 @@ extension ProfileViewController: ProfileViewProtocol {
                 return profile.statusText
             }
         }()
-        if profile.profileImageData == nil && profile.fullName == nil {
+        
+        if profile.profileImageData == nil || profile.fullName == nil {
             self.profileImageView.image = placeholderImage
-        } else if profile.profileImageData == nil {
-            self.profileImageView = userAvatar
-            
         } else {
             guard let imageData = profile.profileImageData else { return }
             self.userAvatar.removeFromSuperview()

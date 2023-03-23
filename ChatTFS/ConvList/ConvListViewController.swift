@@ -13,6 +13,7 @@ class ConvListViewController: UIViewController {
         static let rowHeight: CGFloat = 76
         static let sectionHeight: CGFloat = 44
         static let imageSize: CGSize = CGSize(width: 44, height: 44)
+        static let smallImageSize: CGSize = CGSize(width: 30, height: 30)
     }
     
     //MARK: - Public
@@ -23,7 +24,7 @@ class ConvListViewController: UIViewController {
     
     //MARK: - Private
     private lazy var profileImageView = UIImageView()
-    // извиняюсь за force unwrap, честно, не осталось времени подумать как его убрать
+//  убрать форс
     private lazy var dataSource = ConvListDataSource(tableView: tableView, themeService: themeService!)
     private lazy var tableView = UITableView()
     private lazy var button = UIButton(type: .custom)
@@ -46,6 +47,8 @@ class ConvListViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
+        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
         setNavBar()
         updateColorsCells()
     }
@@ -75,17 +78,15 @@ class ConvListViewController: UIViewController {
     
     private func setNavBar() {
         navigationItem.title = "Chat"
-        
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
-        navigationItem.leftBarButtonItem = settingButton
-        
-        button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
-        button.contentMode = .scaleToFill
         let profileButton = UIBarButtonItem(customView: button)
+        button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
+        
         profileButton.customView?.contentMode = .scaleAspectFill
         profileButton.customView?.frame = CGRect(origin: .zero, size: UIConstants.imageSize)
         profileButton.customView?.layer.cornerRadius = UIConstants.imageSize.height / 2
         profileButton.customView?.clipsToBounds = true
+        navigationItem.leftBarButtonItem = settingButton
         navigationItem.rightBarButtonItem = profileButton
         
         navigationController?.navigationBar.prefersLargeTitles = true
@@ -96,6 +97,7 @@ class ConvListViewController: UIViewController {
             navBarStyle.backgroundColor = currentTheme.backgroundColor
             navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
             navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor ]
+            changeNavBar(appearance: navBarStyle)
         case .dark:
             navBarStyle.backgroundColor = currentTheme.backgroundColor
             navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
@@ -193,11 +195,16 @@ extension ConvListViewController: ConvListViewProtocol {
             self?.users = value
             self?.setDataSource()
         }
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
-        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
-        guard let imageData = self.presenter?.profile?.profileImageData else { return }
-        let imageButton = UIImage(data: imageData)?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
-        button.setImage(imageButton, for: .normal)
+        
+        let imageData = self.presenter?.profile?.profileImageData
+        if imageData == nil {
+            let imageButton = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: UIConstants.smallImageSize).withTintColor(.systemBlue)
+            button.setImage(imageButton, for: .normal)
+        } else {
+            guard let imageData = imageData else { return }
+            let imageButton = UIImage(data: imageData)?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
+            button.setImage(imageButton, for: .normal)
+        }
     }
 }
 
@@ -206,7 +213,7 @@ extension ConvListViewController: DataManagerSubscriber {
     func updateProfile(profile: ProfileModel) {
         presenter?.profile = profile
         if profile.profileImageData == nil {
-            button.setImage(UIImage(systemName: "heart"), for: .normal)
+            button.setImage(UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize).withTintColor(.systemBlue), for: .normal)
         } else {
             guard let imageData = profile.profileImageData else { return }
             let image = UIImage(data: imageData)

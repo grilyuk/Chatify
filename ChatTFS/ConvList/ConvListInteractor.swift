@@ -1,7 +1,6 @@
 import UIKit
 
 protocol ConvListInteractorProtocol: AnyObject {
-    var currentProfile: ProfileModel? { get set }
     func loadData()
 }
 
@@ -10,7 +9,6 @@ class ConvListInteractor: ConvListInteractorProtocol {
     //MARK: - Public
     weak var presenter: ConvListPresenterProtocol?
     weak var dataManager: DataManagerProtocol?
-    var currentProfile: ProfileModel?
     
     //MARK: - Methods
     func loadData() {
@@ -121,14 +119,28 @@ class ConvListInteractor: ConvListInteractorProtocol {
         let pathExist = dataManager.checkPath()
         
         if pathExist {
-            currentProfile = dataManager.currentProfile
-            presenter?.profile = currentProfile
-            presenter?.users = users
-            presenter?.dataUploaded()
+            //GCD
+            guard let GCDDataManager = dataManager as? GCDDataManager else { return }
+            GCDDataManager.asyncReadData { [weak self] profile in
+                self?.presenter?.handler?(profile, users)
+                self?.presenter?.dataUploaded()
+            }
+            
+            //Operation
+            let readDataOperation = ReadProfileOperation(dataManager: dataManager)
+            readDataOperation.completionBlock = { [weak self] in
+                OperationQueue.main.addOperation {
+                    let profile = readDataOperation.profile
+                    guard let profile = profile else { return }
+                    self?.presenter?.handler?(profile, users)
+                    self?.presenter?.dataUploaded()
+                }
+            }
+            let queue = OperationQueue()
+            queue.addOperation(readDataOperation)
+            
         } else {
-            currentProfile = dataManager.currentProfile
-            presenter?.profile = currentProfile
-            presenter?.users = users
+            presenter?.handler?(dataManager.currentProfile, users)
             presenter?.dataUploaded()
         }
     }

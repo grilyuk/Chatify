@@ -26,6 +26,7 @@
 		5E97BF3D29BE8542003BBA1B /* OutgoingConversationViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E97BF3C29BE8542003BBA1B /* OutgoingConversationViewCell.swift */; };
 		5E9F20CA29C861140027EAFE /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F20C929C861140027EAFE /* DataManager.swift */; };
 		5E9F20CD29CA4D490027EAFE /* GCDDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F20CC29CA4D490027EAFE /* GCDDataManager.swift */; };
+		5E9F20CF29CB00F20027EAFE /* OperationDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F20CE29CB00F20027EAFE /* OperationDataManager.swift */; };
 		5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218229AB609700029FB8 /* ProfilePresenter.swift */; };
 		5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */; };
 		5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218A29AB683B00029FB8 /* ProfileModel.swift */; };
@@ -60,6 +61,7 @@
 		5E97BF3C29BE8542003BBA1B /* OutgoingConversationViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingConversationViewCell.swift; sourceTree = "<group>"; };
 		5E9F20C929C861140027EAFE /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		5E9F20CC29CA4D490027EAFE /* GCDDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GCDDataManager.swift; sourceTree = "<group>"; };
+		5E9F20CE29CB00F20027EAFE /* OperationDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OperationDataManager.swift; sourceTree = "<group>"; };
 		5EB6218229AB609700029FB8 /* ProfilePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePresenter.swift; sourceTree = "<group>"; };
 		5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInteractor.swift; sourceTree = "<group>"; };
 		5EB6218A29AB683B00029FB8 /* ProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileModel.swift; sourceTree = "<group>"; };
@@ -151,6 +153,7 @@
 			children = (
 				5E9F20C929C861140027EAFE /* DataManager.swift */,
 				5E9F20CC29CA4D490027EAFE /* GCDDataManager.swift */,
+				5E9F20CE29CB00F20027EAFE /* OperationDataManager.swift */,
 			);
 			path = DataManagers;
 			sourceTree = "<group>";
@@ -179,6 +182,7 @@
 		5EB621A029ABBA6700029FB8 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				5E9F20CB29C9A1710027EAFE /* DataManagers */,
 				5E74BCB329A8DCA3009236A1 /* AlertController.swift */,
 				5E74BCB529A8E438009236A1 /* ImagePickerController.swift */,
 				5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */,
@@ -207,7 +211,6 @@
 		5EDC6591299ECEAD009B6586 /* ChatTFS */ = {
 			isa = PBXGroup;
 			children = (
-				5E9F20CB29C9A1710027EAFE /* DataManagers */,
 				5E08ADC029A16ADA004510A6 /* Application */,
 				5EB6218029AB600500029FB8 /* ConvList */,
 				5E92E9F029B693A80038EED2 /* Conversation */,
@@ -311,6 +314,7 @@
 				5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */,
 				5EB6218D29AB6FE800029FB8 /* ConvListInteractor.swift in Sources */,
 				5EDC6597299ECEAD009B6586 /* ConvListViewController.swift in Sources */,
+				5E9F20CF29CB00F20027EAFE /* OperationDataManager.swift in Sources */,
 				5E42B9D629C24FF700F472D1 /* MessageCellModel.swift in Sources */,
 				5E92E9F829B7C4550038EED2 /* ConversationDataSource.swift in Sources */,
 				5E92E9F429B72B9F0038EED2 /* ConversationPresenter.swift in Sources */,
