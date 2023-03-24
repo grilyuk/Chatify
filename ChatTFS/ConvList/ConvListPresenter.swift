@@ -3,12 +3,12 @@ import UIKit
 protocol ConvListPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
     var users: [ConversationListModel]? { get set }
-    var handler: ((ProfileModel, [ConversationListModel]) -> Void)? { get set }
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
     func didTappedThemesPicker()
     func didTappedConversation(for conversation: ConversationListModel)
+    var handler:(([ConversationListModel]) -> Void)? { get set }
 }
 
 class ConvListPresenter {
@@ -19,7 +19,7 @@ class ConvListPresenter {
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
     var users: [ConversationListModel]?
-    var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
+    var handler:(([ConversationListModel]) -> Void)?
     
     //MARK: - Initializer
     init(router: RouterProtocol, interactor: ConvListInteractorProtocol) {
@@ -33,10 +33,6 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     
     //MARK: - Methods
     func viewReady() {
-        handler = { [weak self] meProfile, unsortUsers in
-            self?.profile = meProfile
-            self?.users = unsortUsers
-        }
         interactor.loadData()
     }
     
@@ -52,8 +48,12 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         }
         var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
         sortedUsers.append(contentsOf: usersWithoutMessages)
+        
+        handler = { [weak self] sortedUsers in
+            self?.view?.users = sortedUsers
+        }
+        handler?(sortedUsers)
         view?.showMain()
-        view?.handler?(sortedUsers)
     }
     
     func didTappedProfile() {

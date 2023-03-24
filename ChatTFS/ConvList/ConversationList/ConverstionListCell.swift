@@ -214,4 +214,9 @@ extension ConverstionListCell: ConfigurableViewProtocol {
         lastMessageText.textColor = theme.currentTheme.incomingTextColor
         contentView.backgroundColor = theme.currentTheme.backgroundColor
     }
+    
+    func configureLastCell(with model: ConversationListModel) {
+        configure(with: model)
+        removeSeparator()
+    }
 }

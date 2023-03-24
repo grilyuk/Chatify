@@ -2,8 +2,8 @@ import UIKit
 
 protocol ConversationViewProtocol: AnyObject {
     func showConversation()
+    var userName: String { get set }
     var historyChat: [MessageCellModel] { get set }
-    var handler: (([MessageCellModel], String) -> Void)? { get set }
 }
 
 class ConversationViewController: UIViewController {
@@ -19,16 +19,13 @@ class ConversationViewController: UIViewController {
     
     //MARK: - Public
     var presenter: ConversationPresenterProtocol?
-    var handler: (([MessageCellModel], String) -> Void)?
     var historyChat: [MessageCellModel] = []
     var titlesSections: [String] = []
     var userName: String = "Steve Jobs"
     weak var themeService: ThemeServiceProtocol?
     
     //MARK: - Private
-// еще раз прошу прощения за форс...
-    private lazy var dataSource = ConversationDataSource(tableView: tableView, themeService: themeService!)
-    private var imageProfileBottomColor: UIColor?
+    private var dataSource: UITableViewDiffableDataSource<Date, MessageCellModel>?
     
     private lazy var tableView: UITableView = {
         let table = UITableView()
@@ -78,7 +75,6 @@ class ConversationViewController: UIViewController {
     
     private lazy var companionAvatar: UIView = {
         let view = UIView(frame: CGRect(origin: .zero, size: .init(width: UIConstants.avatarSize, height: UIConstants.avatarSize)))
-
         let gradient = CAGradientLayer()
         gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
                            UIConstants.imageProfileBottomColor.cgColor]
@@ -132,7 +128,8 @@ class ConversationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        setDataSource()
+        setupDataSource()
+        setupSnapshot()
         setTableView()
         setGesture()
         NotificationCenter.default.addObserver(self,
@@ -156,8 +153,31 @@ class ConversationViewController: UIViewController {
         navigationController?.navigationBar.isHidden = false
     }
 
-    //MARK: - Set DataSource
-    private func setDataSource() {
+    //MARK: - Methods
+    private func setupDataSource() {
+        dataSource = UITableViewDiffableDataSource<Date, MessageCellModel> (tableView: tableView) { [weak self]
+            (tableView: UITableView, indexPath: IndexPath, itemIdentifier: MessageCellModel) -> UITableViewCell in
+            switch itemIdentifier.myMessage {
+            case true:
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingConversationViewCell.identifier) as? OutgoingConversationViewCell,
+                      let themeService = self?.themeService
+                else {return UITableViewCell()}
+                cell.configureTheme(theme: themeService)
+                cell.configure(with: itemIdentifier)
+                return cell
+            case false:
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingConversationViewCell.identifier) as? IncomingConversationViewCell,
+                      let themeService = self?.themeService
+                else {return UITableViewCell()}
+                cell.configureTheme(theme: themeService)
+                cell.configure(with: itemIdentifier)
+                return cell
+            }
+        }
+    }
+    
+    private func setupSnapshot() {
+        guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
         let formatter = DateFormatter()
@@ -176,7 +196,6 @@ class ConversationViewController: UIViewController {
         dataSource.apply(snapshot)
     }
     
-    //MARK: - Methods
     private func setGesture() {
         let tapGesture = UITapGestureRecognizer(target: self,
                                                 action: #selector(dismissKeyboard))
@@ -308,10 +327,6 @@ extension ConversationViewController: UITableViewDelegate {
 //MARK: - ConversationViewController + ConversationViewProtocol
 extension ConversationViewController: ConversationViewProtocol {
     func showConversation() {
-        handler = { [weak self] history, name in
-            self?.historyChat = history
-            self?.userName = name
-        }
         view.backgroundColor = themeService?.currentTheme.backgroundColor
     }
 }

@@ -1,9 +1,13 @@
 import UIKit
 
+enum Section: Hashable, CaseIterable {
+    case online
+    case offline
+}
+
 protocol ConvListViewProtocol: AnyObject {
     func showMain()
     var users: [ConversationListModel]? { get set }
-    var handler:(([ConversationListModel]) -> Void)? { get set }
 }
 
 class ConvListViewController: UIViewController {
@@ -19,17 +23,15 @@ class ConvListViewController: UIViewController {
     //MARK: - Public
     var presenter: ConvListPresenterProtocol?
     var users: [ConversationListModel]?
-    var handler: (([ConversationListModel]) -> Void)?
     weak var themeService: ThemeServiceProtocol?
     
     //MARK: - Private
-    private lazy var profileImageView = UIImageView()
-//  убрать форс
-    private lazy var dataSource = ConvListDataSource(tableView: tableView, themeService: themeService!)
+    private var dataSource: UITableViewDiffableDataSource<Section, ConversationListModel>?
     private lazy var tableView = UITableView()
     private lazy var button = UIButton(type: .custom)
+    private lazy var placeholder = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: UIConstants.smallImageSize).withTintColor(.systemBlue)
     
-    //MARK: - Lifeсycle
+    //MARK: - Initializer
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
@@ -39,6 +41,7 @@ class ConvListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: - Lifeсycle
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
@@ -49,25 +52,71 @@ class ConvListViewController: UIViewController {
         super.viewWillAppear(animated)
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
-        setNavBar()
+        setupNavBar()
         updateColorsCells()
     }
     
     //MARK: - Setup UI
     private func setupUI() {
-        setTableView()
-        setDataSource()
+        configureTableView()
+        setupTableView()
+        setupDataSource()
+        setupSnapshot()
     }
     
     //MARK: - Methods
-    private func setTableView() {
-        view.addSubview(tableView)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
+    private func setupDataSource() {
+        dataSource = UITableViewDiffableDataSource<Section, ConversationListModel> (tableView: tableView) { [weak self]
+            (tableView: UITableView, indexPath: IndexPath, itemIdentifier: ConversationListModel) -> ConverstionListCell in
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConverstionListCell.identifier) as? ConverstionListCell,
+                  let themeService = self?.themeService
+            else { return ConverstionListCell()}
+            
+            cell.configureTheme(theme: themeService)
+            
+            let onlineUsersCount = tableView.numberOfRows(inSection: 0)
+            let historyUsersCount = tableView.numberOfRows(inSection: 1)
+
+            switch indexPath {
+            case [0, onlineUsersCount - 1]:
+                cell.configureLastCell(with: itemIdentifier)
+            case [1, historyUsersCount - 1]:
+                cell.configureLastCell(with: itemIdentifier)
+            default:
+                cell.configure(with: itemIdentifier)
+            }
+            return cell
+        }
+        tableView.dataSource = dataSource
+    }
+    
+    private func setupSnapshot() {
+        guard let dataSource = dataSource else { return }
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteAllItems()
+        snapshot.appendSections([Section.online, Section.offline])
+        guard let users = users else { return }
+        for user in users {
+            switch user.isOnline {
+            case true:
+                snapshot.appendItems([user], toSection: .online)
+            case false:
+                snapshot.appendItems([user], toSection: .offline)
+            }
+        }
+        dataSource.apply(snapshot)
+    }
+    
+    private func configureTableView() {
         tableView.register(ConverstionListCell.self, forCellReuseIdentifier: ConverstionListCell.identifier)
         tableView.delegate = self
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
-        
+    }
+    
+    private func setupTableView() {
+        view.addSubview(tableView)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
@@ -76,7 +125,7 @@ class ConvListViewController: UIViewController {
         ])
     }
     
-    private func setNavBar() {
+    private func setupNavBar() {
         navigationItem.title = "Chat"
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
         let profileButton = UIBarButtonItem(customView: button)
@@ -116,6 +165,7 @@ class ConvListViewController: UIViewController {
     }
     
     private func updateColorsCells() {
+        guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         snapshot.sectionIdentifiers.forEach { section in
             snapshot.reloadSections([section])
@@ -136,26 +186,24 @@ class ConvListViewController: UIViewController {
         presenter?.didTappedProfile()
     }
     
-    //MARK: - SetDataSource
-    private func setDataSource() {
-        var snapshot = dataSource.snapshot()
-        snapshot.deleteAllItems()
-        snapshot.appendSections([Section.online, Section.offline])
-        guard let users = users else { return }
-        for user in users {
-            switch user.isOnline {
-            case true:
-                snapshot.appendItems([user], toSection: .online)
-            case false:
-                snapshot.appendItems([user], toSection: .offline)
-            }
-        }
-        dataSource.apply(snapshot)
-    }
 }
 
 //MARK: - MainViewController + UITableViewDelegate
 extension ConvListViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let headerView = UITableViewHeaderFooterView()
+        switch section {
+        case 0:
+            headerView.textLabel?.text = "ONLINE"
+        case 1:
+            headerView.textLabel?.text = "HISTORY"
+        default:
+            break
+        }
+        headerView.tintColor = themeService?.currentTheme.backgroundColor
+        headerView.textLabel?.textColor = themeService?.currentTheme.incomingTextColor
+        return headerView
+    }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         UIConstants.sectionHeight
@@ -163,13 +211,6 @@ extension ConvListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         UIConstants.rowHeight
-    }
-    
-    func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
-        if let headerView = view as? UITableViewHeaderFooterView {
-            headerView.tintColor = themeService?.currentTheme.backgroundColor
-            headerView.textLabel?.textColor = themeService?.currentTheme.incomingTextColor
-        }
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -183,6 +224,7 @@ extension ConvListViewController: UITableViewDelegate {
         default:
             break
         }
+        guard let dataSource = dataSource else { return }
         let usersInSection = dataSource.snapshot().itemIdentifiers(inSection: section)
         presenter?.didTappedConversation(for: usersInSection[indexPath.row])
     }
@@ -191,14 +233,10 @@ extension ConvListViewController: UITableViewDelegate {
 //MARK: - MainViewController + MainViewProtocol
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
-        handler = { [weak self] value in
-            self?.users = value
-            self?.setDataSource()
-        }
-        
+        setupSnapshot()
         let imageData = self.presenter?.profile?.profileImageData
         if imageData == nil {
-            let imageButton = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: UIConstants.smallImageSize).withTintColor(.systemBlue)
+            let imageButton = placeholder
             button.setImage(imageButton, for: .normal)
         } else {
             guard let imageData = imageData else { return }
@@ -213,7 +251,7 @@ extension ConvListViewController: DataManagerSubscriber {
     func updateProfile(profile: ProfileModel) {
         presenter?.profile = profile
         if profile.profileImageData == nil {
-            button.setImage(UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize).withTintColor(.systemBlue), for: .normal)
+            button.setImage(placeholder, for: .normal)
         } else {
             guard let imageData = profile.profileImageData else { return }
             let image = UIImage(data: imageData)

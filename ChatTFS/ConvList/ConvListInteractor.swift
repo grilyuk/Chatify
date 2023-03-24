@@ -9,6 +9,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
     //MARK: - Public
     weak var presenter: ConvListPresenterProtocol?
     weak var dataManager: DataManagerProtocol?
+    var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
     
     //MARK: - Methods
     func loadData() {
@@ -115,6 +116,12 @@ class ConvListInteractor: ConvListInteractorProtocol {
                                   hasUnreadMessages: nil)
         ]
         
+        handler = { [weak self] profile, users in
+            self?.presenter?.profile = profile
+            self?.presenter?.users = users
+            self?.presenter?.dataUploaded()
+        }
+        
         guard let dataManager = dataManager else { return }
         let pathExist = dataManager.checkPath()
         
@@ -122,8 +129,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
             //GCD
             guard let GCDDataManager = dataManager as? GCDDataManager else { return }
             GCDDataManager.asyncReadData { [weak self] profile in
-                self?.presenter?.handler?(profile, users)
-                self?.presenter?.dataUploaded()
+                self?.handler?(profile, users)
             }
             
             //Operation
@@ -132,16 +138,14 @@ class ConvListInteractor: ConvListInteractorProtocol {
                 OperationQueue.main.addOperation {
                     let profile = readDataOperation.profile
                     guard let profile = profile else { return }
-                    self?.presenter?.handler?(profile, users)
-                    self?.presenter?.dataUploaded()
+                    self?.handler?(profile, users)
                 }
             }
             let queue = OperationQueue()
             queue.addOperation(readDataOperation)
             
         } else {
-            presenter?.handler?(dataManager.currentProfile, users)
-            presenter?.dataUploaded()
+            handler?(dataManager.currentProfile, users)
         }
     }
 }
