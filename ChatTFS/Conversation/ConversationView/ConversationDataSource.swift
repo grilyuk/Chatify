@@ -1,24 +1,22 @@
-//
-//  TableDataSource.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 07.03.2023.
-//
-
 import UIKit
 
-class ConversationDataSource: UITableViewDiffableDataSource<DaySection, Message> {
+class ConversationDataSource: UITableViewDiffableDataSource<Date, MessageCellModel> {
     
-    init(tableView: UITableView, messages: [MessageCellModel]) {
-        super.init(tableView: tableView) {
-            tableView, indexPath, itemIdentifier in
+    //MARK: - Initializer
+    init(tableView: UITableView, themeService: ThemeServiceProtocol) {
+        super.init(tableView: tableView) { tableView, indexPath, message in
             
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationViewCell.identifier, for: indexPath) as? ConversationViewCell else { return UITableViewCell()}
-            
-            cell.configure(with: messages[itemIdentifier.number])
-            print("configure from \(itemIdentifier.number)")
-            cell.selectionStyle = .none
-            return cell
+            if message.myMessage {
+                guard let outgoingMessage = tableView.dequeueReusableCell(withIdentifier: OutgoingConversationViewCell.identifier, for: indexPath) as? OutgoingConversationViewCell else { return UITableViewCell() }
+                outgoingMessage.configureTheme(theme: themeService)
+                outgoingMessage.configure(with: message)
+                return outgoingMessage
+            } else {
+                guard let incomingMessage = tableView.dequeueReusableCell(withIdentifier: IncomingConversationViewCell.identifier, for: indexPath) as? IncomingConversationViewCell else { return UITableViewCell() }
+                incomingMessage.configureTheme(theme: themeService)
+                incomingMessage.configure(with: message)
+                return incomingMessage
+            }
         }
     }
 }

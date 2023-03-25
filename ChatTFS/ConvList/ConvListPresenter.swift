@@ -1,140 +1,62 @@
-//
-//  MainPresenter.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 26.02.2023.
-//
-
 import UIKit
 
-protocol MainPresenterProtocol: AnyObject {
+protocol ConvListPresenterProtocol: AnyObject {
     var profile: ProfileModel? { get set }
+    var users: [ConversationListModel]? { get set }
+    var handler: ((ProfileModel, [ConversationListModel]) -> Void)? { get set }
     func viewReady()
     func dataUploaded()
     func didTappedProfile()
-    func didTappedConversation(for indexPath: IndexPath)
+    func didTappedThemesPicker()
+    func didTappedConversation(for conversation: ConversationListModel)
 }
 
-class MainPresenter {
-    weak var view: MainViewProtocol?
-    let router: RouterProtocol?
-    let interactor: MainInteractorProtocol
-    var profile: ProfileModel?
+class ConvListPresenter {
     
-    init(router: RouterProtocol, interactor: MainInteractorProtocol) {
+    //MARK: - Public
+    weak var view: ConvListViewProtocol?
+    var router: RouterProtocol?
+    let interactor: ConvListInteractorProtocol
+    var profile: ProfileModel?
+    var users: [ConversationListModel]?
+    var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
+    
+    //MARK: - Initializer
+    init(router: RouterProtocol, interactor: ConvListInteractorProtocol) {
         self.router = router
         self.interactor = interactor
     }
 }
 
-extension MainPresenter: MainPresenterProtocol {
+//MARK: - ConvListPresenter + ConvListPresenterProtocol
+extension ConvListPresenter: ConvListPresenterProtocol {
+    
+    //MARK: - Methods
     func viewReady() {
+        handler = { [weak self] meProfile, unsortUsers in
+            self?.profile = meProfile
+            self?.users = unsortUsers
+        }
+        
         interactor.loadData()
+
+        var usersWithMessages: [ConversationListModel] = []
+        var usersWithoutMessages: [ConversationListModel] = []
+        guard let users = users else { return }
+        for user in users {
+            switch user.date != nil {
+            case true: usersWithMessages.append(user)
+            case false: usersWithoutMessages.append(user)
+            }
+        }
+        
+        var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
+        sortedUsers.append(contentsOf: usersWithoutMessages)
+
+        view?.handler?(sortedUsers)
     }
     
     func dataUploaded() {
-        view?.users = [
-            ConversationListCellModel(name: "Charis Clay",
-                                      message: "I think Houdini did something like this once! Why, if I recall correctly, he was out of the hospital",
-                                      date: Date(timeIntervalSinceNow: -100000),
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Lacey Finch",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Norma Carver",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Dawson Suarez",
-                                      message: "Привет",
-                                      date: Date(timeIntervalSinceNow: -54252),
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Aminah Burch",
-                                      message: "How are you?",
-                                      date: Date(timeIntervalSinceNow: -4235),
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Rodney Sharp",
-                                      message: "Go to shop",
-                                      date: Date(timeIntervalSinceNow: -3242),
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Erin Duke",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Mehmet Matthams",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Malik Rios",
-                                      message: "Я с тобой не разговариваю...",
-                                      date: Date(timeIntervalSince1970: 0),
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Samantha Erickson",
-                                      message: "Ладно",
-                                      date: Date(timeIntervalSinceNow: -124151513),
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Sid Terry",
-                                      message: "Hello",
-                                      date: Date(timeIntervalSinceReferenceDate: 4525346),
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Lochlan Alexander",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Ishaan Matthews",
-                                      message: "Hello",
-                                      date: Date(timeIntervalSinceNow: -5325),
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Jazmin Clayton",
-                                      message: "Я в своём познании настолько преисполнился, что как будто бы уже 100 триллионов миллиардов лет проживаю",
-                                      date: Date(timeIntervalSinceReferenceDate: 1352533),
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Hamish Barker",
-                                      message: "Hello",
-                                      date: Date(),
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Kezia Finley",
-                                      message: "Прив че дел??",
-                                      date: Date(timeIntervalSinceNow: -9932),
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Sylvia Cooper",
-                                      message: "Предлагаем работу 300кк/нс нужно всего лишь быть",
-                                      date: Date(timeIntervalSinceNow: -35551),
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Erica Tate",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: false,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Liana Fitzgerald",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: true,
-                                      hasUnreadMessages: nil),
-            ConversationListCellModel(name: "Aiza Fischer",
-                                      message: nil,
-                                      date: nil,
-                                      isOnline: false,
-                                      hasUnreadMessages: nil)
-        ]
         view?.showMain()
     }
     
@@ -143,7 +65,11 @@ extension MainPresenter: MainPresenterProtocol {
         router?.showProfile(profile: profile)
     }
     
-    func didTappedConversation(for indexPath: IndexPath) {
-        router?.showConversation(conversation: indexPath)
+    func didTappedConversation(for conversation: ConversationListModel) {
+        router?.showConversation(conversation: conversation)
+    }
+    
+    func didTappedThemesPicker() {
+        router?.showThemePicker()
     }
 }

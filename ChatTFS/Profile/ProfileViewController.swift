@@ -1,10 +1,3 @@
-//
-//  SecondViewController.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 18.02.2023.
-//
-
 import UIKit
 
 protocol ProfileViewProtocol: AnyObject {
@@ -12,9 +5,8 @@ protocol ProfileViewProtocol: AnyObject {
 }
 
 class ProfileViewController: UIViewController, UINavigationBarDelegate {
-    var presenter: ProfilePresenterProtocol?
 
-    //MARK: UIConstants
+    //MARK: - UIConstants
     private enum UIConstants {
         static let fontSize: CGFloat = 17
         static let largerFontSize: CGFloat = 22
@@ -28,23 +20,22 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
         static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
     }
-
-    //MARK: Public
-//    var complitionHandler: (() -> Void)?
-    public let profileImageView = UIImageView()
     
-    //MARK: Private
-
+    //MARK: - Public
+    var profileImageView = UIImageView()
+    var presenter: ProfilePresenterProtocol?
+    
+    //MARK: - Private
     private let navigationBar = UINavigationBar()
     private let addPhotoButton = UIButton(type: .system)
     private let fullNameLabel = UILabel()
     private let statusText = UITextView()
 
-    //MARK: Lifecycle
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         setupUI()
     }
 
@@ -59,7 +50,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         profileImageView.clipsToBounds = true
     }
 
-    //MARK: Setup UI
+    //MARK: - Setup UI
     private func setupUI() {
         setNavBar()
         setProfileImage()
@@ -68,6 +59,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         setInfoText()
     }
 
+    //MARK: - Methods
     private func setNavBar() {
         view.addSubview(navigationBar)
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
@@ -146,15 +138,18 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         ])
     }
 
-    @objc private func editProfileTapped() {
+    @objc
+    private func editProfileTapped() {
         //temporary empty
     }
 
-    @objc private func closeProfileTapped() {
+    @objc
+    private func closeProfileTapped() {
         self.dismiss(animated: true)
     }
 
-    @objc private func addPhototapped() {
+    @objc
+    private func addPhototapped() {
         let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         present(alert, animated: true) {
             alert.vc = self
@@ -162,7 +157,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
 }
 
-//MARK: ProfileViewController + ProfileViewProtocol
+//MARK: - ProfileViewController + ProfileViewProtocol
 extension ProfileViewController: ProfileViewProtocol {
     func showProfile(profile: ProfileModel) {
         self.fullNameLabel.text = profile.fullName

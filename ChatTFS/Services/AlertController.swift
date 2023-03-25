@@ -1,26 +1,19 @@
-//
-//  AlertController.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 24.02.2023.
-//
-
 import UIKit
 
 class AlertController: UIAlertController {
 
-    //MARK: Properties
+    //MARK: - Properties
     weak var vc: UIViewController?
     private var pickerController: ImagePickerController?
 
-    //MARK: Lifecycle
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         pickerController = ImagePickerController()
         addActions()
     }
 
-    //MARK: Methods
+    //MARK: - Methods
     private func addActions() {
         addAction(UIAlertAction(title: "Сделать фото", style: .default) { _ in
             guard let picker = self.pickerController else {return}

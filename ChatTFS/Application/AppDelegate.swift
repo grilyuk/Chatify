@@ -10,14 +10,14 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    //MARK: Properties
+    //MARK: - Properties
     lazy var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
 
-    //MARK: Lifecycle
+    //MARK: - Lifecycle
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        window?.overrideUserInterfaceStyle = .light
         let moduleBuilder = ModuleBuilder()
         let navigationController = UINavigationController()
+        navigationController.navigationBar.backgroundColor = nil
         let router = Router(navigationController: navigationController, moduleBuilder: moduleBuilder)
         router.initialViewController()
         window?.rootViewController = navigationController

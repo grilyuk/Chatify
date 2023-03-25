@@ -1,10 +1,3 @@
-//
-//  ConverstionListCell.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 05.03.2023.
-//
-
 import UIKit
 
 protocol ConfigurableViewProtocol {
@@ -12,19 +5,10 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-struct ConversationListCellModel {
-    let name: String?
-    let message: String?
-    let date: Date?
-    let isOnline: Bool?
-    let hasUnreadMessages: Bool?
-}
-
 class ConverstionListCell: UITableViewCell {
-    
     static let identifier = "conListCell"
-    
-    //MARK: UIConstants
+
+    //MARK: - UIConstants
     private enum UIConstants {
         static let avatarToContentEdge: CGFloat = 5
         static let avatarSize: CGFloat = 60
@@ -37,9 +21,11 @@ class ConverstionListCell: UITableViewCell {
         static let avatarToName: CGFloat = 10
         static let avatarToMessage: CGFloat = 10
         static let indicatorToContentTrailing: CGFloat = -10
+        static let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
+        static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.1823898468, green: 0.5700650811, blue: 0.6495155096, alpha: 1)
     }
     
-    //MARK: Private
+    //MARK: - Private
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .bold)
@@ -66,7 +52,6 @@ class ConverstionListCell: UITableViewCell {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.lastMessageFontSize, weight: .regular)
         label.numberOfLines = 1
-        label.textColor = .gray
         return label
     }()
     
@@ -79,10 +64,23 @@ class ConverstionListCell: UITableViewCell {
     
     private lazy var userAvatar: UIImageView = {
         let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: UIConstants.avatarSize, height: UIConstants.avatarSize))
-        imageView.contentMode = .scaleAspectFit
+        let gradient = CAGradientLayer()
+        gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
+                           UIConstants.imageProfileBottomColor.cgColor]
+        gradient.frame = imageView.bounds
+        imageView.layer.addSublayer(gradient)
         imageView.layer.cornerRadius = UIConstants.avatarSize/2
         imageView.clipsToBounds = true
         return imageView
+    }()
+    
+    private lazy var initialsLabel: UILabel = {
+        let label = UILabel()
+        let initialFontSizeCalc = UIConstants.avatarSize * 0.45
+        let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
+        label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
+        label.textColor = .white
+        return label
     }()
     
     private lazy var separatorLine: UIView = {
@@ -91,38 +89,42 @@ class ConverstionListCell: UITableViewCell {
         return view
     }()
     
-    //MARK: Initializater
+    //MARK: - Initializater
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: - Methods
     func removeSeparator() {
         separatorLine.removeFromSuperview()
     }
     
-    //MARK: PrepareForReuse
+    private func setInitials(from name: String) {
+        let formatter = PersonNameComponentsFormatter()
+        let components = formatter.personNameComponents(from: name)
+        formatter.style = .abbreviated
+        initialsLabel.text = formatter.string(from: components!)
+    }
+    
+    //MARK: - PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
         userAvatar.image = nil
         nameLabel.text = nil
         lastMessageText.text = nil
         dateLabel.text = nil
+        initialsLabel.text = nil
         lastMessageText.font = .systemFont(ofSize: UIConstants.lastMessageFontSize)
     }
     
-    //MARK: Setup UI
+    //MARK: - Setup UI
     private func setupUI() {
-        contentView.addSubview(userAvatar)
-        contentView.addSubview(nameLabel)
-        contentView.addSubview(lastMessageText)
-        contentView.addSubview(dateLabel)
-        contentView.addSubview(indicatorImage)
-        contentView.addSubview(separatorLine)
+        contentView.addSubviews(userAvatar, nameLabel, lastMessageText, dateLabel, initialsLabel, indicatorImage, separatorLine)
         
         userAvatar.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -130,6 +132,7 @@ class ConverstionListCell: UITableViewCell {
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         indicatorImage.translatesAutoresizingMaskIntoConstraints = false
         separatorLine.translatesAutoresizingMaskIntoConstraints = false
+        initialsLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             userAvatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -153,15 +156,17 @@ class ConverstionListCell: UITableViewCell {
             separatorLine.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             separatorLine.widthAnchor.constraint(equalToConstant: contentView.frame.width),
             separatorLine.heightAnchor.constraint(equalToConstant: 1),
-            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
+            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            
+            initialsLabel.centerXAnchor.constraint(equalTo: userAvatar.centerXAnchor),
+            initialsLabel.centerYAnchor.constraint(equalTo: userAvatar.centerYAnchor)
         ])
     }
 }
 
-//MARK: ConverstionListCell + ConfigurableViewProtocol
+//MARK: - ConverstionListCell + ConfigurableViewProtocol
 extension ConverstionListCell: ConfigurableViewProtocol {
-    
-    func configure(with model: ConversationListCellModel) {
+    func configure(with model: ConversationListModel) {
         if model.message == nil {
             dateLabel.text = nil
             lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
@@ -182,11 +187,7 @@ extension ConverstionListCell: ConfigurableViewProtocol {
         }
         
         if userAvatar.image == nil {
-            DispatchQueue.main.async {
-                self.userAvatar.image = ImageRender(fullName: model.name ?? "Steve Jobs",
-                                                    size: CGSize(width: UIConstants.avatarSize,
-                                                                 height: UIConstants.avatarSize)).render()
-            }
+            setInitials(from: model.name ?? "Steve Jobs")
         }
         
         nameLabel.text = model.name
@@ -206,5 +207,11 @@ extension ConverstionListCell: ConfigurableViewProtocol {
             formatterNotToday.dateFormat = "dd, MMM"
             dateLabel.text = formatterNotToday.string(from: date)
         }
+    }
+    
+    func configureTheme(theme: ThemeServiceProtocol) {
+        nameLabel.textColor = theme.currentTheme.textColor
+        lastMessageText.textColor = theme.currentTheme.incomingTextColor
+        contentView.backgroundColor = theme.currentTheme.backgroundColor
     }
 }

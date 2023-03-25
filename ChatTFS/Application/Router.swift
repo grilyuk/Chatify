@@ -1,11 +1,3 @@
-//
-//  Router.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 04.03.2023.
-//
-
-import Foundation
 import UIKit
 
 protocol RouterMain: AnyObject {
@@ -16,22 +8,26 @@ protocol RouterMain: AnyObject {
 protocol RouterProtocol: RouterMain {
     func initialViewController()
     func showProfile(profile: ProfileModel)
-    func showConversation(conversation: IndexPath)
+    func showConversation(conversation: ConversationListModel)
+    func showThemePicker()
 }
 
 class Router: RouterProtocol {
     
+    //MARK: - Public
     var navigationController: UINavigationController?
     var moduleBuilder: ModuleBuilderProtocol?
     
+    //MARK: - Init
     init(navigationController: UINavigationController, moduleBuilder: ModuleBuilderProtocol) {
         self.navigationController = navigationController
         self.moduleBuilder = moduleBuilder
     }
     
+    //MARK: - Methods
     func initialViewController() {
         if let navigationController = navigationController {
-            guard let mainViewController = moduleBuilder?.buildMain(router: self) else { return }
+            guard let mainViewController = moduleBuilder?.buildConvList(router: self) else { return }
             navigationController.viewControllers = [mainViewController]
         }
     }
@@ -43,10 +39,17 @@ class Router: RouterProtocol {
         }
     }
     
-    func showConversation(conversation: IndexPath) {
+    func showConversation(conversation: ConversationListModel) {
         if let navigationController = navigationController {
             guard let conversationViewController = moduleBuilder?.buildConversation(router: self, conversation: conversation) else { return }
             navigationController.pushViewController(conversationViewController, animated: true)
+        }
+    }
+    
+    func showThemePicker() {
+        if let navigationController = navigationController {
+            guard let themeViewController = moduleBuilder?.buildThemePicker() else { return }
+            navigationController.pushViewController(themeViewController, animated: true)
         }
     }
 }
