@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 protocol ConvListInteractorProtocol: AnyObject {
     func loadData()
@@ -16,7 +17,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
     weak var dataManager: DataManagerProtocol?
     
     //MARK: - Private
-    private var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
+    private var handler: (([ConversationListModel]) -> Void)?
     
     //MARK: - Methods
     func loadData() {
@@ -123,36 +124,11 @@ class ConvListInteractor: ConvListInteractorProtocol {
                                   hasUnreadMessages: nil)
         ]
         
-        handler = { [weak self] profile, users in
-            self?.presenter?.profile = profile
+        handler = { [weak self] users in
             self?.presenter?.users = users
             self?.presenter?.dataUploaded()
         }
         
-        guard let dataManager = dataManager else { return }
-        let pathExist = dataManager.checkPath()
-        
-        if pathExist {
-            //GCD
-            guard let GCDDataManager = dataManager as? GCDDataManager else { return }
-            GCDDataManager.asyncReadData { [weak self] profile in
-                self?.handler?(profile, users)
-            }
-            
-            //Operation
-            let readDataOperation = ReadProfileOperation(dataManager: dataManager)
-            readDataOperation.completionBlock = { [weak self] in
-                OperationQueue.main.addOperation {
-                    let profile = readDataOperation.profile
-                    guard let profile = profile else { return }
-                    self?.handler?(profile, users)
-                }
-            }
-            let queue = OperationQueue()
-            queue.addOperation(readDataOperation)
-            
-        } else {
-            handler?(dataManager.currentProfile, users)
-        }
+        handler?(users)
     }
 }

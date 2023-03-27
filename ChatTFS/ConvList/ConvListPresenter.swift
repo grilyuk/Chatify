@@ -51,14 +51,13 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         
         handler = { [weak self] sortedUsers in
             self?.view?.users = sortedUsers
+            self?.view?.showMain()
         }
         handler?(sortedUsers)
-        view?.showMain()
     }
     
     func didTappedProfile() {
-        guard let profile = profile else { return }
-        router?.showProfile(profile: profile)
+        router?.showProfile()
     }
     
     func didTappedConversation(for conversation: ConversationListModel) {

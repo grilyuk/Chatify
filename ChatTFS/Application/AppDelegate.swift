@@ -25,3 +25,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
 }
+
+struct CustomError: Error {
+    let description: String
+}

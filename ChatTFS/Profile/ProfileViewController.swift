@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 protocol ProfileViewProtocol: AnyObject {
     func showProfile()
@@ -34,6 +35,7 @@ class ProfileViewController: UIViewController {
     //MARK: - Public
     var profileImageView = UIImageView()
     var presenter: ProfilePresenterProtocol?
+    private var profileRequest: Cancellable?
     weak var themeService: ThemeServiceProtocol?
     weak var dataManager: DataManagerProtocol?
     
@@ -139,7 +141,6 @@ class ProfileViewController: UIViewController {
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         editButton.addTarget(self, action: #selector(editProfileTapped), for: .touchUpInside)
         addPhotoButton.addTarget(self, action: #selector(addPhototapped), for: .touchUpInside)
         presenter?.viewReady()
@@ -152,6 +153,10 @@ class ProfileViewController: UIViewController {
         bioText.backgroundColor = themeService?.currentTheme.backgroundColor
         nameLabel.textColor = themeService?.currentTheme.textColor
         navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
+    }
+    
+    override func viewDidDisappear(_ animated: Bool) {
+        profileRequest?.cancel()
     }
     
     override func viewDidLayoutSubviews() {
@@ -194,121 +199,10 @@ class ProfileViewController: UIViewController {
         navigationBar.setItems([navTitle], animated: false)
     }
     
-    private func setContextMenu() {
-        successAlert.addAction(okAction)
-        
-        let saveGCD = UIAction(title: "Save GCD") { [ weak self ] _ in
-            guard let self = self,
-                  let nameText = self.editableNameSection.text,
-                  let bioText = self.editableBioSection.text
-            else { return }
-            
-            let imageData: Data? = {
-                if self.profileImageView.image != self.placeholderImage {
-                    return self.profileImageView.image?.jpegData(compressionQuality: 1)
-                } else { return nil }
-            }()
-            self.editableBioSection.isEnabled = false
-            self.editableNameSection.isEnabled = false
-            self.addPhotoButton.isEnabled = false
-            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
-            self.activityIndicator.startAnimating()
-            let savingProfile = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
-            self.saveProfileGCD(profile: savingProfile)
-        }
-        
-        let saveOpeartion = UIAction(title: "Save Operations") { [ weak self ] _ in
-            guard let self = self,
-                  let nameText = self.editableNameSection.text,
-                  let bioText = self.editableBioSection.text
-            else { return }
-            
-            let imageData: Data? = {
-                if self.profileImageView.image != self.placeholderImage {
-                    return self.profileImageView.image?.jpegData(compressionQuality: 1)
-                } else {return nil}
-            }()
-            self.editableBioSection.isEnabled = false
-            self.editableNameSection.isEnabled = false
-            self.addPhotoButton.isEnabled = false
-            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
-            self.activityIndicator.startAnimating()
-            let savingProfile = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
-            self.saveProfileOperation(profile: savingProfile)
-        }
-        
-        navSaveProfile.menu = UIMenu(children: [saveGCD, saveOpeartion])
-        navTitle.rightBarButtonItem = navSaveProfile
-    }
-    
-    private func saveProfileGCD(profile: ProfileModel) {
-        
-        guard let dataManager = self.dataManager as? GCDDataManager else { return }
-        dataManager.asyncWriteData(profileData: profile) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case true:
-                self.activityIndicator.stopAnimating()
-                self.setEditFinished()
-                self.nameLabel.text = profile.fullName
-                self.bioText.text = profile.statusText
-                self.present(self.successAlert, animated: true)
-            case false:
-                let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
-                    self.saveProfileGCD(profile: profile)
-                }
-                let okFailureAction = UIAlertAction(title: "OK", style: .default) {_ in
-                    self.setEditFinished()
-                }
-                if self.failureAlert.actions.count <= 1 {
-                    self.failureAlert.addAction(okFailureAction)
-                    self.failureAlert.addAction(tryAction)
-                }
-                self.present(self.failureAlert, animated: true)
-            }
-        }
-    }
-    
-    private func saveProfileOperation(profile: ProfileModel) {
-        guard let dataManager = self.dataManager as? DataManager else { return }
-        let saveOperation = SaveProfileOperation(profile: profile, dataManager: dataManager)
-        saveOperation.completionBlock = { [weak self] in
-            guard let self = self
-            else { return }
-            OperationQueue.main.addOperation {
-                if saveOperation.isSuccess {
-                    self.activityIndicator.stopAnimating()
-                    self.setEditFinished()
-                    self.nameLabel.text = profile.fullName
-                    self.bioText.text = profile.statusText
-                    self.present(self.successAlert, animated: true)
-                } else {
-                    let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
-                        self.saveProfileOperation(profile: profile)
-                    }
-                    let okFailureAction = UIAlertAction(title: "OK", style: .default) {_ in
-                        self.setEditFinished()
-                    }
-                    if self.failureAlert.actions.count <= 1 {
-                        self.failureAlert.addAction(okFailureAction)
-                        self.failureAlert.addAction(tryAction)
-                    }
-                    self.present(self.failureAlert, animated: true)
-                }
-            }
-        }
-        let operationQueue = OperationQueue()
-        operationQueue.addOperation(saveOperation)
-    }
-
-    
     private func editableMode() {
-        if let bioText = dataManager?.currentProfile.statusText {
-            editableBioSection.text = bioText
-        }
-        if let nameText = dataManager?.currentProfile.fullName {
-            editableNameSection.text = nameText
-        }
+        editableBioSection.text = bioText.text
+        editableNameSection.text = nameLabel.text
+        navTitle.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: nil)
         nameLabel.isHidden = true
         bioText.isHidden = true
         editableNameSection.isHidden = false
@@ -317,7 +211,6 @@ class ProfileViewController: UIViewController {
         nameCell.isHidden = false
         bioCell.isHidden = false
         editableNameSection.becomeFirstResponder()
-        setContextMenu()
     }
     
     private func setEditFinished() {
@@ -419,31 +312,26 @@ class ProfileViewController: UIViewController {
 
 //MARK: - ProfileViewController + ProfileViewProtocol
 extension ProfileViewController: ProfileViewProtocol {
-    
     func showProfile() {
-        guard let profile = presenter?.profile else { return }
-        self.nameLabel.text = {
-            if profile.fullName == nil || profile.fullName == "" {
-                return "No name"
-            } else {
-                return profile.fullName
-            }
-        }()
-        
-        self.bioText.text = {
-            if profile.statusText == nil || profile.statusText == "" {
-                return "No bio specified"
-            } else {
-                return profile.statusText
-            }
-        }()
-        
-        if profile.profileImageData == nil || profile.fullName == nil {
-            self.profileImageView.image = placeholderImage
-        } else {
-            guard let imageData = profile.profileImageData else { return }
-            self.userAvatar.removeFromSuperview()
-            self.profileImageView.image = UIImage(data: imageData)
-        }
+        profileRequest = dataManager?
+            .readProfilePublisher()
+            .handleEvents(receiveCancel: { print("Cancel") })
+            .receive(on: DispatchQueue.main)
+            .subscribe(on: DispatchQueue.global())
+            .decode(type: ProfileModel.self, decoder: JSONDecoder())
+            .tryMap({ profile in
+                return profile.fullName })
+            .catch({_ in Just("No name")})
+            .assign(to: \.nameLabel.text, on: self)
+                    
+        profileRequest = dataManager?
+            .readProfilePublisher()
+            .receive(on: DispatchQueue.main)
+            .subscribe(on: DispatchQueue.global())
+            .decode(type: ProfileModel.self, decoder: JSONDecoder())
+            .tryMap({ profile in
+                return profile.statusText })
+            .catch({_ in Just("No bio")})
+            .assign(to: \.bioText.text, on: self)
     }
 }

@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 enum Section: Hashable, CaseIterable {
     case online
@@ -23,7 +24,9 @@ class ConvListViewController: UIViewController {
     //MARK: - Public
     var presenter: ConvListPresenterProtocol?
     var users: [ConversationListModel]?
+    var profileRequest: Cancellable?
     weak var themeService: ThemeServiceProtocol?
+    weak var dataManager: DataManagerProtocol?
     
     //MARK: - Private
     private var dataSource: UITableViewDiffableDataSource<Section, ConversationListModel>?
@@ -32,8 +35,9 @@ class ConvListViewController: UIViewController {
     private lazy var placeholder = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: UIConstants.smallImageSize).withTintColor(.systemBlue)
     
     //MARK: - Initializer
-    init(themeService: ThemeServiceProtocol) {
+    init(themeService: ThemeServiceProtocol, dataManager: DataManagerProtocol) {
         self.themeService = themeService
+        self.dataManager = dataManager
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -45,6 +49,7 @@ class ConvListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
+        setupNavBar()
         setupUI()
     }
     
@@ -52,8 +57,21 @@ class ConvListViewController: UIViewController {
         super.viewWillAppear(animated)
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
-        setupNavBar()
         updateColorsCells()
+            
+        profileRequest = dataManager?
+            .readProfilePublisher()
+            .subscribe(on: DispatchQueue.global())
+            .decode(type: ProfileModel.self, decoder: JSONDecoder())
+            .receive(on: DispatchQueue.main)
+            .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
+            .map({ profile in
+                guard let imageData = profile.profileImageData else { return UIImage(systemName: "heart")}
+                return UIImage(data: imageData)
+            })
+            .sink(receiveValue: { image in
+                self.button.setImage(image, for: .normal)
+            })
     }
     
     //MARK: - Setup UI
@@ -119,12 +137,17 @@ class ConvListViewController: UIViewController {
         navigationItem.title = "Chat"
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
         let profileButton = UIBarButtonItem(customView: button)
+//        let userButton = UIBarButtonItem(image: nil, style: .plain, target: self, action: #selector(tappedProfile))
+        button.imageView?.frame = CGRect(origin: .zero, size: CGSize(width: 44, height: 44))
         button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
+        button.imageView?.contentMode = .scaleToFill
+        button.layer.cornerRadius = 5
+        button.clipsToBounds = true
         
-        profileButton.customView?.contentMode = .scaleAspectFill
-        profileButton.customView?.frame = CGRect(origin: .zero, size: UIConstants.imageSize)
-        profileButton.customView?.layer.cornerRadius = UIConstants.imageSize.height / 2
-        profileButton.customView?.clipsToBounds = true
+//        profileButton.customView?.frame = CGRect(origin: .zero, size: UIConstants.imageSize)
+//        profileButton.customView?.layer.cornerRadius = UIConstants.imageSize.height / 2
+//        profileButton.customView?.clipsToBounds = true
+//        profileButton.customView?.contentMode = .scaleAspectFill
         navigationItem.leftBarButtonItem = settingButton
         navigationItem.rightBarButtonItem = profileButton
         
@@ -225,30 +248,5 @@ extension ConvListViewController: UITableViewDelegate {
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
         setupSnapshot()
-        let imageData = self.presenter?.profile?.profileImageData
-        if imageData == nil {
-            let imageButton = placeholder
-            button.setImage(imageButton, for: .normal)
-        } else {
-            guard let imageData = imageData else { return }
-            let imageButton = UIImage(data: imageData)?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
-            button.setImage(imageButton, for: .normal)
-        }
-    }
-}
-
-//MARK: - MainViewController + DataManagerSubscriber
-extension ConvListViewController: DataManagerSubscriber {
-    func updateProfile(profile: ProfileModel) {
-        presenter?.profile = profile
-        if profile.profileImageData == nil {
-            button.setImage(placeholder, for: .normal)
-        } else {
-            guard let imageData = profile.profileImageData else { return }
-            let image = UIImage(data: imageData)
-            button.setImage(image?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize), for: .normal)
-//            let testButton = UIBarButtonItem(image: image, style: .plain, target: nil, action: nil)
-//            navigationItem.rightBarButtonItem = testButton
-        }
     }
 }

@@ -22,7 +22,8 @@ class ProfileInteractor: ProfileInteractorProtocol {
             self?.presenter?.dataUploaded()
         }
         
-        guard let currentProfile = dataManager?.currentProfile else { return }
-        handler?(currentProfile)
+//        guard let currentProfile = dataManager?.currentProfile else { return }
+        let testProfile = ProfileModel(fullName: "Test", statusText: "Test", profileImageData: nil)
+        handler?(testProfile)
     }
 }

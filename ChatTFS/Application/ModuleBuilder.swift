@@ -11,15 +11,13 @@ class ModuleBuilder: ModuleBuilderProtocol {
     
     //MARK: - Private
     private lazy var themeService = ThemeService()
-//    private lazy var dataManager = DataManager()
-    private lazy var dataManager = GCDDataManager()
+    private lazy var dataManager = DataManager()
     
     //MARK: - Methods
     func buildConvList(router: RouterProtocol) -> ConvListViewController {
         let interactor = ConvListInteractor(dataManager: dataManager)
         let presenter = ConvListPresenter(router: router, interactor: interactor)
-        let view = ConvListViewController(themeService: themeService)
-        dataManager.addSubscriber(subscriber: view)
+        let view = ConvListViewController(themeService: themeService, dataManager: dataManager)
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view
