@@ -6,10 +6,17 @@ protocol ConvListInteractorProtocol: AnyObject {
 
 class ConvListInteractor: ConvListInteractorProtocol {
 
+    //MARK: - Initializer
+    init(dataManager: DataManagerProtocol) {
+        self.dataManager = dataManager
+    }
+    
     //MARK: - Public
     weak var presenter: ConvListPresenterProtocol?
     weak var dataManager: DataManagerProtocol?
-    var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
+    
+    //MARK: - Private
+    private var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
     
     //MARK: - Methods
     func loadData() {

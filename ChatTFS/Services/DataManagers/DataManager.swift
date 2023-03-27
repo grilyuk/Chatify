@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 protocol DataManagerObserver: AnyObject {
     var subscribers: [DataManagerSubscriber] { get set }
@@ -27,11 +28,22 @@ class DataManager: DataManagerProtocol {
     }
 
     //MARK: - Methods
+    
+    func profilePublisher() -> AnyPublisher<ProfileModel, Error> {
+        Deferred {
+            Future { promise in
+//                switch promise {
+//                case .success(
+//                }
+            }
+        }
+        .eraseToAnyPublisher()
+    }
+    
     func checkPath() -> Bool {
         guard let filePath = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json").path else { return false }
         
         if FileManager.default.fileExists(atPath: filePath) {
-            print(filePath)
             return true
         } else {
             return false
@@ -39,7 +51,6 @@ class DataManager: DataManagerProtocol {
     }
     
     func writeData(profileData: ProfileModel) -> Bool {
-        sleep(5)
         var profileToJSON: Data?
         var result: Bool = false
         do {
@@ -57,7 +68,6 @@ class DataManager: DataManagerProtocol {
                     self.currentProfile = profileData
                 }
                 result = true
-//                result = false
             } catch {
                 print("Error writeData \(error.localizedDescription)")
                 result = false
@@ -67,12 +77,10 @@ class DataManager: DataManagerProtocol {
     }
     
     func readData() -> ProfileModel {
-//        sleep(5)
         guard let fileURL = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json"),
               let jsonData = try? Data(contentsOf: fileURL) else { return defaultProfile }
         do {
             let profile = try JSONDecoder().decode(ProfileModel.self, from: jsonData)
-//            print(fileURL)
             return profile
         } catch {
             print("Error read data \(error.localizedDescription)")

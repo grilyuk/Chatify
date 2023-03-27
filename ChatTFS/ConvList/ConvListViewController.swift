@@ -71,23 +71,10 @@ class ConvListViewController: UIViewController {
             guard let cell = tableView.dequeueReusableCell(withIdentifier: ConverstionListCell.identifier) as? ConverstionListCell,
                   let themeService = self?.themeService
             else { return ConverstionListCell()}
-            
             cell.configureTheme(theme: themeService)
-            
-            let onlineUsersCount = tableView.numberOfRows(inSection: 0)
-            let historyUsersCount = tableView.numberOfRows(inSection: 1)
-
-            switch indexPath {
-            case [0, onlineUsersCount - 1]:
-                cell.configureLastCell(with: itemIdentifier)
-            case [1, historyUsersCount - 1]:
-                cell.configureLastCell(with: itemIdentifier)
-            default:
-                cell.configure(with: itemIdentifier)
-            }
+            cell.configure(with: itemIdentifier)
             return cell
         }
-        tableView.dataSource = dataSource
     }
     
     private func setupSnapshot() {
@@ -112,6 +99,9 @@ class ConvListViewController: UIViewController {
         tableView.delegate = self
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
     }
     
     private func setupTableView() {
@@ -185,12 +175,12 @@ class ConvListViewController: UIViewController {
     private func tappedProfile() {
         presenter?.didTappedProfile()
     }
-    
 }
 
 //MARK: - MainViewController + UITableViewDelegate
 extension ConvListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
         let headerView = UITableViewHeaderFooterView()
         switch section {
         case 0:
@@ -200,13 +190,14 @@ extension ConvListViewController: UITableViewDelegate {
         default:
             break
         }
+        
         headerView.tintColor = themeService?.currentTheme.backgroundColor
         headerView.textLabel?.textColor = themeService?.currentTheme.incomingTextColor
         return headerView
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        UIConstants.sectionHeight
+        tableView.estimatedSectionHeaderHeight.binade
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -256,6 +247,8 @@ extension ConvListViewController: DataManagerSubscriber {
             guard let imageData = profile.profileImageData else { return }
             let image = UIImage(data: imageData)
             button.setImage(image?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize), for: .normal)
+//            let testButton = UIBarButtonItem(image: image, style: .plain, target: nil, action: nil)
+//            navigationItem.rightBarButtonItem = testButton
         }
     }
 }

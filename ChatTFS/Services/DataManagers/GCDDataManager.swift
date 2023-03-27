@@ -4,7 +4,6 @@ class GCDDataManager: DataManager {
     
     //MARK: - Properties
     private var queue = DispatchQueue.global(qos: .utility)
-    private var work: DispatchWorkItem?
 
     //MARK: - Methods
     func asyncWriteData(profileData: ProfileModel, completion: @escaping (Bool) -> Void) {

@@ -2,7 +2,7 @@ import Foundation
 
 protocol ModuleBuilderProtocol: AnyObject {
     func buildConvList(router: RouterProtocol) -> ConvListViewController
-    func buildProfile(router: RouterProtocol, profile: ProfileModel) -> ProfileViewController
+    func buildProfile(router: RouterProtocol) -> ProfileViewController
     func buildConversation(router: RouterProtocol, conversation: ConversationListModel) -> ConversationViewController
     func buildThemePicker() -> ThemesViewController
 }
@@ -16,10 +16,9 @@ class ModuleBuilder: ModuleBuilderProtocol {
     
     //MARK: - Methods
     func buildConvList(router: RouterProtocol) -> ConvListViewController {
-        let interactor = ConvListInteractor()
+        let interactor = ConvListInteractor(dataManager: dataManager)
         let presenter = ConvListPresenter(router: router, interactor: interactor)
         let view = ConvListViewController(themeService: themeService)
-        interactor.dataManager = dataManager
         dataManager.addSubscriber(subscriber: view)
         view.presenter = presenter
         interactor.presenter = presenter
@@ -27,11 +26,10 @@ class ModuleBuilder: ModuleBuilderProtocol {
         return view
     }
 
-    func buildProfile(router: RouterProtocol, profile: ProfileModel) -> ProfileViewController {
-        let interactor = ProfileInteractor()
-        let view = ProfileViewController(themeService: themeService)
-        let presenter = ProfilePresenter(router: router, interactor: interactor, profile: profile)
-        view.dataManager = dataManager
+    func buildProfile(router: RouterProtocol) -> ProfileViewController {
+        let interactor = ProfileInteractor(dataManager: dataManager)
+        let view = ProfileViewController(themeService: themeService, dataManager: dataManager)
+        let presenter = ProfilePresenter(router: router, interactor: interactor)
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view

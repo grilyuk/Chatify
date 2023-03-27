@@ -100,10 +100,6 @@ class ConverstionListCell: UITableViewCell {
     }
     
     //MARK: - Methods
-    func removeSeparator() {
-        separatorLine.removeFromSuperview()
-    }
-    
     private func setInitials(from name: String) {
         let formatter = PersonNameComponentsFormatter()
         let components = formatter.personNameComponents(from: name)
@@ -111,7 +107,7 @@ class ConverstionListCell: UITableViewCell {
         initialsLabel.text = formatter.string(from: components!)
     }
     
-    //MARK: - PrepareForReuse
+    //MARK: PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
         userAvatar.image = nil
@@ -213,10 +209,5 @@ extension ConverstionListCell: ConfigurableViewProtocol {
         nameLabel.textColor = theme.currentTheme.textColor
         lastMessageText.textColor = theme.currentTheme.incomingTextColor
         contentView.backgroundColor = theme.currentTheme.backgroundColor
-    }
-    
-    func configureLastCell(with model: ConversationListModel) {
-        configure(with: model)
-        removeSeparator()
     }
 }

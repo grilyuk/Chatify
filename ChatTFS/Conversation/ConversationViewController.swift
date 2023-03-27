@@ -297,7 +297,6 @@ class ConversationViewController: UIViewController {
             backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18)
         ])
     }
-
 }
 
 //MARK: - ConversationViewController + UITableViewDelegate
