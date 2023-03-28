@@ -3,6 +3,7 @@ import UIKit
 protocol ProfilePresenterProtocol: AnyObject {
     func viewReady()
     func dataUploaded()
+    func updateProfile(profile: ProfileModel)
     var profile: ProfileModel? { get set }
 }
 
@@ -22,6 +23,10 @@ class ProfilePresenter {
 extension ProfilePresenter: ProfilePresenterProtocol {
     func dataUploaded() {
         view?.showProfile()
+    }
+    
+    func updateProfile(profile: ProfileModel) {
+        interactor.pushData(profile: profile)
     }
 
     func viewReady() {

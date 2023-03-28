@@ -53,6 +53,7 @@ extension ConvListPresenter: ConvListPresenterProtocol {
             self?.view?.users = sortedUsers
             self?.view?.showMain()
         }
+        
         handler?(sortedUsers)
     }
     

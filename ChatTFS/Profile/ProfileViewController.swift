@@ -8,9 +8,9 @@ protocol ProfileViewProtocol: AnyObject {
 class ProfileViewController: UIViewController {
     
     //MARK: - Initializer
-    init(themeService: ThemeServiceProtocol, dataManager: DataManagerProtocol) {
-        self.dataManager = dataManager
+    init(themeService: ThemeServiceProtocol, profilePublisher: AnyPublisher<Data, Error>) {
         self.themeService = themeService
+        self.profilePublisher = profilePublisher
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -35,15 +35,35 @@ class ProfileViewController: UIViewController {
     //MARK: - Public
     var profileImageView = UIImageView()
     var presenter: ProfilePresenterProtocol?
-    private var profileRequest: Cancellable?
     weak var themeService: ThemeServiceProtocol?
-    weak var dataManager: DataManagerProtocol?
-    
+
     //MARK: - Private
+    private enum State {
+        case loading
+        case profile(ProfileModel)
+    }
+    
+    private var state: State = .loading {
+        didSet {
+            switch state {
+            case .loading: print("")
+            case .profile(let profile):
+                self.nameLabel.text = profile.fullName
+                self.bioText.text = profile.statusText
+                if profile.profileImageData == nil {
+                    profileImageView.image = placeholderImage
+                } else {
+                    guard let imageData = profile.profileImageData else { return }
+                    profileImageView.image = UIImage(data: imageData)
+                }
+            }
+        }
+    }
+    
+    private var profilePublisher: AnyPublisher<Data, Error>
+    private var profileRequest: Cancellable?
     private lazy var navigationBar = UINavigationBar()
     private lazy var navTitle = UINavigationItem()
-    private lazy var navSaveProfile = UIBarButtonItem(image: UIImage(systemName: "ellipsis.circle"))
-    private lazy var activity = UIActivityIndicatorView.init(style: .medium)
     private lazy var placeholderImage = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(100, 100)).withTintColor(.gray)
     private lazy var okAction = UIAlertAction(title: "OK", style: .default)
     private lazy var successAlert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
@@ -154,11 +174,7 @@ class ProfileViewController: UIViewController {
         nameLabel.textColor = themeService?.currentTheme.textColor
         navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
     }
-    
-    override func viewDidDisappear(_ animated: Bool) {
-        profileRequest?.cancel()
-    }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
@@ -202,7 +218,7 @@ class ProfileViewController: UIViewController {
     private func editableMode() {
         editableBioSection.text = bioText.text
         editableNameSection.text = nameLabel.text
-        navTitle.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: nil)
+        navTitle.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveProfile))
         nameLabel.isHidden = true
         bioText.isHidden = true
         editableNameSection.isHidden = false
@@ -227,6 +243,37 @@ class ProfileViewController: UIViewController {
         navTitle.rightBarButtonItems?.removeAll()
         let navEditProfile = UIBarButtonItem(customView: editButton)
         navTitle.rightBarButtonItem = navEditProfile
+    }
+    
+    private func setupProfile(profile: ProfileModel) {
+        nameLabel.text = profile.fullName
+        bioText.text = profile.statusText
+        if profile.profileImageData == nil {
+            userAvatar.image = placeholderImage
+        } else {
+            guard let imageData = profile.profileImageData else { return }
+            userAvatar.image = UIImage(data: imageData)
+        }
+    }
+    
+    @objc
+    private func saveProfile() {
+        guard let bioText = editableBioSection.text,
+              let nameText = editableNameSection.text
+        else {
+            return
+        }
+        
+        var imageData: Data? = nil
+        
+        if self.profileImageView.image == placeholderImage {
+            imageData = nil
+        } else {
+            imageData = self.profileImageView.image?.jpegData(compressionQuality: 1)
+        }
+        
+        let profileToSave = ProfileModel(fullName: bioText, statusText: nameText, profileImageData: imageData)
+        presenter?.updateProfile(profile: profileToSave)
     }
     
     @objc
@@ -308,30 +355,19 @@ class ProfileViewController: UIViewController {
             editableBioSection.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
+    
 }
 
 //MARK: - ProfileViewController + ProfileViewProtocol
 extension ProfileViewController: ProfileViewProtocol {
     func showProfile() {
-        profileRequest = dataManager?
-            .readProfilePublisher()
-            .handleEvents(receiveCancel: { print("Cancel") })
-            .receive(on: DispatchQueue.main)
+        profileRequest = profilePublisher
             .subscribe(on: DispatchQueue.global())
-            .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .tryMap({ profile in
-                return profile.fullName })
-            .catch({_ in Just("No name")})
-            .assign(to: \.nameLabel.text, on: self)
-                    
-        profileRequest = dataManager?
-            .readProfilePublisher()
             .receive(on: DispatchQueue.main)
-            .subscribe(on: DispatchQueue.global())
+            .handleEvents(receiveCancel: { print("Cancel sub in ProfileViewController") })
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .tryMap({ profile in
-                return profile.statusText })
-            .catch({_ in Just("No bio")})
-            .assign(to: \.bioText.text, on: self)
+            .catch({_ in Just(ProfileModel(fullName: "No name", statusText: "No bio", profileImageData: nil))})
+            .map(State.profile)
+            .assign(to: \.state, on: self)
     }
 }

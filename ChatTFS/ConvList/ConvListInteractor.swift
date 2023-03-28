@@ -8,16 +8,17 @@ protocol ConvListInteractorProtocol: AnyObject {
 class ConvListInteractor: ConvListInteractorProtocol {
 
     //MARK: - Initializer
-    init(dataManager: DataManagerProtocol) {
-        self.dataManager = dataManager
+    init(profilePublisher: AnyPublisher<Data, Error>) {
+        self.profilePublisher = profilePublisher
     }
     
     //MARK: - Public
     weak var presenter: ConvListPresenterProtocol?
-    weak var dataManager: DataManagerProtocol?
     
     //MARK: - Private
-    private var handler: (([ConversationListModel]) -> Void)?
+    private var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
+    private var profilePublisher: AnyPublisher<Data, Error>
+    private var profileRequest: Cancellable?
     
     //MARK: - Methods
     func loadData() {
@@ -123,12 +124,22 @@ class ConvListInteractor: ConvListInteractorProtocol {
                                   isOnline: false,
                                   hasUnreadMessages: nil)
         ]
-        
-        handler = { [weak self] users in
+
+        handler = { [weak self] profile, users in
+            self?.presenter?.profile = profile
             self?.presenter?.users = users
             self?.presenter?.dataUploaded()
+            self?.profileRequest?.cancel()
         }
         
-        handler?(users)
+        profileRequest = profilePublisher
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveCancel: { print("Cancel sub in ConvListInteractor") })
+            .decode(type: ProfileModel.self, decoder: JSONDecoder())
+            .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
+            .sink(receiveValue: { [weak self] profile in
+                self?.handler?(profile, users)
+            })
     }
 }

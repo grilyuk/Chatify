@@ -58,20 +58,6 @@ class ConvListViewController: UIViewController {
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
         updateColorsCells()
-            
-        profileRequest = dataManager?
-            .readProfilePublisher()
-            .subscribe(on: DispatchQueue.global())
-            .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .receive(on: DispatchQueue.main)
-            .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
-            .map({ profile in
-                guard let imageData = profile.profileImageData else { return UIImage(systemName: "heart")}
-                return UIImage(data: imageData)
-            })
-            .sink(receiveValue: { image in
-                self.button.setImage(image, for: .normal)
-            })
     }
     
     //MARK: - Setup UI
@@ -137,17 +123,7 @@ class ConvListViewController: UIViewController {
         navigationItem.title = "Chat"
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
         let profileButton = UIBarButtonItem(customView: button)
-//        let userButton = UIBarButtonItem(image: nil, style: .plain, target: self, action: #selector(tappedProfile))
-        button.imageView?.frame = CGRect(origin: .zero, size: CGSize(width: 44, height: 44))
         button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
-        button.imageView?.contentMode = .scaleToFill
-        button.layer.cornerRadius = 5
-        button.clipsToBounds = true
-        
-//        profileButton.customView?.frame = CGRect(origin: .zero, size: UIConstants.imageSize)
-//        profileButton.customView?.layer.cornerRadius = UIConstants.imageSize.height / 2
-//        profileButton.customView?.clipsToBounds = true
-//        profileButton.customView?.contentMode = .scaleAspectFill
         navigationItem.leftBarButtonItem = settingButton
         navigationItem.rightBarButtonItem = profileButton
         
@@ -248,5 +224,10 @@ extension ConvListViewController: UITableViewDelegate {
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
         setupSnapshot()
+        if let imageData = presenter?.profile?.profileImageData {
+            button.setBackgroundImage(UIImage(data: imageData), for: .normal)
+        } else {
+            button.setImage(placeholder, for: .normal)
+        }
     }
 }
