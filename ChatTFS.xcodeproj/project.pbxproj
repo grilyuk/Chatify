@@ -30,7 +30,8 @@
 		5EB6218F29AB6FF100029FB8 /* ConvListPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218E29AB6FF100029FB8 /* ConvListPresenter.swift */; };
 		5EB624B029C0CAD7006D19B2 /* ThemeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */; };
 		5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB624B129C0CB44006D19B2 /* Theme.swift */; };
-		5EC4498B29C3BF8A00D6C51C /* UIImageResize.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC4498A29C3BF8A00D6C51C /* UIImageResize.swift */; };
+		5EC4498B29C3BF8A00D6C51C /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC4498A29C3BF8A00D6C51C /* UIImageExtension.swift */; };
+		5ECA720429D3858E0049E635 /* ErrorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ECA720329D3858E0049E635 /* ErrorExtension.swift */; };
 		5EDC6593299ECEAD009B6586 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDC6592299ECEAD009B6586 /* AppDelegate.swift */; };
 		5EDC6597299ECEAD009B6586 /* ConvListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDC6596299ECEAD009B6586 /* ConvListViewController.swift */; };
 		5EDC659C299ECEAE009B6586 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EDC659B299ECEAE009B6586 /* Assets.xcassets */; };
@@ -61,7 +62,8 @@
 		5EB6218E29AB6FF100029FB8 /* ConvListPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvListPresenter.swift; sourceTree = "<group>"; };
 		5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeService.swift; sourceTree = "<group>"; };
 		5EB624B129C0CB44006D19B2 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
-		5EC4498A29C3BF8A00D6C51C /* UIImageResize.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageResize.swift; sourceTree = "<group>"; };
+		5EC4498A29C3BF8A00D6C51C /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
+		5ECA720329D3858E0049E635 /* ErrorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorExtension.swift; sourceTree = "<group>"; };
 		5EDC658F299ECEAD009B6586 /* ChatTFS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatTFS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5EDC6592299ECEAD009B6586 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		5EDC6596299ECEAD009B6586 /* ConvListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvListViewController.swift; sourceTree = "<group>"; };
@@ -125,7 +127,8 @@
 			isa = PBXGroup;
 			children = (
 				5E97BF3629BE33B3003BBA1B /* UIViewExtension.swift */,
-				5EC4498A29C3BF8A00D6C51C /* UIImageResize.swift */,
+				5EC4498A29C3BF8A00D6C51C /* UIImageExtension.swift */,
+				5ECA720329D3858E0049E635 /* ErrorExtension.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -287,8 +290,9 @@
 				5E92E9E629B4B4C60038EED2 /* ConverstionListCell.swift in Sources */,
 				5E9F20CA29C861140027EAFE /* DataManager.swift in Sources */,
 				5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */,
+				5ECA720429D3858E0049E635 /* ErrorExtension.swift in Sources */,
 				5E97BF3729BE33B3003BBA1B /* UIViewExtension.swift in Sources */,
-				5EC4498B29C3BF8A00D6C51C /* UIImageResize.swift in Sources */,
+				5EC4498B29C3BF8A00D6C51C /* UIImageExtension.swift in Sources */,
 				5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */,
 				5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */,
 				5EB6218D29AB6FE800029FB8 /* ConvListInteractor.swift in Sources */,

@@ -13,13 +13,14 @@ class ModuleBuilder: ModuleBuilderProtocol {
     //MARK: - Private
     private lazy var themeService = ThemeService()
     private lazy var dataManager = DataManager()
-    private lazy var readProfilePublisher = dataManager.readProfilePublisher()
+    private lazy var dataPublisher = dataManager.readProfilePublisher()
+    private lazy var profilePublisher = dataManager.currentProfile
     
     //MARK: - Methods
     func buildConvList(router: RouterProtocol) -> ConvListViewController {
-        let interactor = ConvListInteractor(profilePublisher: readProfilePublisher)
+        let interactor = ConvListInteractor(profilePublisher: dataPublisher, dataManager: dataManager)
         let presenter = ConvListPresenter(router: router, interactor: interactor)
-        let view = ConvListViewController(themeService: themeService, dataManager: dataManager)
+        let view = ConvListViewController(themeService: themeService, profilePublisher: profilePublisher)
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view
@@ -27,9 +28,9 @@ class ModuleBuilder: ModuleBuilderProtocol {
     }
 
     func buildProfile(router: RouterProtocol) -> ProfileViewController {
-        let interactor = ProfileInteractor(profilePublisher: readProfilePublisher, dataManager: dataManager)
+        let interactor = ProfileInteractor(profilePublisher: dataPublisher, dataManager: dataManager)
         let presenter = ProfilePresenter(router: router, interactor: interactor)
-        let view = ProfileViewController(themeService: themeService, profilePublisher: readProfilePublisher)
+        let view = ProfileViewController(themeService: themeService, profilePublisher: dataPublisher)
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view

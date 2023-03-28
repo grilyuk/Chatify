@@ -26,26 +26,10 @@ class ProfileInteractor: ProfileInteractorProtocol {
     //MARK: - Methods
     func loadData() {
         
-        presenter?.dataUploaded()
+        handler = { [weak self] profile in
+            self?.presenter?.profile = profile
+        }
         
-//        handler = { [weak self] profile in
-//            self?.presenter?.profile = profile
-//            self?.presenter?.dataUploaded()
-//            self?.profileRequest?.cancel()
-//        }
-        
-//        profileRequest = profilePublisher
-//            .subscribe(on: DispatchQueue.global())
-//            .receive(on: DispatchQueue.main)
-//            .handleEvents(receiveCancel: { print("Cancel sub in ProfileInteractor") })
-//            .decode(type: ProfileModel.self, decoder: JSONDecoder())
-//            .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
-//            .sink(receiveValue: { [weak self] profile in
-//                self?.handler?(profile)
-//            })
-    }
-    
-    func publisher () {
         profileRequest = profilePublisher
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
@@ -54,6 +38,7 @@ class ProfileInteractor: ProfileInteractorProtocol {
             .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
             .sink(receiveValue: { [weak self] profile in
                 self?.handler?(profile)
+                self?.presenter?.dataUploaded()
             })
     }
     
@@ -73,6 +58,7 @@ class ProfileInteractor: ProfileInteractorProtocol {
             .sink(receiveCompletion: { [weak self] _ in
                 self?.profileRequest?.cancel()
             }, receiveValue: { [weak self] result in
+                self?.dataManager?.currentProfile.send(profile)
                 self?.presenter?.dataUploaded()
             })
     }

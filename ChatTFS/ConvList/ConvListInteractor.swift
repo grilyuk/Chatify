@@ -8,15 +8,17 @@ protocol ConvListInteractorProtocol: AnyObject {
 class ConvListInteractor: ConvListInteractorProtocol {
 
     //MARK: - Initializer
-    init(profilePublisher: AnyPublisher<Data, Error>) {
+    init(profilePublisher: AnyPublisher<Data, Error>, dataManager: DataManagerProtocol) {
+        self.dataManager = dataManager
         self.profilePublisher = profilePublisher
     }
     
     //MARK: - Public
     weak var presenter: ConvListPresenterProtocol?
+    var dataManager: DataManagerProtocol?
     
     //MARK: - Private
-    private var handler: ((ProfileModel, [ConversationListModel]) -> Void)?
+    private var handler: (([ConversationListModel]) -> Void)?
     private var profilePublisher: AnyPublisher<Data, Error>
     private var profileRequest: Cancellable?
     
@@ -125,8 +127,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
                                   hasUnreadMessages: nil)
         ]
 
-        handler = { [weak self] profile, users in
-            self?.presenter?.profile = profile
+        handler = { [weak self] users in
             self?.presenter?.users = users
             self?.presenter?.dataUploaded()
             self?.profileRequest?.cancel()
@@ -139,7 +140,8 @@ class ConvListInteractor: ConvListInteractorProtocol {
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
             .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
             .sink(receiveValue: { [weak self] profile in
-                self?.handler?(profile, users)
+                self?.dataManager?.currentProfile.send(profile)
+                self?.handler?(users)
             })
     }
 }

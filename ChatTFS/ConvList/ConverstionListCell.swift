@@ -32,7 +32,7 @@ class ConverstionListCell: UITableViewCell {
         return label
     }()
     
-    private lazy var indicatorImage: UIImageView = {
+    private lazy var chevronIndicator: UIImageView = {
         let imageView = UIImageView(frame: .zero)
         imageView.image = UIImage(systemName: "chevron.right")
         imageView.tintColor = .systemGray
@@ -120,13 +120,13 @@ class ConverstionListCell: UITableViewCell {
     
     //MARK: - Setup UI
     private func setupUI() {
-        contentView.addSubviews(userAvatar, nameLabel, lastMessageText, dateLabel, initialsLabel, indicatorImage, separatorLine)
+        contentView.addSubviews(userAvatar, nameLabel, lastMessageText, dateLabel, initialsLabel, chevronIndicator, separatorLine)
         
         userAvatar.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         lastMessageText.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
-        indicatorImage.translatesAutoresizingMaskIntoConstraints = false
+        chevronIndicator.translatesAutoresizingMaskIntoConstraints = false
         separatorLine.translatesAutoresizingMaskIntoConstraints = false
         initialsLabel.translatesAutoresizingMaskIntoConstraints = false
         
@@ -143,10 +143,10 @@ class ConverstionListCell: UITableViewCell {
             lastMessageText.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToMessage),
             lastMessageText.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             
-            indicatorImage.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
-            indicatorImage.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: UIConstants.indicatorToContentTrailing),
+            chevronIndicator.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
+            chevronIndicator.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: UIConstants.indicatorToContentTrailing),
             
-            dateLabel.trailingAnchor.constraint(equalTo: indicatorImage.leadingAnchor, constant: UIConstants.dateLabelToContentEdge),
+            dateLabel.trailingAnchor.constraint(equalTo: chevronIndicator.leadingAnchor, constant: UIConstants.dateLabelToContentEdge),
             dateLabel.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
             
             separatorLine.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),

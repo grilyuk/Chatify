@@ -13,31 +13,10 @@ protocol ConvListViewProtocol: AnyObject {
 
 class ConvListViewController: UIViewController {
     
-    //MARK: - UIConstants
-    private enum UIConstants {
-        static let rowHeight: CGFloat = 76
-        static let sectionHeight: CGFloat = 44
-        static let imageSize: CGSize = CGSize(width: 44, height: 44)
-        static let smallImageSize: CGSize = CGSize(width: 30, height: 30)
-    }
-    
-    //MARK: - Public
-    var presenter: ConvListPresenterProtocol?
-    var users: [ConversationListModel]?
-    var profileRequest: Cancellable?
-    weak var themeService: ThemeServiceProtocol?
-    weak var dataManager: DataManagerProtocol?
-    
-    //MARK: - Private
-    private var dataSource: UITableViewDiffableDataSource<Section, ConversationListModel>?
-    private lazy var tableView = UITableView()
-    private lazy var button = UIButton(type: .custom)
-    private lazy var placeholder = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: UIConstants.smallImageSize).withTintColor(.systemBlue)
-    
     //MARK: - Initializer
-    init(themeService: ThemeServiceProtocol, dataManager: DataManagerProtocol) {
+    init(themeService: ThemeServiceProtocol, profilePublisher: CurrentValueSubject<ProfileModel, Never>) {
         self.themeService = themeService
-        self.dataManager = dataManager
+        self.profilePublisher = profilePublisher
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -45,12 +24,40 @@ class ConvListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
+    //MARK: - UIConstants
+    private enum UIConstants {
+        static let rowHeight: CGFloat = 76
+        static let sectionHeight: CGFloat = 44
+        static let imageSize: CGSize = CGSize(width: 44, height: 44)
+    }
+    
+    //MARK: - Public
+    var presenter: ConvListPresenterProtocol?
+    var users: [ConversationListModel]?
+    var profilePublisher: CurrentValueSubject<ProfileModel, Never>
+    var profileRequest: Cancellable?
+    weak var themeService: ThemeServiceProtocol?
+
+    //MARK: - Private
+    private var dataSource: UITableViewDiffableDataSource<Section, ConversationListModel>?
+    private lazy var placeholder = UIImage.placeholder?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
+    private lazy var tableView = UITableView()
+    private lazy var buttonWithUserPhoto = UIButton(type: .custom)
+    
     //MARK: - Lifeсycle
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        setupNavBar()
+        setupNavigationBar()
         setupUI()
+        profileRequest = profilePublisher
+            .sink(receiveValue: { profile in
+                if let imageData = profile.profileImageData {
+                    self.buttonWithUserPhoto.setBackgroundImage(UIImage(data: imageData)?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize), for: .normal)
+                } else {
+                    self.buttonWithUserPhoto.setBackgroundImage(self.placeholder, for: .normal)
+                }
+            })
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -63,12 +70,12 @@ class ConvListViewController: UIViewController {
     //MARK: - Setup UI
     private func setupUI() {
         configureTableView()
-        setupTableView()
+        setupTableViewConstraints()
         setupDataSource()
         setupSnapshot()
     }
     
-    //MARK: - Methods
+    //MARK: - Private methods
     private func setupDataSource() {
         dataSource = UITableViewDiffableDataSource<Section, ConversationListModel> (tableView: tableView) { [weak self]
             (tableView: UITableView, indexPath: IndexPath, itemIdentifier: ConversationListModel) -> ConverstionListCell in
@@ -108,49 +115,36 @@ class ConvListViewController: UIViewController {
         }
     }
     
-    private func setupTableView() {
-        view.addSubview(tableView)
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
-        ])
-    }
-    
-    private func setupNavBar() {
-        navigationItem.title = "Chat"
+    private func setupNavigationBar() {
         let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
-        let profileButton = UIBarButtonItem(customView: button)
-        button.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
+        let profileButton = UIBarButtonItem(customView: buttonWithUserPhoto)
+        buttonWithUserPhoto.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
+        profileButton.customView?.layer.cornerRadius = UIConstants.imageSize.height/2
+        profileButton.customView?.clipsToBounds = true
+        navigationItem.title = "Chat"
         navigationItem.leftBarButtonItem = settingButton
         navigationItem.rightBarButtonItem = profileButton
         
         navigationController?.navigationBar.prefersLargeTitles = true
-        let navBarStyle = UINavigationBarAppearance()
         guard let currentTheme = themeService?.currentTheme else { return }
         switch currentTheme {
-        case .light:
-            navBarStyle.backgroundColor = currentTheme.backgroundColor
-            navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
-            navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor ]
-            changeNavBar(appearance: navBarStyle)
-        case .dark:
-            navBarStyle.backgroundColor = currentTheme.backgroundColor
-            navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
-            navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor ]
-            changeNavBar(appearance: navBarStyle)
+        case .light: changeNavigationBar(theme: currentTheme)
+        case .dark: changeNavigationBar(theme: currentTheme)
         }
     }
     
-    private func changeNavBar(appearance: UINavigationBarAppearance) {
+    private func changeNavigationBar(theme: Theme) {
+        guard let currentTheme = themeService?.currentTheme else { return }
+        let appearance = UINavigationBarAppearance()
+        appearance.backgroundColor = currentTheme.backgroundColor
+        appearance.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
+        appearance.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor ]
         navigationController?.navigationItem.scrollEdgeAppearance = appearance
         navigationController?.navigationItem.standardAppearance = appearance
         navigationController?.navigationItem.compactAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
         navigationController?.navigationBar.standardAppearance = appearance
         navigationController?.navigationBar.compactAppearance = appearance
-        navigationController?.navigationBar.scrollEdgeAppearance = appearance
     }
     
     private func updateColorsCells() {
@@ -162,7 +156,7 @@ class ConvListViewController: UIViewController {
         snapshot.itemIdentifiers.forEach { item in
             snapshot.reloadItems([item])
         }
-        dataSource.apply(snapshot, animatingDifferences: true)
+        dataSource.apply(snapshot, animatingDifferences: false)
     }
     
     @objc
@@ -174,9 +168,20 @@ class ConvListViewController: UIViewController {
     private func tappedProfile() {
         presenter?.didTappedProfile()
     }
+    
+    private func setupTableViewConstraints() {
+        view.addSubview(tableView)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+    }
 }
 
-//MARK: - MainViewController + UITableViewDelegate
+//MARK: - ConvListViewController + UITableViewDelegate
 extension ConvListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         
@@ -196,7 +201,7 @@ extension ConvListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        tableView.estimatedSectionHeaderHeight.binade
+        UIConstants.sectionHeight
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
@@ -220,14 +225,9 @@ extension ConvListViewController: UITableViewDelegate {
     }
 }
 
-//MARK: - MainViewController + MainViewProtocol
+//MARK: - ConvListViewController + ConvListViewProtocol
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
         setupSnapshot()
-        if let imageData = presenter?.profile?.profileImageData {
-            button.setBackgroundImage(UIImage(data: imageData), for: .normal)
-        } else {
-            button.setImage(placeholder, for: .normal)
-        }
     }
 }

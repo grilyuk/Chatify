@@ -2,22 +2,20 @@ import UIKit
 import Combine
 
 protocol DataManagerProtocol: AnyObject {
+    var currentProfile: CurrentValueSubject<ProfileModel, Never> { get set }
     func readProfilePublisher() -> AnyPublisher<Data, Error>
     func writeProfilePublisher(profile: ProfileModel) -> AnyPublisher<ProfileModel, Error>
 }
 
 class DataManager: DataManagerProtocol {
     
+    static var defaultProfile = ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
+    var currentProfile = CurrentValueSubject<ProfileModel, Never>.init(defaultProfile)
+    
     //MARK: - Private properties
     private var backgroundQueue = DispatchQueue.global(qos: .utility)
-    private var currentProfile: CurrentValueSubject<ProfileModel, Error>?
     
     //MARK: - Methods
-    
-    
-    func getCurrentProfile() {
-        
-    }
     
     func readProfilePublisher() -> AnyPublisher<Data, Error> {
         Deferred {
@@ -73,7 +71,7 @@ class DataManager: DataManagerProtocol {
         else {
             return ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
         }
+        sleep(3)
         return profileData
     }
-    
 }

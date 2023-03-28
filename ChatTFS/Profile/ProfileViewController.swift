@@ -46,7 +46,11 @@ class ProfileViewController: UIViewController {
     private var state: State = .loading {
         didSet {
             switch state {
-            case .loading: print("")
+            case .loading:
+                self.activityIndicator.startAnimating()
+                self.addPhotoButton.isEnabled = false
+                self.editableNameSection.isEnabled = false
+                self.editableBioSection.isEnabled = false
             case .profile(let profile):
                 self.nameLabel.text = profile.fullName
                 self.bioText.text = profile.statusText
@@ -56,6 +60,7 @@ class ProfileViewController: UIViewController {
                     guard let imageData = profile.profileImageData else { return }
                     profileImageView.image = UIImage(data: imageData)
                 }
+                self.setEditFinished()
             }
         }
     }
@@ -241,19 +246,9 @@ class ProfileViewController: UIViewController {
         bioText.isHidden = false
         navTitle.title = "My Profile"
         navTitle.rightBarButtonItems?.removeAll()
+        activityIndicator.stopAnimating()
         let navEditProfile = UIBarButtonItem(customView: editButton)
         navTitle.rightBarButtonItem = navEditProfile
-    }
-    
-    private func setupProfile(profile: ProfileModel) {
-        nameLabel.text = profile.fullName
-        bioText.text = profile.statusText
-        if profile.profileImageData == nil {
-            userAvatar.image = placeholderImage
-        } else {
-            guard let imageData = profile.profileImageData else { return }
-            userAvatar.image = UIImage(data: imageData)
-        }
     }
     
     @objc
@@ -273,6 +268,8 @@ class ProfileViewController: UIViewController {
         }
         
         let profileToSave = ProfileModel(fullName: bioText, statusText: nameText, profileImageData: imageData)
+        navTitle.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
+        state = .loading
         presenter?.updateProfile(profile: profileToSave)
     }
     
@@ -288,9 +285,7 @@ class ProfileViewController: UIViewController {
     
     @objc
     private func closeProfileTapped() {
-        if activityIndicator.isAnimating == true {
-            setEditFinished()
-        } else if editableNameSection.isHidden == false {
+        if editableNameSection.isHidden == false {
             setEditFinished()
         } else {
             self.dismiss(animated: true)
