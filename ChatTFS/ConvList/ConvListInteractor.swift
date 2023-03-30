@@ -8,9 +8,8 @@ protocol ConvListInteractorProtocol: AnyObject {
 class ConvListInteractor: ConvListInteractorProtocol {
 
     //MARK: - Initializer
-    init(profilePublisher: AnyPublisher<Data, Error>, dataManager: DataManagerProtocol) {
+    init(dataManager: DataManagerProtocol) {
         self.dataManager = dataManager
-        self.profilePublisher = profilePublisher
     }
     
     //MARK: - Public
@@ -19,8 +18,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
     
     //MARK: - Private
     private var handler: (([ConversationListModel]) -> Void)?
-    private var profilePublisher: AnyPublisher<Data, Error>
-    private var profileRequest: Cancellable?
+    private var dataRequest: Cancellable?
     
     //MARK: - Methods
     func loadData() {
@@ -130,10 +128,10 @@ class ConvListInteractor: ConvListInteractorProtocol {
         handler = { [weak self] users in
             self?.presenter?.users = users
             self?.presenter?.dataUploaded()
-            self?.profileRequest?.cancel()
+            self?.dataRequest?.cancel()
         }
         
-        profileRequest = profilePublisher
+        dataRequest = dataManager?.readProfilePublisher()
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .handleEvents(receiveCancel: { print("Cancel sub in ConvListInteractor") })

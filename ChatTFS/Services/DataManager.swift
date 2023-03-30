@@ -15,8 +15,7 @@ class DataManager: DataManagerProtocol {
     //MARK: - Private properties
     private var backgroundQueue = DispatchQueue.global(qos: .utility)
     
-    //MARK: - Methods
-    
+    //MARK: - Publishers
     func readProfilePublisher() -> AnyPublisher<Data, Error> {
         Deferred {
             Future { promise in
@@ -47,6 +46,7 @@ class DataManager: DataManagerProtocol {
         .eraseToAnyPublisher()
     }
     
+    //MARK: - Private methods
     private func checkPath() -> Bool {
         guard let filePath = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json").path
         else {
@@ -55,23 +55,24 @@ class DataManager: DataManagerProtocol {
         return FileManager.default.fileExists(atPath: filePath) ? true : false
     }
     
-    func readData() throws -> Data {
+    private func readData() throws -> Data {
         guard let fileURL = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json"),
               checkPath() == true,
               let jsonData = try? Data(contentsOf: fileURL)
         else {
             throw CustomError(description: "readData failed")
         }
+        sleep(1)
         return jsonData
     }
     
-    func writeData(profileData: ProfileModel) throws -> ProfileModel {
+    private func writeData(profileData: ProfileModel) throws -> ProfileModel {
         guard profileData.fullName != nil,
               profileData.statusText != nil
         else {
             return ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
         }
-        sleep(3)
+        sleep(1)
         return profileData
     }
 }

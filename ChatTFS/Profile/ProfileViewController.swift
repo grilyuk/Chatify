@@ -9,7 +9,7 @@ protocol ProfileViewProtocol: AnyObject {
 class ProfileViewController: UIViewController {
     
     //MARK: - Initializer
-    init(themeService: ThemeServiceProtocol, profilePublisher: AnyPublisher<Data, Error>) {
+    init(themeService: ThemeServiceProtocol, profilePublisher: CurrentValueSubject<ProfileModel, Never>) {
         self.themeService = themeService
         self.profilePublisher = profilePublisher
         super.init(nibName: nil, bundle: nil)
@@ -41,6 +41,7 @@ class ProfileViewController: UIViewController {
     //MARK: - Private
     private enum State {
         case loading
+        case error
         case profile(ProfileModel)
     }
     
@@ -62,11 +63,13 @@ class ProfileViewController: UIViewController {
                     profilePhoto.image = UIImage(data: imageData)
                 }
                 self.setEditFinished()
+            case .error:
+                break
             }
         }
     }
     
-    private var profilePublisher: AnyPublisher<Data, Error>
+    private var profilePublisher: CurrentValueSubject<ProfileModel, Never>
     private var profileRequest: Cancellable?
     private lazy var navigationBar = UINavigationBar()
     private lazy var navTitle = UINavigationItem()
@@ -359,11 +362,6 @@ class ProfileViewController: UIViewController {
 extension ProfileViewController: ProfileViewProtocol {
     func showProfile() {
         profileRequest = profilePublisher
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
-            .handleEvents(receiveCancel: { print("Cancel sub in ProfileViewController") })
-            .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .catch({_ in Just(ProfileModel(fullName: "No name", statusText: "No bio", profileImageData: nil))})
             .map(State.profile)
             .assign(to: \.state, on: self)
     }

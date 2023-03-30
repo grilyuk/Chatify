@@ -3,14 +3,13 @@ import Combine
 
 protocol ProfileInteractorProtocol: AnyObject {
     func loadData()
-    func pushData(profile: ProfileModel)
+    func updateData(profile: ProfileModel)
 }
 
 class ProfileInteractor: ProfileInteractorProtocol {
     
     //MARK: - Initializer
-    init(profilePublisher: AnyPublisher<Data, Error>, dataManager: DataManagerProtocol) {
-        self.profilePublisher = profilePublisher
+    init(dataManager: DataManagerProtocol) {
         self.dataManager = dataManager
     }
     
@@ -20,17 +19,18 @@ class ProfileInteractor: ProfileInteractorProtocol {
     
     //MARK: - Private
     private var handler: ((ProfileModel) -> Void)?
-    private var profilePublisher: AnyPublisher<Data, Error>
-    private var profileRequest: Cancellable?
+    private var dataRequest: Cancellable?
 
     //MARK: - Methods
     func loadData() {
         
         handler = { [weak self] profile in
             self?.presenter?.profile = profile
+            self?.presenter?.dataUploaded()
+            self?.dataRequest?.cancel()
         }
         
-        profileRequest = profilePublisher
+        dataRequest = dataManager?.readProfilePublisher()
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .handleEvents(receiveCancel: { print("Cancel sub in ProfileInteractor") })
@@ -38,28 +38,31 @@ class ProfileInteractor: ProfileInteractorProtocol {
             .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
             .sink(receiveValue: { [weak self] profile in
                 self?.handler?(profile)
-                self?.presenter?.dataUploaded()
             })
     }
     
-    func pushData(profile: ProfileModel) {
-        profileRequest = dataManager?.writeProfilePublisher(profile: profile)
+    func updateData(profile: ProfileModel) {
+        dataRequest = dataManager?.writeProfilePublisher(profile: profile)
             .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
             .encode(encoder: JSONEncoder())
             .map({ data in
                 if let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                     let pathWithFileName = documentDirectory.appendingPathComponent("profileData.json")
                     try? data.write(to: pathWithFileName)
-                    return true
+                    return false
                 }
                 return false
             })
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] _ in
-                self?.profileRequest?.cancel()
+            .sink(receiveCompletion: { _ in
             }, receiveValue: { [weak self] result in
-                self?.dataManager?.currentProfile.send(profile)
-                self?.presenter?.dataUploaded()
+                switch result {
+                case true:
+                    self?.dataManager?.currentProfile.send(profile)
+                    self?.presenter?.dataUploaded()
+                case false:
+                    break
+                }
             })
     }
 }

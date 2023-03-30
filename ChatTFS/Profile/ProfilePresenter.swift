@@ -25,11 +25,11 @@ extension ProfilePresenter: ProfilePresenterProtocol {
         view?.showProfile()
     }
     
-    func updateProfile(profile: ProfileModel) {
-        interactor.pushData(profile: profile)
-    }
-
     func viewReady() {
         interactor.loadData()
+    }
+    
+    func updateProfile(profile: ProfileModel) {
+        interactor.updateData(profile: profile)
     }
 }
