@@ -62,7 +62,6 @@ class DataManager: DataManagerProtocol {
         else {
             throw CustomError(description: "readData failed")
         }
-        sleep(1)
         return jsonData
     }
     
@@ -72,7 +71,7 @@ class DataManager: DataManagerProtocol {
         else {
             return ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
         }
-        sleep(1)
+        sleep(3)
         return profileData
     }
 }

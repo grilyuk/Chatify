@@ -21,6 +21,5 @@ class PhotoPickerController: UIImagePickerController, UIImagePickerControllerDel
             profileVC.profilePhoto.image = imagePicked
             dismiss(animated: true)
         }
-        
     }
 }

@@ -50,7 +50,7 @@ class ProfileInteractor: ProfileInteractorProtocol {
                 if let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
                     let pathWithFileName = documentDirectory.appendingPathComponent("profileData.json")
                     try? data.write(to: pathWithFileName)
-                    return false
+                    return true
                 }
                 return false
             })

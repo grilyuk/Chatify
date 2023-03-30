@@ -43,6 +43,8 @@ class ProfileViewController: UIViewController {
         case loading
         case error
         case profile(ProfileModel)
+        case profileUploaded(ProfileModel)
+
     }
     
     private var state: State = .loading {
@@ -54,15 +56,12 @@ class ProfileViewController: UIViewController {
                 self.editableNameSection.isEnabled = false
                 self.editableBioSection.isEnabled = false
             case .profile(let profile):
-                self.nameLabel.text = profile.fullName
-                self.bioText.text = profile.statusText
-                if profile.profileImageData == nil {
-                    profilePhoto.image = placeholderImage
-                } else {
-                    guard let imageData = profile.profileImageData else { return }
-                    profilePhoto.image = UIImage(data: imageData)
-                }
+                profileUploaded(profile: profile)
                 self.setEditFinished()
+            case .profileUploaded(let profile):
+                profileUploaded(profile: profile)
+                self.setEditFinished()
+                self.show(successAlert, sender: self)
             case .error:
                 break
             }
@@ -171,6 +170,7 @@ class ProfileViewController: UIViewController {
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        successAlert.addAction(okAction)
         editButton.addTarget(self, action: #selector(editProfileTapped), for: .touchUpInside)
         addPhotoButton.addTarget(self, action: #selector(addPhototapped), for: .touchUpInside)
         presenter?.viewReady()
@@ -178,6 +178,7 @@ class ProfileViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         bioText.textColor = themeService?.currentTheme.textColor
         bioText.backgroundColor = themeService?.currentTheme.backgroundColor
@@ -190,6 +191,11 @@ class ProfileViewController: UIViewController {
         profilePhoto.contentMode = .scaleAspectFill
         profilePhoto.layer.cornerRadius = profilePhoto.frame.height / 2
         profilePhoto.clipsToBounds = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        profileRequest?.cancel()
     }
     
     //MARK: - Setup UI
@@ -224,6 +230,18 @@ class ProfileViewController: UIViewController {
         navTitle.leftBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
         navTitle.rightBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
         navigationBar.setItems([navTitle], animated: false)
+    }
+    
+    
+    private func profileUploaded(profile: ProfileModel) {
+        nameLabel.text = profile.fullName
+        bioText.text = profile.statusText
+        if profile.profileImageData == nil {
+            profilePhoto.image = placeholderImage
+        } else {
+            guard let imageData = profile.profileImageData else { return }
+            profilePhoto.image = UIImage(data: imageData)
+        }
     }
     
     private func editableMode() {
@@ -355,14 +373,21 @@ class ProfileViewController: UIViewController {
             editableBioSection.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
-    
 }
 
 //MARK: - ProfileViewController + ProfileViewProtocol
 extension ProfileViewController: ProfileViewProtocol {
     func showProfile() {
         profileRequest = profilePublisher
-            .map(State.profile)
+            .map({ [weak self] profile in
+                guard let self = self else { return State.error }
+                if self.nameLabel.text == profile.fullName,
+                   self.bioText.text == profile.statusText {
+                    return State.profileUploaded(profile)
+                } else {
+                    return State.profile(profile)
+                }
+            })
             .assign(to: \.state, on: self)
     }
 }
