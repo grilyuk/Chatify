@@ -2,6 +2,7 @@ import UIKit
 import Combine
 
 protocol ProfileViewProtocol: AnyObject {
+    var profilePhoto: UIImageView { get set }
     func showProfile()
 }
 
@@ -33,7 +34,7 @@ class ProfileViewController: UIViewController {
     }
     
     //MARK: - Public
-    var profileImageView = UIImageView()
+    var profilePhoto = UIImageView()
     var presenter: ProfilePresenterProtocol?
     weak var themeService: ThemeServiceProtocol?
 
@@ -55,10 +56,10 @@ class ProfileViewController: UIViewController {
                 self.nameLabel.text = profile.fullName
                 self.bioText.text = profile.statusText
                 if profile.profileImageData == nil {
-                    profileImageView.image = placeholderImage
+                    profilePhoto.image = placeholderImage
                 } else {
                     guard let imageData = profile.profileImageData else { return }
-                    profileImageView.image = UIImage(data: imageData)
+                    profilePhoto.image = UIImage(data: imageData)
                 }
                 self.setEditFinished()
             }
@@ -69,6 +70,7 @@ class ProfileViewController: UIViewController {
     private var profileRequest: Cancellable?
     private lazy var navigationBar = UINavigationBar()
     private lazy var navTitle = UINavigationItem()
+    private lazy var chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
     private lazy var placeholderImage = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(100, 100)).withTintColor(.gray)
     private lazy var okAction = UIAlertAction(title: "OK", style: .default)
     private lazy var successAlert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
@@ -182,8 +184,9 @@ class ProfileViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
-        profileImageView.clipsToBounds = true
+        profilePhoto.contentMode = .scaleAspectFill
+        profilePhoto.layer.cornerRadius = profilePhoto.frame.height / 2
+        profilePhoto.clipsToBounds = true
     }
     
     //MARK: - Setup UI
@@ -261,13 +264,13 @@ class ProfileViewController: UIViewController {
         
         var imageData: Data? = nil
         
-        if self.profileImageView.image == placeholderImage {
+        if self.profilePhoto.image == placeholderImage {
             imageData = nil
         } else {
-            imageData = self.profileImageView.image?.jpegData(compressionQuality: 1)
+            imageData = self.profilePhoto.image?.jpegData(compressionQuality: 1)
         }
         
-        let profileToSave = ProfileModel(fullName: bioText, statusText: nameText, profileImageData: imageData)
+        let profileToSave = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
         navTitle.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
         state = .loading
         presenter?.updateProfile(profile: profileToSave)
@@ -295,18 +298,17 @@ class ProfileViewController: UIViewController {
     @objc
     private func addPhototapped() {
         editableMode()
-        let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        present(alert, animated: true) {
-            alert.vc = self
+        present(chooseSourceAlert, animated: true) {
+            self.chooseSourceAlert.profileVC = self
         }
     }
     
     private func setConstraints() {
-        view.addSubviews(navigationBar, profileImageView, addPhotoButton, nameLabel, bioText, nameCell,bioCell)
+        view.addSubviews(navigationBar, profilePhoto, addPhotoButton, nameLabel, bioText, nameCell,bioCell)
         nameCell.addSubview(editableNameSection)
         bioCell.addSubview(editableBioSection)
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
+        profilePhoto.translatesAutoresizingMaskIntoConstraints = false
         addPhotoButton.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameCell.translatesAutoresizingMaskIntoConstraints = false
@@ -319,12 +321,12 @@ class ProfileViewController: UIViewController {
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.widthAnchor.constraint(equalToConstant: view.frame.width),
             
-            profileImageView.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
-            profileImageView.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
-            profileImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            profileImageView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: UIConstants.navBarToProfileImage),
+            profilePhoto.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
+            profilePhoto.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
+            profilePhoto.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            profilePhoto.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: UIConstants.navBarToProfileImage),
             
-            addPhotoButton.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
+            addPhotoButton.topAnchor.constraint(equalTo: profilePhoto.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
             addPhotoButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             nameLabel.topAnchor.constraint(equalTo: addPhotoButton.bottomAnchor, constant: UIConstants.addPhotoToNameLabel),

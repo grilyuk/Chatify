@@ -64,6 +64,7 @@ class ConvListViewController: UIViewController {
         super.viewWillAppear(animated)
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+        navigationController?.navigationBar.prefersLargeTitles = true
         updateColorsCells()
     }
     
@@ -124,8 +125,6 @@ class ConvListViewController: UIViewController {
         navigationItem.title = "Chat"
         navigationItem.leftBarButtonItem = settingButton
         navigationItem.rightBarButtonItem = profileButton
-        
-        navigationController?.navigationBar.prefersLargeTitles = true
         guard let currentTheme = themeService?.currentTheme else { return }
         switch currentTheme {
         case .light: changeNavigationBar(theme: currentTheme)

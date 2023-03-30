@@ -1,10 +1,10 @@
 import UIKit
 
-class ImagePickerController: UIImagePickerController, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
+class PhotoPickerController: UIImagePickerController, UIImagePickerControllerDelegate & UINavigationControllerDelegate {
 
     //MARK: - Properties
     var imagePicked: UIImage?
-    weak var vc: ProfileViewController?
+    weak var profileVC: ProfileViewProtocol?
 
     //MARK: - Lifecycle
     override func viewDidLoad() {
@@ -17,10 +17,10 @@ class ImagePickerController: UIImagePickerController, UIImagePickerControllerDel
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             imagePicked = image
-            guard let vc else { return }
-            vc.profileImageView.image = imagePicked
-            vc.viewDidLayoutSubviews()
+            guard let profileVC else { return }
+            profileVC.profilePhoto.image = imagePicked
             dismiss(animated: true)
         }
+        
     }
 }

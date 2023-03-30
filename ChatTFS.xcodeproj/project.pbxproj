@@ -10,8 +10,8 @@
 		5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E08ADC229A16B10004510A6 /* ProfileViewController.swift */; };
 		5E42B9D629C24FF700F472D1 /* MessageCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */; };
 		5E42B9D829C2502900F472D1 /* ConversationListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42B9D729C2502900F472D1 /* ConversationListModel.swift */; };
-		5E74BCB429A8DCA3009236A1 /* AlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB329A8DCA3009236A1 /* AlertController.swift */; };
-		5E74BCB629A8E438009236A1 /* ImagePickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB529A8E438009236A1 /* ImagePickerController.swift */; };
+		5E74BCB429A8DCA3009236A1 /* ChooseSourceAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB329A8DCA3009236A1 /* ChooseSourceAlertController.swift */; };
+		5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */; };
 		5E92E9E029B2A7570038EED2 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9DF29B2A7570038EED2 /* Router.swift */; };
 		5E92E9E229B33C900038EED2 /* ModuleBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9E129B33C900038EED2 /* ModuleBuilder.swift */; };
 		5E92E9E629B4B4C60038EED2 /* ConverstionListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9E529B4B4C60038EED2 /* ConverstionListCell.swift */; };
@@ -42,8 +42,8 @@
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCellModel.swift; sourceTree = "<group>"; };
 		5E42B9D729C2502900F472D1 /* ConversationListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListModel.swift; sourceTree = "<group>"; };
-		5E74BCB329A8DCA3009236A1 /* AlertController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertController.swift; sourceTree = "<group>"; };
-		5E74BCB529A8E438009236A1 /* ImagePickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePickerController.swift; sourceTree = "<group>"; };
+		5E74BCB329A8DCA3009236A1 /* ChooseSourceAlertController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseSourceAlertController.swift; sourceTree = "<group>"; };
+		5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerController.swift; sourceTree = "<group>"; };
 		5E92E9DF29B2A7570038EED2 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		5E92E9E129B33C900038EED2 /* ModuleBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleBuilder.swift; sourceTree = "<group>"; };
 		5E92E9E529B4B4C60038EED2 /* ConverstionListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverstionListCell.swift; sourceTree = "<group>"; };
@@ -158,8 +158,8 @@
 			isa = PBXGroup;
 			children = (
 				5E9F20C929C861140027EAFE /* DataManager.swift */,
-				5E74BCB329A8DCA3009236A1 /* AlertController.swift */,
-				5E74BCB529A8E438009236A1 /* ImagePickerController.swift */,
+				5E74BCB329A8DCA3009236A1 /* ChooseSourceAlertController.swift */,
+				5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -302,14 +302,14 @@
 				5E97BF3D29BE8542003BBA1B /* OutgoingConversationViewCell.swift in Sources */,
 				5EDC6593299ECEAD009B6586 /* AppDelegate.swift in Sources */,
 				5E42B9D829C2502900F472D1 /* ConversationListModel.swift in Sources */,
-				5E74BCB429A8DCA3009236A1 /* AlertController.swift in Sources */,
+				5E74BCB429A8DCA3009236A1 /* ChooseSourceAlertController.swift in Sources */,
 				5E92E9F229B72B930038EED2 /* ConversationInteractor.swift in Sources */,
 				5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */,
 				5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */,
 				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ConversationViewController.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ConvListPresenter.swift in Sources */,
-				5E74BCB629A8E438009236A1 /* ImagePickerController.swift in Sources */,
+				5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */,
 				5E92E9E029B2A7570038EED2 /* Router.swift in Sources */,
 				5E92E9F629B72C6E0038EED2 /* IncomingConversationViewCell.swift in Sources */,
 				5E92E9E229B33C900038EED2 /* ModuleBuilder.swift in Sources */,
