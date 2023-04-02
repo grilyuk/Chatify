@@ -62,4 +62,8 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     func didTappedConversation(for conversation: ConversationListModel, navigationController: UINavigationController) {
         router?.showConversation(conversation: conversation, navigationController: navigationController)
     }
+    
+    func createChannel(name: String) {
+//        interactor.
+    }
 }

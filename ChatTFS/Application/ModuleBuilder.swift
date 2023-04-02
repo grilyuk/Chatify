@@ -1,9 +1,10 @@
 import Foundation
 import UIKit
+import TFSChatTransport
 
 protocol ModuleBuilderProtocol: AnyObject {
     func buildConvList() -> UINavigationController
-    func buildProfile() -> ProfileViewController
+    func buildProfile() -> UINavigationController
     func buildConversation(router: RouterProtocol, conversation: ConversationListModel) -> ConversationViewController
     func buildThemePicker() -> UINavigationController
     func buildTabBarController() -> UITabBarController
@@ -16,11 +17,12 @@ class ModuleBuilder: ModuleBuilderProtocol {
     private lazy var themeService = ThemeService()
     private lazy var dataManager = DataManager()
     private lazy var profilePublisher = dataManager.currentProfile
+    private lazy var chatService = ChatService(baseUrl: "167.235.86.234", port: 8080)
     
     // MARK: - Methods
     
     func buildConvList() -> UINavigationController {
-        let interactor = ConvListInteractor(dataManager: dataManager)
+        let interactor = ConvListInteractor(dataManager: dataManager, chatService: chatService)
         let presenter = ConvListPresenter(interactor: interactor)
         let view = ConvListViewController(themeService: themeService)
         view.presenter = presenter
@@ -31,14 +33,15 @@ class ModuleBuilder: ModuleBuilderProtocol {
         return navigationController
     }
 
-    func buildProfile() -> ProfileViewController {
+    func buildProfile() -> UINavigationController {
         let interactor = ProfileInteractor(dataManager: dataManager)
         let presenter = ProfilePresenter(interactor: interactor)
         let view = ProfileViewController(themeService: themeService, profilePublisher: profilePublisher)
         view.presenter = presenter
         interactor.presenter = presenter
         presenter.view = view
-        return view
+        let navigationController = UINavigationController(rootViewController: view)
+        return navigationController
     }
     
     func buildConversation(router: RouterProtocol, conversation: ConversationListModel) -> ConversationViewController {

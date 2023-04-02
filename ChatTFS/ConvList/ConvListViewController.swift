@@ -107,7 +107,7 @@ class ConvListViewController: UIViewController {
     
     private func setupNavigationBar() {
         navigationItem.title = "Channels"
-        let addChannelButton = UIBarButtonItem(title: "Add Channel", style: .plain, target: self, action: nil)
+        let addChannelButton = UIBarButtonItem(title: "Add Channel", style: .plain, target: self, action: #selector(addChannelTapped))
         navigationItem.rightBarButtonItem = addChannelButton
         guard let currentTheme = themeService?.currentTheme else { return }
         switch currentTheme {
@@ -139,6 +139,40 @@ class ConvListViewController: UIViewController {
         dataSource.apply(snapshot, animatingDifferences: false)
     }
     
+    private func showCreateChannelAC() {
+        let addChanelAlert = UIAlertController(title: "New channel", message: nil, preferredStyle: .alert)
+        addChanelAlert.addTextField()
+        addChanelAlert.textFields?.first?.placeholder = "Channel Name"
+
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel)
+        let createChannel = UIAlertAction(title: "Create", style: .default) { [weak addChanelAlert, weak self] _ in
+            guard let textFieldIsEmpty = addChanelAlert?.textFields?.first?.text?.isEmpty
+            else {
+                return
+            }
+            if textFieldIsEmpty {
+                let errorAlert = UIAlertController(title: "Channel name empty!",
+                                                   message: "Имя канала не может быть пустым. \nВведите имя канала.",
+                                                   preferredStyle: .alert)
+                let action = UIAlertAction(title: "Retry", style: .cancel) { [weak self] _ in
+                    self?.showCreateChannelAC()
+                }
+                errorAlert.addAction(action)
+                self?.present(errorAlert, animated: true)
+            } else {
+                guard let channelName = addChanelAlert?.textFields?.first?.text
+                else {
+                    return
+                }
+//                presenter.createChannel
+                print(channelName)
+            }
+        }
+        addChanelAlert.addAction(cancel)
+        addChanelAlert.addAction(createChannel)
+        present(addChanelAlert, animated: true)
+    }
+    
     private func setupTableViewConstraints() {
         view.addSubviews(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
@@ -148,6 +182,11 @@ class ConvListViewController: UIViewController {
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
+    }
+    
+    @objc
+    private func addChannelTapped() {
+        showCreateChannelAC()
     }
 }
 

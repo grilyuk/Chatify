@@ -1,5 +1,6 @@
 import UIKit
 import Combine
+import TFSChatTransport
 
 protocol ConvListInteractorProtocol: AnyObject {
     func loadData()
@@ -9,128 +10,36 @@ class ConvListInteractor: ConvListInteractorProtocol {
 
     // MARK: - Initialization
     
-    init(dataManager: DataManagerProtocol) {
+    init(dataManager: DataManagerProtocol, chatService: ChatService) {
         self.dataManager = dataManager
+        self.chatService = chatService
     }
     
     // MARK: - Public
     
     weak var presenter: ConvListPresenterProtocol?
     var dataManager: DataManagerProtocol?
+    var chatService: ChatService?
     
     // MARK: - Private
     
     private var handler: (([ConversationListModel]) -> Void)?
     private var dataRequest: Cancellable?
+    private var channelsRequest: Cancellable?
     
     // MARK: - Methods
     
     func loadData() {
-        let users = [
+        let conversations = [
             ConversationListModel(name: "Charis Clay",
                                   message: "I think Houdini did something like this once! Why, if I recall correctly, he was out of the hospital",
                                   date: Date(timeIntervalSinceNow: -100000),
                                   isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Lacey Finch",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Norma Carver",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Dawson Suarez",
-                                  message: "Привет",
-                                  date: Date(timeIntervalSinceNow: -54252),
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Aminah Burch",
-                                  message: "How are you?",
-                                  date: Date(timeIntervalSinceNow: -4235),
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Rodney Sharp",
-                                  message: "Go to shop",
-                                  date: Date(timeIntervalSinceNow: -3242),
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Erin Duke",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Mehmet Matthams",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Malik Rios",
-                                  message: "Я с тобой не разговариваю...",
-                                  date: Date(timeIntervalSince1970: 0),
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Samantha Erickson",
-                                  message: "Ладно",
-                                  date: Date(timeIntervalSinceNow: -124151513),
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Sid Terry",
-                                  message: "Hello",
-                                  date: Date(timeIntervalSinceReferenceDate: 4525346),
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Lochlan Alexander",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Ishaan Matthews",
-                                  message: "Hello",
-                                  date: Date(timeIntervalSinceNow: -5325),
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Jazmin Clayton",
-                                  message: "Я в своём познании настолько преисполнился, что как будто бы уже 100 триллионов миллиардов лет проживаю",
-                                  date: Date(timeIntervalSinceReferenceDate: 1352533),
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Hamish Barker",
-                                  message: "Hello",
-                                  date: Date(),
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Kezia Finley",
-                                  message: "Прив че дел??",
-                                  date: Date(timeIntervalSinceNow: -9932),
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Sylvia Cooper",
-                                  message: "Предлагаем работу 300кк/нс нужно всего лишь быть",
-                                  date: Date(timeIntervalSinceNow: -35551),
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Erica Tate",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: false,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Liana Fitzgerald",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: true,
-                                  hasUnreadMessages: nil),
-            ConversationListModel(name: "Aiza Fischer",
-                                  message: nil,
-                                  date: nil,
-                                  isOnline: false,
                                   hasUnreadMessages: nil)
         ]
 
-        handler = { [weak self] users in
-            self?.presenter?.users = users
+        handler = { [weak self] conversations in
+            self?.presenter?.users = conversations
             self?.presenter?.dataUploaded()
             self?.dataRequest?.cancel()
         }
@@ -144,7 +53,19 @@ class ConvListInteractor: ConvListInteractorProtocol {
                 Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
             .sink(receiveValue: { [weak self] profile in
                 self?.dataManager?.currentProfile.send(profile)
-                self?.handler?(users)
+                self?.handler?(conversations)
             })
+    }
+    
+    func loadChannels() {
+        channelsRequest = chatService?.loadChannels()
+            .sink(receiveCompletion: { _ in
+            }, receiveValue: { channel in
+                print(channel)
+            })
+    }
+    
+    func createChannel(name: String) {
+        
     }
 }

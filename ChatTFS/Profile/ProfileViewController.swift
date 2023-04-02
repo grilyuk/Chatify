@@ -65,7 +65,7 @@ class ProfileViewController: UIViewController {
             case .profileUploaded(let profile):
                 profileUploaded(profile: profile)
                 self.setEditFinished()
-                self.show(successAlert, sender: self)
+                self.tabBarController?.show(successAlert, sender: self)
             case .error:
                 break
             }
@@ -74,8 +74,6 @@ class ProfileViewController: UIViewController {
     
     private var profilePublisher: CurrentValueSubject<ProfileModel, Never>
     private var profileRequest: Cancellable?
-    private lazy var navigationBar = UINavigationBar()
-    private lazy var navTitle = UINavigationItem()
     private lazy var chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
     private lazy var placeholderImage = UIImage(systemName: "person.fill")?
         .scalePreservingAspectRatio(targetSize: CGSize(width: 100, height: 100)).withTintColor(.gray)
@@ -152,13 +150,6 @@ class ProfileViewController: UIViewController {
         return imageView
     }()
     
-    private lazy var editButton: UIButton = {
-        let button = UIButton()
-        button.setTitleColor(.systemBlue, for: .normal)
-        button.setTitle("Edit", for: .normal)
-        return button
-    }()
-    
     private lazy var initials: UILabel = {
         let label = UILabel()
         let initialFontSizeCalc = 150 * 0.45
@@ -179,8 +170,7 @@ class ProfileViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         successAlert.addAction(okAction)
-        editButton.addTarget(self, action: #selector(editProfileTapped), for: .touchUpInside)
-        addPhotoButton.addTarget(self, action: #selector(addPhototapped), for: .touchUpInside)
+        addPhotoButton.addTarget(self, action: #selector(addPhotoTapped), for: .touchUpInside)
         presenter?.viewReady()
         setupUI()
     }
@@ -191,7 +181,7 @@ class ProfileViewController: UIViewController {
         bioText.textColor = themeService?.currentTheme.textColor
         bioText.backgroundColor = themeService?.currentTheme.backgroundColor
         nameLabel.textColor = themeService?.currentTheme.textColor
-        navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
+        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
     }
 
     override func viewDidLayoutSubviews() {
@@ -224,25 +214,23 @@ class ProfileViewController: UIViewController {
     }
     
     private func setNavBarButtons() {
-        let navCloseButton = UIBarButtonItem(title: "Close", style: .plain, target: self, action: #selector(closeProfileTapped))
-        let navEditProfile = UIBarButtonItem(customView: editButton)
-        navTitle.leftBarButtonItem = navCloseButton
-        navTitle.rightBarButtonItem = navEditProfile
+        let navEditProfile = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editProfileTapped))
+        navigationItem.rightBarButtonItem = navEditProfile
     }
     
     private func setNavBar() {
-        navTitle.title = "My Profile"
+        navigationController?.navigationItem.title = "My Profile"
+        navigationController?.navigationBar.prefersLargeTitles = true
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
         appearance.titleTextAttributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: UIConstants.fontSize,
                                                                                           weight: .bold)]
         appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
         UINavigationBar.appearance().standardAppearance = appearance
-        navTitle.leftBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
+        navigationItem.leftBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
             .systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
-        navTitle.rightBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
+        navigationItem.rightBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
             .systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
-        navigationBar.setItems([navTitle], animated: false)
     }
     
     private func profileUploaded(profile: ProfileModel) {
@@ -259,12 +247,12 @@ class ProfileViewController: UIViewController {
     private func editableMode() {
         editableBioSection.text = bioText.text
         editableNameSection.text = nameLabel.text
-        navTitle.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveProfile))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveProfile))
         nameLabel.isHidden = true
         bioText.isHidden = true
         editableNameSection.isHidden = false
         editableBioSection.isHidden = false
-        navTitle.title = "Edit profile"
+        navigationItem.title = "Edit profile"
         nameCell.isHidden = false
         bioCell.isHidden = false
         editableNameSection.becomeFirstResponder()
@@ -280,11 +268,11 @@ class ProfileViewController: UIViewController {
         addPhotoButton.isEnabled = true
         nameLabel.isHidden = false
         bioText.isHidden = false
-        navTitle.title = "My Profile"
-        navTitle.rightBarButtonItems?.removeAll()
+        navigationItem.title = "My Profile"
+        navigationItem.rightBarButtonItems?.removeAll()
         activityIndicator.stopAnimating()
-        let navEditProfile = UIBarButtonItem(customView: editButton)
-        navTitle.rightBarButtonItem = navEditProfile
+        let navEditProfile = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editProfileTapped))
+        navigationItem.rightBarButtonItem = navEditProfile
     }
     
     @objc
@@ -304,7 +292,7 @@ class ProfileViewController: UIViewController {
         }
         
         let profileToSave = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
-        navTitle.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
         state = .loading
         presenter?.updateProfile(profile: profileToSave)
     }
@@ -329,18 +317,17 @@ class ProfileViewController: UIViewController {
     }
     
     @objc
-    private func addPhototapped() {
+    private func addPhotoTapped() {
         editableMode()
-        present(chooseSourceAlert, animated: true) {
+        tabBarController?.present(chooseSourceAlert, animated: true) {
             self.chooseSourceAlert.profileVC = self
         }
     }
     
     private func setConstraints() {
-        view.addSubviews(navigationBar, profilePhoto, addPhotoButton, nameLabel, bioText, nameCell, bioCell)
+        view.addSubviews(profilePhoto, addPhotoButton, nameLabel, bioText, nameCell, bioCell)
         nameCell.addSubview(editableNameSection)
         bioCell.addSubview(editableBioSection)
-        navigationBar.translatesAutoresizingMaskIntoConstraints = false
         profilePhoto.translatesAutoresizingMaskIntoConstraints = false
         addPhotoButton.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -350,14 +337,11 @@ class ProfileViewController: UIViewController {
         editableBioSection.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            navigationBar.widthAnchor.constraint(equalToConstant: view.frame.width),
             
             profilePhoto.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
             profilePhoto.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
             profilePhoto.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            profilePhoto.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: UIConstants.navBarToProfileImage),
+            profilePhoto.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: UIConstants.navBarToProfileImage),
             
             addPhotoButton.topAnchor.constraint(equalTo: profilePhoto.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
             addPhotoButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
