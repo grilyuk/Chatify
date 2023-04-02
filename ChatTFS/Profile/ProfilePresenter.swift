@@ -8,18 +8,22 @@ protocol ProfilePresenterProtocol: AnyObject {
 }
 
 class ProfilePresenter {
+    
+    // MARK: - Properties
+    
     weak var view: ProfileViewProtocol?
-    let router: RouterProtocol
     let interactor: ProfileInteractorProtocol
     var profile: ProfileModel?
 
-    init(router: RouterProtocol, interactor: ProfileInteractorProtocol) {
-        self.router = router
+    // MARK: - Initialization
+    
+    init(interactor: ProfileInteractorProtocol) {
         self.interactor = interactor
     }
 }
 
-//MARK: ProfilePresenter + ProfilePresenterProtocol
+// MARK: - ProfilePresenter + ProfilePresenterProtocol
+
 extension ProfilePresenter: ProfilePresenterProtocol {
     func dataUploaded() {
         view?.showProfile()

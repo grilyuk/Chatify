@@ -7,20 +7,24 @@ protocol ConvListInteractorProtocol: AnyObject {
 
 class ConvListInteractor: ConvListInteractorProtocol {
 
-    //MARK: - Initializer
+    // MARK: - Initialization
+    
     init(dataManager: DataManagerProtocol) {
         self.dataManager = dataManager
     }
     
-    //MARK: - Public
+    // MARK: - Public
+    
     weak var presenter: ConvListPresenterProtocol?
     var dataManager: DataManagerProtocol?
     
-    //MARK: - Private
+    // MARK: - Private
+    
     private var handler: (([ConversationListModel]) -> Void)?
     private var dataRequest: Cancellable?
     
-    //MARK: - Methods
+    // MARK: - Methods
+    
     func loadData() {
         let users = [
             ConversationListModel(name: "Charis Clay",
@@ -136,7 +140,8 @@ class ConvListInteractor: ConvListInteractorProtocol {
             .receive(on: DispatchQueue.main)
             .handleEvents(receiveCancel: { print("Cancel sub in ConvListInteractor") })
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
+            .catch({ _ in
+                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
             .sink(receiveValue: { [weak self] profile in
                 self?.dataManager?.currentProfile.send(profile)
                 self?.handler?(users)

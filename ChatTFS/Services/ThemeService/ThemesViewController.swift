@@ -2,7 +2,8 @@ import UIKit
 
 class ThemesViewController: UIViewController {
     
-    //MARK: - UIConstants
+    // MARK: - UIConstants
+    
     enum UIConstants {
         static let cornerRadius: CGFloat = 16
         static let borderOnExample: CGFloat = 1.5
@@ -13,7 +14,8 @@ class ThemesViewController: UIViewController {
         static let labelSpace: CGFloat = 20
     }
     
-    //MARK: - Init
+    // MARK: - Initialization
+    
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
@@ -23,7 +25,8 @@ class ThemesViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Private properties
+    // MARK: - Private properties
+    
     private var themeService: ThemeServiceProtocol?
     private var themeHandler: ((Theme) -> Void)?
     
@@ -89,7 +92,8 @@ class ThemesViewController: UIViewController {
         return checkmarkButton
     }()
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         themeHandler = { [weak self] theme in
@@ -109,7 +113,8 @@ class ThemesViewController: UIViewController {
         view.backgroundColor = themeService?.currentTheme.backgroundColor
     }
     
-    //MARK: - Private methods
+    // MARK: - Private methods
+    
     private func fetchTheme(currentTheme: Theme) {
         switch currentTheme {
         case .light:
@@ -123,7 +128,7 @@ class ThemesViewController: UIViewController {
     
     private func setNavigationBar() {
         self.title = "Settings"
-        navigationController?.navigationBar.prefersLargeTitles = false
+        navigationController?.navigationBar.prefersLargeTitles = true
     }
     
     @objc
@@ -139,6 +144,8 @@ class ThemesViewController: UIViewController {
         navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
+        tabBarController?.tabBar.barTintColor = lightTheme.backgroundColor
+        navigationController?.navigationBar.backgroundColor = lightTheme.backgroundColor
     }
     
     @objc
@@ -154,6 +161,7 @@ class ThemesViewController: UIViewController {
         navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
+        tabBarController?.tabBar.barTintColor = darkTheme.backgroundColor
         navigationController?.navigationBar.backgroundColor = darkTheme.backgroundColor
     }
     
@@ -180,16 +188,16 @@ class ThemesViewController: UIViewController {
         NSLayoutConstraint.activate([
             bubble.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: UIConstants.bubbleToTopSafe),
             bubble.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            bubble.widthAnchor.constraint(equalTo: view.widthAnchor,constant: UIConstants.bubbleWidth),
-            bubble.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 2/7),
+            bubble.widthAnchor.constraint(equalTo: view.widthAnchor, constant: UIConstants.bubbleWidth),
+            bubble.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 2 / 7),
             
-            lightExample.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 1/3),
-            lightExample.heightAnchor.constraint(equalTo: bubble.heightAnchor, multiplier: 1/3),
+            lightExample.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 1 / 3),
+            lightExample.heightAnchor.constraint(equalTo: bubble.heightAnchor, multiplier: 1 / 3),
             lightExample.leadingAnchor.constraint(equalTo: bubble.leadingAnchor, constant: UIConstants.edgeToExample),
             lightExample.topAnchor.constraint(equalTo: bubble.topAnchor, constant: UIConstants.edgeToExample),
             
-            darkExample.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 1/3),
-            darkExample.heightAnchor.constraint(equalTo: bubble.heightAnchor, multiplier: 1/3),
+            darkExample.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 1 / 3),
+            darkExample.heightAnchor.constraint(equalTo: bubble.heightAnchor, multiplier: 1 / 3),
             darkExample.trailingAnchor.constraint(equalTo: bubble.trailingAnchor, constant: -UIConstants.edgeToExample),
             darkExample.topAnchor.constraint(equalTo: bubble.topAnchor, constant: UIConstants.edgeToExample),
             
@@ -202,7 +210,7 @@ class ThemesViewController: UIViewController {
             dayTickButton.centerXAnchor.constraint(equalTo: lightExample.centerXAnchor),
             dayTickButton.widthAnchor.constraint(equalTo: lightExample.widthAnchor),
             dayTickButton.heightAnchor.constraint(equalTo: view.heightAnchor),
-            dayTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor,constant: -UIConstants.edgeToExample),
+            dayTickButton.centerYAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -UIConstants.edgeToExample),
             
             nightTickButton.centerXAnchor.constraint(equalTo: darkExample.centerXAnchor),
             nightTickButton.widthAnchor.constraint(equalTo: darkExample.widthAnchor),

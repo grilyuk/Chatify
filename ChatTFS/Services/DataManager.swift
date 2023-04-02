@@ -10,12 +10,16 @@ protocol DataManagerProtocol: AnyObject {
 class DataManager: DataManagerProtocol {
     
     static var defaultProfile = ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
-    var currentProfile = CurrentValueSubject<ProfileModel, Never>.init(defaultProfile)
+    var currentProfile = CurrentValueSubject<ProfileModel, Never>(defaultProfile)
     
-    //MARK: - Private properties
+    // MARK: - Private properties
+    
+    private let fileManager = FileManager.default
+    private let fileName = "profileData.json"
     private var backgroundQueue = DispatchQueue.global(qos: .utility)
     
-    //MARK: - Publishers
+    // MARK: - Publishers
+    
     func readProfilePublisher() -> AnyPublisher<Data, Error> {
         Deferred {
             Future { promise in
@@ -46,9 +50,11 @@ class DataManager: DataManagerProtocol {
         .eraseToAnyPublisher()
     }
     
-    //MARK: - Private methods
+    // MARK: - Private methods
+    
     private func checkPath() -> Bool {
-        guard let filePath = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json").path
+        guard let filePath = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            .appendingPathComponent(fileName).path
         else {
             return false
         }
@@ -56,7 +62,8 @@ class DataManager: DataManagerProtocol {
     }
     
     private func readData() throws -> Data {
-        guard let fileURL = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json"),
+        guard let fileURL = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            .appendingPathComponent(fileName),
               checkPath() == true,
               let jsonData = try? Data(contentsOf: fileURL)
         else {
@@ -71,7 +78,6 @@ class DataManager: DataManagerProtocol {
         else {
             return ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
         }
-        sleep(3)
         return profileData
     }
 }

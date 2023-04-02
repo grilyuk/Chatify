@@ -9,7 +9,8 @@ protocol ConversationPresenterProtocol: AnyObject {
 
 class ConversationPresenter {
     
-    //MARK: - Public
+    // MARK: - Public
+    
     weak var view: ConversationViewProtocol?
     let router: RouterProtocol?
     let interactor: ConversationInteractorProtocol
@@ -17,7 +18,8 @@ class ConversationPresenter {
     var historyChat: [MessageCellModel]?
     var handler: (([MessageCellModel], String) -> Void)?
     
-    //MARK: - Initializer
+    // MARK: - Initialization
+    
     init(router: RouterProtocol, interactor: ConversationInteractorProtocol, conversation: ConversationListModel) {
         self.router = router
         self.interactor = interactor
@@ -25,10 +27,12 @@ class ConversationPresenter {
     }
 }
 
-//MARK: - ConversationPresenter + ConversationPresenterProtocol
+// MARK: - ConversationPresenter + ConversationPresenterProtocol
+
 extension ConversationPresenter: ConversationPresenterProtocol {
     
-    //MARK: - Methods
+    // MARK: - Methods
+    
     func viewReady() {
         interactor.loadData()
         let userName = conversation?.name ?? ""

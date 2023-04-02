@@ -8,7 +8,8 @@ protocol ProfileViewProtocol: AnyObject {
 
 class ProfileViewController: UIViewController {
     
-    //MARK: - Initializer
+    // MARK: - Initialization
+    
     init(themeService: ThemeServiceProtocol, profilePublisher: CurrentValueSubject<ProfileModel, Never>) {
         self.themeService = themeService
         self.profilePublisher = profilePublisher
@@ -19,7 +20,8 @@ class ProfileViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - UIConstants
+    // MARK: - UIConstants
+    
     private enum UIConstants {
         static let fontSize: CGFloat = 17
         static let largerFontSize: CGFloat = 22
@@ -29,16 +31,18 @@ class ProfileViewController: UIViewController {
         static let imageProfileToAddPhoto: CGFloat = 24
         static let addPhotoToNameLabel: CGFloat = 24
         static let nameLabelToInfoText: CGFloat = 10
-        static let imageProfileTopColor: UIColor = UIColor(red: 241/255, green: 159/255, blue: 180/255, alpha: 1)
-        static let imageProfileBottomColor: UIColor = UIColor(red: 238/255, green: 123/255, blue: 149/255, alpha: 1)
+        static let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
+        static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.1823898468, green: 0.5700650811, blue: 0.6495155096, alpha: 1)
     }
     
-    //MARK: - Public
+    // MARK: - Public
+    
     var profilePhoto = UIImageView()
     var presenter: ProfilePresenterProtocol?
     weak var themeService: ThemeServiceProtocol?
 
-    //MARK: - Private
+    // MARK: - Private
+    
     private enum State {
         case loading
         case error
@@ -73,7 +77,8 @@ class ProfileViewController: UIViewController {
     private lazy var navigationBar = UINavigationBar()
     private lazy var navTitle = UINavigationItem()
     private lazy var chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-    private lazy var placeholderImage = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(100, 100)).withTintColor(.gray)
+    private lazy var placeholderImage = UIImage(systemName: "person.fill")?
+        .scalePreservingAspectRatio(targetSize: CGSize(width: 100, height: 100)).withTintColor(.gray)
     private lazy var okAction = UIAlertAction(title: "OK", style: .default)
     private lazy var successAlert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
     private lazy var failureAlert = UIAlertController(title: "Failure...", message: "Can't saved data", preferredStyle: .alert)
@@ -158,16 +163,19 @@ class ProfileViewController: UIViewController {
         let label = UILabel()
         let initialFontSizeCalc = 150 * 0.45
         let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
-        label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
+        guard let descriptor = descriptor else { return label }
+        label.font = UIFont(descriptor: descriptor, size: initialFontSizeCalc)
         label.textColor = .white
         let formatter = PersonNameComponentsFormatter()
         let components = formatter.personNameComponents(from: nameLabel.text ?? "")
         formatter.style = .abbreviated
-        label.text = formatter.string(from: components!)
+        guard let components = components else { return label }
+        label.text = formatter.string(from: components)
         return label
     }()
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         successAlert.addAction(okAction)
@@ -198,7 +206,8 @@ class ProfileViewController: UIViewController {
         profileRequest?.cancel()
     }
     
-    //MARK: - Setup UI
+    // MARK: - Setup UI
+    
     private func setupUI() {
         setNavBar()
         setNavBarButtons()
@@ -206,7 +215,8 @@ class ProfileViewController: UIViewController {
         setGesture()
     }
     
-    //MARK: - Methods
+    // MARK: - Methods
+    
     private func setGesture() {
         let tapGesture = UITapGestureRecognizer(target: self,
                                                 action: #selector(dismissKeyboard))
@@ -224,14 +234,16 @@ class ProfileViewController: UIViewController {
         navTitle.title = "My Profile"
         let appearance = UINavigationBarAppearance()
         appearance.configureWithTransparentBackground()
-        appearance.titleTextAttributes = [NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .bold)]
+        appearance.titleTextAttributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: UIConstants.fontSize,
+                                                                                          weight: .bold)]
         appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
         UINavigationBar.appearance().standardAppearance = appearance
-        navTitle.leftBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
-        navTitle.rightBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font : UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
+        navTitle.leftBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
+            .systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
+        navTitle.rightBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
+            .systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
         navigationBar.setItems([navTitle], animated: false)
     }
-    
     
     private func profileUploaded(profile: ProfileModel) {
         nameLabel.text = profile.fullName
@@ -283,7 +295,7 @@ class ProfileViewController: UIViewController {
             return
         }
         
-        var imageData: Data? = nil
+        var imageData: Data?
         
         if self.profilePhoto.image == placeholderImage {
             imageData = nil
@@ -325,7 +337,7 @@ class ProfileViewController: UIViewController {
     }
     
     private func setConstraints() {
-        view.addSubviews(navigationBar, profilePhoto, addPhotoButton, nameLabel, bioText, nameCell,bioCell)
+        view.addSubviews(navigationBar, profilePhoto, addPhotoButton, nameLabel, bioText, nameCell, bioCell)
         nameCell.addSubview(editableNameSection)
         bioCell.addSubview(editableBioSection)
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
@@ -338,7 +350,7 @@ class ProfileViewController: UIViewController {
         editableBioSection.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            navigationBar.topAnchor.constraint(equalTo: view.topAnchor),
+            navigationBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.widthAnchor.constraint(equalToConstant: view.frame.width),
             
@@ -375,7 +387,8 @@ class ProfileViewController: UIViewController {
     }
 }
 
-//MARK: - ProfileViewController + ProfileViewProtocol
+// MARK: - ProfileViewController + ProfileViewProtocol
+
 extension ProfileViewController: ProfileViewProtocol {
     func showProfile() {
         profileRequest = profilePublisher

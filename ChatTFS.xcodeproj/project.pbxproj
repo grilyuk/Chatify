@@ -14,7 +14,7 @@
 		5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */; };
 		5E92E9E029B2A7570038EED2 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9DF29B2A7570038EED2 /* Router.swift */; };
 		5E92E9E229B33C900038EED2 /* ModuleBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9E129B33C900038EED2 /* ModuleBuilder.swift */; };
-		5E92E9E629B4B4C60038EED2 /* ConverstionListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9E529B4B4C60038EED2 /* ConverstionListCell.swift */; };
+		5E92E9E629B4B4C60038EED2 /* ConversationListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9E529B4B4C60038EED2 /* ConversationListCell.swift */; };
 		5E92E9EF29B6939F0038EED2 /* ConversationViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9EE29B6939F0038EED2 /* ConversationViewController.swift */; };
 		5E92E9F229B72B930038EED2 /* ConversationInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9F129B72B930038EED2 /* ConversationInteractor.swift */; };
 		5E92E9F429B72B9F0038EED2 /* ConversationPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9F329B72B9F0038EED2 /* ConversationPresenter.swift */; };
@@ -36,12 +36,12 @@
 		5EDC6597299ECEAD009B6586 /* ConvListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDC6596299ECEAD009B6586 /* ConvListViewController.swift */; };
 		5EDC659C299ECEAE009B6586 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5EDC659B299ECEAE009B6586 /* Assets.xcassets */; };
 		5EDC659F299ECEAE009B6586 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 5EDC659D299ECEAE009B6586 /* LaunchScreen.storyboard */; };
-		78E7998E896A06D65F752377 /* Pods_ChatTFS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 80C8F1E00EA65D121A648BEA /* Pods_ChatTFS.framework */; };
+		7E6511308FA73CE06B8C42DE /* Pods_ChatTFS.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 974DCC7B09B01B87052BB6BF /* Pods_ChatTFS.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		16DF97A5FFE05C57C6364804 /* Pods-ChatTFS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.release.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.release.xcconfig"; sourceTree = "<group>"; };
-		40634F829E04ECC805E2F92E /* Pods-ChatTFS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.debug.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.debug.xcconfig"; sourceTree = "<group>"; };
+		4BB014E7FA9EFDF47E2C004A /* Pods-ChatTFS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.release.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.release.xcconfig"; sourceTree = "<group>"; };
+		4CE4628B252E8DEB6B3EB225 /* Pods-ChatTFS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.debug.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.debug.xcconfig"; sourceTree = "<group>"; };
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCellModel.swift; sourceTree = "<group>"; };
 		5E42B9D729C2502900F472D1 /* ConversationListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListModel.swift; sourceTree = "<group>"; };
@@ -49,7 +49,7 @@
 		5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerController.swift; sourceTree = "<group>"; };
 		5E92E9DF29B2A7570038EED2 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		5E92E9E129B33C900038EED2 /* ModuleBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleBuilder.swift; sourceTree = "<group>"; };
-		5E92E9E529B4B4C60038EED2 /* ConverstionListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConverstionListCell.swift; sourceTree = "<group>"; };
+		5E92E9E529B4B4C60038EED2 /* ConversationListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListCell.swift; sourceTree = "<group>"; };
 		5E92E9EE29B6939F0038EED2 /* ConversationViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationViewController.swift; sourceTree = "<group>"; };
 		5E92E9F129B72B930038EED2 /* ConversationInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationInteractor.swift; sourceTree = "<group>"; };
 		5E92E9F329B72B9F0038EED2 /* ConversationPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationPresenter.swift; sourceTree = "<group>"; };
@@ -73,7 +73,7 @@
 		5EDC659B299ECEAE009B6586 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		5EDC659E299ECEAE009B6586 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		5EDC65A0299ECEAE009B6586 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		80C8F1E00EA65D121A648BEA /* Pods_ChatTFS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ChatTFS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		974DCC7B09B01B87052BB6BF /* Pods_ChatTFS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ChatTFS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,7 +81,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				78E7998E896A06D65F752377 /* Pods_ChatTFS.framework in Frameworks */,
+				7E6511308FA73CE06B8C42DE /* Pods_ChatTFS.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -91,11 +91,18 @@
 		127713064A46FE04810C7ACD /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				40634F829E04ECC805E2F92E /* Pods-ChatTFS.debug.xcconfig */,
-				16DF97A5FFE05C57C6364804 /* Pods-ChatTFS.release.xcconfig */,
+				4CE4628B252E8DEB6B3EB225 /* Pods-ChatTFS.debug.xcconfig */,
+				4BB014E7FA9EFDF47E2C004A /* Pods-ChatTFS.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		4F17F2D75BB6B372BE8AA2C0 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				974DCC7B09B01B87052BB6BF /* Pods_ChatTFS.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		5E08ADC029A16ADA004510A6 /* Application */ = {
@@ -116,6 +123,15 @@
 				5EB6218A29AB683B00029FB8 /* ProfileModel.swift */,
 			);
 			path = Models;
+			sourceTree = "<group>";
+		};
+		5E86E6A829D90C25008D047B /* PhotoChoose */ = {
+			isa = PBXGroup;
+			children = (
+				5E74BCB329A8DCA3009236A1 /* ChooseSourceAlertController.swift */,
+				5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */,
+			);
+			path = PhotoChoose;
 			sourceTree = "<group>";
 		};
 		5E92E9F029B693A80038EED2 /* Conversation */ = {
@@ -151,7 +167,7 @@
 		5EB6218029AB600500029FB8 /* ConvList */ = {
 			isa = PBXGroup;
 			children = (
-				5E92E9E529B4B4C60038EED2 /* ConverstionListCell.swift */,
+				5E92E9E529B4B4C60038EED2 /* ConversationListCell.swift */,
 				5EDC6596299ECEAD009B6586 /* ConvListViewController.swift */,
 				5EB6218C29AB6FE800029FB8 /* ConvListInteractor.swift */,
 				5EB6218E29AB6FF100029FB8 /* ConvListPresenter.swift */,
@@ -173,8 +189,8 @@
 			isa = PBXGroup;
 			children = (
 				5E9F20C929C861140027EAFE /* DataManager.swift */,
-				5E74BCB329A8DCA3009236A1 /* ChooseSourceAlertController.swift */,
-				5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */,
+				5E86E6A829D90C25008D047B /* PhotoChoose */,
+				5EC1749C29CE296B00F1ADA8 /* ThemeService */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -195,7 +211,7 @@
 				5EDC6591299ECEAD009B6586 /* ChatTFS */,
 				5EDC6590299ECEAD009B6586 /* Products */,
 				127713064A46FE04810C7ACD /* Pods */,
-				A60192056F69BB4D8EA66C08 /* Frameworks */,
+				4F17F2D75BB6B372BE8AA2C0 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -216,7 +232,6 @@
 				5EB6218129AB601B00029FB8 /* Profile */,
 				5E42B9D429C24FE800F472D1 /* Models */,
 				5EB621A029ABBA6700029FB8 /* Services */,
-				5EC1749C29CE296B00F1ADA8 /* ThemeService */,
 				5E97BF3529BE3397003BBA1B /* Extension */,
 				5EDC65A6299EE2C3009B6586 /* Resources */,
 			);
@@ -233,14 +248,6 @@
 			path = Resources;
 			sourceTree = "<group>";
 		};
-		A60192056F69BB4D8EA66C08 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				80C8F1E00EA65D121A648BEA /* Pods_ChatTFS.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -248,11 +255,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5EDC65A3299ECEAE009B6586 /* Build configuration list for PBXNativeTarget "ChatTFS" */;
 			buildPhases = (
-				DDCCF511A65ED313DFFC9B99 /* [CP] Check Pods Manifest.lock */,
+				A16DE6CD05AAA2CA47DE8E03 /* [CP] Check Pods Manifest.lock */,
 				5EDC658B299ECEAD009B6586 /* Sources */,
 				5EDC658C299ECEAD009B6586 /* Frameworks */,
 				5EDC658D299ECEAD009B6586 /* Resources */,
-				7A121D06146ED94C35A2FD83 /* [CP] Embed Pods Frameworks */,
+				5E46A2D929D77183001F13AD /* ShellScript */,
+				8CCB5892648718628C7D15B3 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -309,7 +317,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		7A121D06146ED94C35A2FD83 /* [CP] Embed Pods Frameworks */ = {
+		5E46A2D929D77183001F13AD /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 12;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\nif which swiftlint > /dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
+		8CCB5892648718628C7D15B3 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -326,7 +352,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ChatTFS/Pods-ChatTFS-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		DDCCF511A65ED313DFFC9B99 /* [CP] Check Pods Manifest.lock */ = {
+		A16DE6CD05AAA2CA47DE8E03 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -356,7 +382,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				5EB624B029C0CAD7006D19B2 /* ThemeService.swift in Sources */,
-				5E92E9E629B4B4C60038EED2 /* ConverstionListCell.swift in Sources */,
+				5E92E9E629B4B4C60038EED2 /* ConversationListCell.swift in Sources */,
 				5E9F20CA29C861140027EAFE /* DataManager.swift in Sources */,
 				5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */,
 				5ECA720429D3858E0049E635 /* ErrorExtension.swift in Sources */,
@@ -517,7 +543,7 @@
 		};
 		5EDC65A4299ECEAE009B6586 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 40634F829E04ECC805E2F92E /* Pods-ChatTFS.debug.xcconfig */;
+			baseConfigurationReference = 4CE4628B252E8DEB6B3EB225 /* Pods-ChatTFS.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -550,7 +576,7 @@
 		};
 		5EDC65A5299ECEAE009B6586 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 16DF97A5FFE05C57C6364804 /* Pods-ChatTFS.release.xcconfig */;
+			baseConfigurationReference = 4BB014E7FA9EFDF47E2C004A /* Pods-ChatTFS.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

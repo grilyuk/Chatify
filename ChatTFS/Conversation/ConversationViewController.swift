@@ -8,7 +8,8 @@ protocol ConversationViewProtocol: AnyObject {
 
 class ConversationViewController: UIViewController {
     
-    //MARK: - UIConstants
+    // MARK: - UIConstants
+    
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
         static let textFieldHeight: CGFloat = 36
@@ -17,14 +18,16 @@ class ConversationViewController: UIViewController {
         static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.6705197704, green: 0.6906016156, blue: 0.8105463435, alpha: 1)
     }
     
-    //MARK: - Public
+    // MARK: - Public
+    
     var presenter: ConversationPresenterProtocol?
     var historyChat: [MessageCellModel] = []
     var titlesSections: [String] = []
     var userName: String = "Steve Jobs"
     weak var themeService: ThemeServiceProtocol?
     
-    //MARK: - Private
+    // MARK: - Private
+    
     private var dataSource: UITableViewDiffableDataSource<Date, MessageCellModel>?
     
     private lazy var tableView: UITableView = {
@@ -40,7 +43,7 @@ class ConversationViewController: UIViewController {
     
     private lazy var textFieldView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = UIConstants.textFieldHeight/2
+        view.layer.cornerRadius = UIConstants.textFieldHeight / 2
         view.layer.borderWidth = UIConstants.borderWidth
         view.layer.borderColor = UIColor.systemGray5.cgColor
         return view
@@ -62,7 +65,7 @@ class ConversationViewController: UIViewController {
     private lazy var customNavBar: UIView = {
         let navBar = UIView(frame: CGRect(x: 0, y: 0,
                                           width: view.frame.width,
-                                          height: view.frame.height * (137/844)))
+                                          height: view.frame.height * (137 / 844)))
         let blur = UIBlurEffect(style: .regular)
         let blurEffectView = UIVisualEffectView(effect: blur)
         blurEffectView.frame = navBar.bounds
@@ -80,7 +83,7 @@ class ConversationViewController: UIViewController {
                            UIConstants.imageProfileBottomColor.cgColor]
         gradient.frame = view.bounds
         view.layer.addSublayer(gradient)
-        view.layer.cornerRadius = UIConstants.avatarSize/2
+        view.layer.cornerRadius = UIConstants.avatarSize / 2
         view.clipsToBounds = true
         return view
     }()
@@ -89,12 +92,14 @@ class ConversationViewController: UIViewController {
         let label = UILabel()
         let initialFontSizeCalc = UIConstants.avatarSize * 0.45
         let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
-        label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
+        guard let descriptor = descriptor else { return label }
+        label.font = UIFont(descriptor: descriptor, size: initialFontSizeCalc)
         label.textColor = .white
         let formatter = PersonNameComponentsFormatter()
         let components = formatter.personNameComponents(from: userName)
+        guard let components = components else { return label }
         formatter.style = .abbreviated
-        label.text = formatter.string(from: components!)
+        label.text = formatter.string(from: components)
         return label
     }()
     
@@ -114,7 +119,8 @@ class ConversationViewController: UIViewController {
         return button
     }()
     
-    //MARK: - Initializer
+    // MARK: - Initialization
+    
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
@@ -124,7 +130,8 @@ class ConversationViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
@@ -146,6 +153,7 @@ class ConversationViewController: UIViewController {
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
+        tabBarController?.tabBar.isHidden = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -153,10 +161,10 @@ class ConversationViewController: UIViewController {
         navigationController?.navigationBar.isHidden = false
     }
 
-    //MARK: - Methods
+    // MARK: - Methods
+    
     private func setupDataSource() {
-        dataSource = UITableViewDiffableDataSource<Date, MessageCellModel> (tableView: tableView) { [weak self]
-            (tableView: UITableView, indexPath: IndexPath, itemIdentifier: MessageCellModel) -> UITableViewCell in
+        dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
             switch itemIdentifier.myMessage {
             case true:
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingConversationViewCell.identifier) as? OutgoingConversationViewCell,
@@ -173,7 +181,7 @@ class ConversationViewController: UIViewController {
                 cell.configure(with: itemIdentifier)
                 return cell
             }
-        }
+        })
     }
     
     private func setupSnapshot() {
@@ -234,7 +242,8 @@ class ConversationViewController: UIViewController {
         navigationController?.popToRootViewController(animated: true)
     }
     
-    //MARK: - Setup UI
+    // MARK: - Setup UI
+    
     private func setTableView() {
         view.addSubview(tableView)
         view.addSubview(textFieldView)
@@ -299,7 +308,8 @@ class ConversationViewController: UIViewController {
     }
 }
 
-//MARK: - ConversationViewController + UITableViewDelegate
+// MARK: - ConversationViewController + UITableViewDelegate
+
 extension ConversationViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let title = UILabel()
@@ -323,7 +333,8 @@ extension ConversationViewController: UITableViewDelegate {
     }
 }
 
-//MARK: - ConversationViewController + ConversationViewProtocol
+// MARK: - ConversationViewController + ConversationViewProtocol
+
 extension ConversationViewController: ConversationViewProtocol {
     func showConversation() {
         view.backgroundColor = themeService?.currentTheme.backgroundColor

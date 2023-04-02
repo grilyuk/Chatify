@@ -7,5 +7,6 @@ target 'ChatTFS' do
 
   # Pods for ChatTFS
 pod 'TFSChatTransport'
+pod 'SwiftLint'
 
 end
