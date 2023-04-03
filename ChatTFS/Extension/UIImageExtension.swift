@@ -1,6 +1,9 @@
 import UIKit
 
 extension UIImage {
+    
+    static let placeholder = UIImage(systemName: "person.fill")?.withTintColor(.systemBlue)
+    
     func scalePreservingAspectRatio(targetSize: CGSize) -> UIImage {
         let widthRatio = targetSize.width / size.width
         let heightRatio = targetSize.height / size.height

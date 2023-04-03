@@ -1,4 +1,5 @@
 import UIKit
+import Combine
 
 protocol ConvListInteractorProtocol: AnyObject {
     func loadData()
@@ -6,9 +7,18 @@ protocol ConvListInteractorProtocol: AnyObject {
 
 class ConvListInteractor: ConvListInteractorProtocol {
 
+    //MARK: - Initializer
+    init(dataManager: DataManagerProtocol) {
+        self.dataManager = dataManager
+    }
+    
     //MARK: - Public
     weak var presenter: ConvListPresenterProtocol?
-    weak var dataManager: DataManagerProtocol?
+    var dataManager: DataManagerProtocol?
+    
+    //MARK: - Private
+    private var handler: (([ConversationListModel]) -> Void)?
+    private var dataRequest: Cancellable?
     
     //MARK: - Methods
     func loadData() {
@@ -114,34 +124,22 @@ class ConvListInteractor: ConvListInteractorProtocol {
                                   isOnline: false,
                                   hasUnreadMessages: nil)
         ]
-        
-        guard let dataManager = dataManager else { return }
-        let pathExist = dataManager.checkPath()
-        
-        if pathExist {
-            //GCD
-            guard let GCDDataManager = dataManager as? GCDDataManager else { return }
-            GCDDataManager.asyncReadData { [weak self] profile in
-                self?.presenter?.handler?(profile, users)
-                self?.presenter?.dataUploaded()
-            }
-            
-            //Operation
-            let readDataOperation = ReadProfileOperation(dataManager: dataManager)
-            readDataOperation.completionBlock = { [weak self] in
-                OperationQueue.main.addOperation {
-                    let profile = readDataOperation.profile
-                    guard let profile = profile else { return }
-                    self?.presenter?.handler?(profile, users)
-                    self?.presenter?.dataUploaded()
-                }
-            }
-            let queue = OperationQueue()
-            queue.addOperation(readDataOperation)
-            
-        } else {
-            presenter?.handler?(dataManager.currentProfile, users)
-            presenter?.dataUploaded()
+
+        handler = { [weak self] users in
+            self?.presenter?.users = users
+            self?.presenter?.dataUploaded()
+            self?.dataRequest?.cancel()
         }
+        
+        dataRequest = dataManager?.readProfilePublisher()
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .handleEvents(receiveCancel: { print("Cancel sub in ConvListInteractor") })
+            .decode(type: ProfileModel.self, decoder: JSONDecoder())
+            .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
+            .sink(receiveValue: { [weak self] profile in
+                self?.dataManager?.currentProfile.send(profile)
+                self?.handler?(users)
+            })
     }
 }

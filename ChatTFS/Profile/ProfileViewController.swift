@@ -1,14 +1,17 @@
 import UIKit
+import Combine
 
 protocol ProfileViewProtocol: AnyObject {
-    func showProfile(profile: ProfileModel)
+    var profilePhoto: UIImageView { get set }
+    func showProfile()
 }
 
-class ProfileViewController: UIViewController, UINavigationBarDelegate {
+class ProfileViewController: UIViewController {
     
     //MARK: - Initializer
-    init(themeService: ThemeServiceProtocol) {
+    init(themeService: ThemeServiceProtocol, profilePublisher: CurrentValueSubject<ProfileModel, Never>) {
         self.themeService = themeService
+        self.profilePublisher = profilePublisher
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -31,24 +34,52 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
     
     //MARK: - Public
-    var profileImageView = UIImageView()
+    var profilePhoto = UIImageView()
     var presenter: ProfilePresenterProtocol?
     weak var themeService: ThemeServiceProtocol?
-    weak var dataManager: DataManagerProtocol?
-    
+
     //MARK: - Private
+    private enum State {
+        case loading
+        case error
+        case profile(ProfileModel)
+        case profileUploaded(ProfileModel)
+
+    }
+    
+    private var state: State = .loading {
+        didSet {
+            switch state {
+            case .loading:
+                self.activityIndicator.startAnimating()
+                self.addPhotoButton.isEnabled = false
+                self.editableNameSection.isEnabled = false
+                self.editableBioSection.isEnabled = false
+            case .profile(let profile):
+                profileUploaded(profile: profile)
+                self.setEditFinished()
+            case .profileUploaded(let profile):
+                profileUploaded(profile: profile)
+                self.setEditFinished()
+                self.show(successAlert, sender: self)
+            case .error:
+                break
+            }
+        }
+    }
+    
+    private var profilePublisher: CurrentValueSubject<ProfileModel, Never>
+    private var profileRequest: Cancellable?
     private lazy var navigationBar = UINavigationBar()
     private lazy var navTitle = UINavigationItem()
-    private lazy var navSaveProfile = UIBarButtonItem(image: UIImage(systemName: "ellipsis.circle"))
-    private lazy var activity = UIActivityIndicatorView.init(style: .medium)
+    private lazy var chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
     private lazy var placeholderImage = UIImage(systemName: "person.fill")?.scalePreservingAspectRatio(targetSize: CGSizeMake(100, 100)).withTintColor(.gray)
     private lazy var okAction = UIAlertAction(title: "OK", style: .default)
     private lazy var successAlert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
     private lazy var failureAlert = UIAlertController(title: "Failure...", message: "Can't saved data", preferredStyle: .alert)
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     
-    
-    private lazy var fullNameLabel: UILabel = {
+    private lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: UIConstants.largerFontSize, weight: .bold)
         return label
@@ -130,7 +161,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
         label.textColor = .white
         let formatter = PersonNameComponentsFormatter()
-        let components = formatter.personNameComponents(from: fullNameLabel.text ?? "")
+        let components = formatter.personNameComponents(from: nameLabel.text ?? "")
         formatter.style = .abbreviated
         label.text = formatter.string(from: components!)
         return label
@@ -139,6 +170,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        successAlert.addAction(okAction)
         editButton.addTarget(self, action: #selector(editProfileTapped), for: .touchUpInside)
         addPhotoButton.addTarget(self, action: #selector(addPhototapped), for: .touchUpInside)
         presenter?.viewReady()
@@ -146,17 +178,24 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         bioText.textColor = themeService?.currentTheme.textColor
         bioText.backgroundColor = themeService?.currentTheme.backgroundColor
-        fullNameLabel.textColor = themeService?.currentTheme.textColor
+        nameLabel.textColor = themeService?.currentTheme.textColor
         navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        profileImageView.layer.cornerRadius = profileImageView.frame.height / 2
-        profileImageView.clipsToBounds = true
+        profilePhoto.contentMode = .scaleAspectFill
+        profilePhoto.layer.cornerRadius = profilePhoto.frame.height / 2
+        profilePhoto.clipsToBounds = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        profileRequest?.cancel()
     }
     
     //MARK: - Setup UI
@@ -193,122 +232,23 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         navigationBar.setItems([navTitle], animated: false)
     }
     
-    private func setContextMenu() {
-        successAlert.addAction(okAction)
-        
-        let saveGCD = UIAction(title: "Save GCD") { [ weak self ] _ in
-            guard let self = self,
-                  let nameText = self.editableNameSection.text,
-                  let bioText = self.editableBioSection.text
-            else { return }
-            
-            let imageData: Data? = {
-                if self.profileImageView.image != self.placeholderImage {
-                    return self.profileImageView.image?.jpegData(compressionQuality: 1)
-                } else {return nil}
-            }()
-            self.editableBioSection.isEnabled = false
-            self.editableNameSection.isEnabled = false
-            self.addPhotoButton.isEnabled = false
-            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
-            self.activityIndicator.startAnimating()
-            let savingProfile = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
-            self.saveProfileGCD(profile: savingProfile)
-        }
-        
-        
-        let saveOpeartion = UIAction(title: "Save Operations") { [ weak self ] _ in
-            guard let self = self,
-                  let nameText = self.editableNameSection.text,
-                  let bioText = self.editableBioSection.text
-            else { return }
-            
-            let imageData: Data? = {
-                if self.profileImageView.image != self.placeholderImage {
-                    return self.profileImageView.image?.jpegData(compressionQuality: 1)
-                } else {return nil}
-            }()
-            self.editableBioSection.isEnabled = false
-            self.editableNameSection.isEnabled = false
-            self.addPhotoButton.isEnabled = false
-            self.navTitle.rightBarButtonItem = UIBarButtonItem(customView: self.activityIndicator)
-            self.activityIndicator.startAnimating()
-            let savingProfile = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
-            self.saveProfileOperation(profile: savingProfile)
-        }
-        
-        navSaveProfile.menu = UIMenu(children: [saveGCD, saveOpeartion])
-        navTitle.rightBarButtonItem = navSaveProfile
-    }
     
-    private func saveProfileGCD(profile: ProfileModel) {
-        guard let dataManager = self.dataManager as? GCDDataManager else { return }
-        dataManager.asyncWriteData(profileData: profile) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case true:
-                self.activityIndicator.stopAnimating()
-                self.setEditFinished()
-                self.fullNameLabel.text = profile.fullName
-                self.bioText.text = profile.statusText
-                self.present(self.successAlert, animated: true)
-            case false:
-                let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
-                    self.saveProfileGCD(profile: profile)
-                }
-                let okFailureAction = UIAlertAction(title: "OK", style: .default) {_ in
-                    self.setEditFinished()
-                }
-                if self.failureAlert.actions.count <= 1 {
-                    self.failureAlert.addAction(okFailureAction)
-                    self.failureAlert.addAction(tryAction)
-                }
-                self.present(self.failureAlert, animated: true)
-            }
+    private func profileUploaded(profile: ProfileModel) {
+        nameLabel.text = profile.fullName
+        bioText.text = profile.statusText
+        if profile.profileImageData == nil {
+            profilePhoto.image = placeholderImage
+        } else {
+            guard let imageData = profile.profileImageData else { return }
+            profilePhoto.image = UIImage(data: imageData)
         }
     }
-    
-    private func saveProfileOperation(profile: ProfileModel) {
-        guard let dataManager = self.dataManager as? DataManager else { return }
-        let saveOperation = SaveProfileOperation(profile: profile, dataManager: dataManager)
-        saveOperation.completionBlock = { [weak self] in
-            guard let self = self
-            else { return }
-            OperationQueue.main.addOperation {
-                if saveOperation.isSuccess {
-                    self.activityIndicator.stopAnimating()
-                    self.setEditFinished()
-                    self.fullNameLabel.text = profile.fullName
-                    self.bioText.text = profile.statusText
-                    self.present(self.successAlert, animated: true)
-                } else {
-                    let tryAction = UIAlertAction(title: "Try again", style: .default) {_ in
-                        self.saveProfileOperation(profile: profile)
-                    }
-                    let okFailureAction = UIAlertAction(title: "OK", style: .default) {_ in
-                        self.setEditFinished()
-                    }
-                    if self.failureAlert.actions.count <= 1 {
-                        self.failureAlert.addAction(okFailureAction)
-                        self.failureAlert.addAction(tryAction)
-                    }
-                    self.present(self.failureAlert, animated: true)
-                }
-            }
-        }
-        let operationQueue = OperationQueue()
-        operationQueue.addOperation(saveOperation)
-    }
-
     
     private func editableMode() {
-        if let bioText = dataManager?.currentProfile.statusText {
-            editableBioSection.text = bioText
-        }
-        if let nameText = dataManager?.currentProfile.fullName {
-            editableNameSection.text = nameText
-        }
-        fullNameLabel.isHidden = true
+        editableBioSection.text = bioText.text
+        editableNameSection.text = nameLabel.text
+        navTitle.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveProfile))
+        nameLabel.isHidden = true
         bioText.isHidden = true
         editableNameSection.isHidden = false
         editableBioSection.isHidden = false
@@ -316,7 +256,6 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         nameCell.isHidden = false
         bioCell.isHidden = false
         editableNameSection.becomeFirstResponder()
-        setContextMenu()
     }
     
     private func setEditFinished() {
@@ -327,12 +266,35 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
         editableNameSection.isEnabled = true
         editableBioSection.isEnabled = true
         addPhotoButton.isEnabled = true
-        fullNameLabel.isHidden = false
+        nameLabel.isHidden = false
         bioText.isHidden = false
         navTitle.title = "My Profile"
         navTitle.rightBarButtonItems?.removeAll()
+        activityIndicator.stopAnimating()
         let navEditProfile = UIBarButtonItem(customView: editButton)
         navTitle.rightBarButtonItem = navEditProfile
+    }
+    
+    @objc
+    private func saveProfile() {
+        guard let bioText = editableBioSection.text,
+              let nameText = editableNameSection.text
+        else {
+            return
+        }
+        
+        var imageData: Data? = nil
+        
+        if self.profilePhoto.image == placeholderImage {
+            imageData = nil
+        } else {
+            imageData = self.profilePhoto.image?.jpegData(compressionQuality: 1)
+        }
+        
+        let profileToSave = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
+        navTitle.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
+        state = .loading
+        presenter?.updateProfile(profile: profileToSave)
     }
     
     @objc
@@ -347,10 +309,7 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     
     @objc
     private func closeProfileTapped() {
-        if activityIndicator.isAnimating == true {
-            //canceling
-            setEditFinished()
-        } else if editableNameSection.isHidden == false {
+        if editableNameSection.isHidden == false {
             setEditFinished()
         } else {
             self.dismiss(animated: true)
@@ -360,20 +319,19 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
     @objc
     private func addPhototapped() {
         editableMode()
-        let alert = AlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        present(alert, animated: true) {
-            alert.vc = self
+        present(chooseSourceAlert, animated: true) {
+            self.chooseSourceAlert.profileVC = self
         }
     }
     
     private func setConstraints() {
-        view.addSubviews(navigationBar, profileImageView, addPhotoButton, fullNameLabel, bioText, nameCell,bioCell)
+        view.addSubviews(navigationBar, profilePhoto, addPhotoButton, nameLabel, bioText, nameCell,bioCell)
         nameCell.addSubview(editableNameSection)
         bioCell.addSubview(editableBioSection)
         navigationBar.translatesAutoresizingMaskIntoConstraints = false
-        profileImageView.translatesAutoresizingMaskIntoConstraints = false
+        profilePhoto.translatesAutoresizingMaskIntoConstraints = false
         addPhotoButton.translatesAutoresizingMaskIntoConstraints = false
-        fullNameLabel.translatesAutoresizingMaskIntoConstraints = false
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
         nameCell.translatesAutoresizingMaskIntoConstraints = false
         bioCell.translatesAutoresizingMaskIntoConstraints = false
         editableNameSection.translatesAutoresizingMaskIntoConstraints = false
@@ -384,18 +342,18 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
             navigationBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             navigationBar.widthAnchor.constraint(equalToConstant: view.frame.width),
             
-            profileImageView.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
-            profileImageView.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
-            profileImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            profileImageView.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: UIConstants.navBarToProfileImage),
+            profilePhoto.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
+            profilePhoto.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
+            profilePhoto.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            profilePhoto.topAnchor.constraint(equalTo: navigationBar.bottomAnchor, constant: UIConstants.navBarToProfileImage),
             
-            addPhotoButton.topAnchor.constraint(equalTo: profileImageView.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
+            addPhotoButton.topAnchor.constraint(equalTo: profilePhoto.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
             addPhotoButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            fullNameLabel.topAnchor.constraint(equalTo: addPhotoButton.bottomAnchor, constant: UIConstants.addPhotoToNameLabel),
-            fullNameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            nameLabel.topAnchor.constraint(equalTo: addPhotoButton.bottomAnchor, constant: UIConstants.addPhotoToNameLabel),
+            nameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            bioText.topAnchor.constraint(equalTo: fullNameLabel.bottomAnchor, constant: UIConstants.nameLabelToInfoText),
+            bioText.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: UIConstants.nameLabelToInfoText),
             bioText.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
             nameCell.widthAnchor.constraint(equalTo: view.widthAnchor),
@@ -419,29 +377,17 @@ class ProfileViewController: UIViewController, UINavigationBarDelegate {
 
 //MARK: - ProfileViewController + ProfileViewProtocol
 extension ProfileViewController: ProfileViewProtocol {
-    func showProfile(profile: ProfileModel) {
-        self.fullNameLabel.text = {
-            if profile.fullName == nil || profile.fullName == "" {
-                return "No name"
-            } else {
-                return profile.fullName
-            }
-        }()
-        
-        self.bioText.text = {
-            if profile.statusText == nil || profile.statusText == "" {
-                return "No bio specified"
-            } else {
-                return profile.statusText
-            }
-        }()
-        
-        if profile.profileImageData == nil || profile.fullName == nil {
-            self.profileImageView.image = placeholderImage
-        } else {
-            guard let imageData = profile.profileImageData else { return }
-            self.userAvatar.removeFromSuperview()
-            self.profileImageView.image = UIImage(data: imageData)
-        }
+    func showProfile() {
+        profileRequest = profilePublisher
+            .map({ [weak self] profile in
+                guard let self = self else { return State.error }
+                if self.nameLabel.text == profile.fullName,
+                   self.bioText.text == profile.statusText {
+                    return State.profileUploaded(profile)
+                } else {
+                    return State.profile(profile)
+                }
+            })
+            .assign(to: \.state, on: self)
     }
 }

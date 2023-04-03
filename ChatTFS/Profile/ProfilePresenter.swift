@@ -3,29 +3,33 @@ import UIKit
 protocol ProfilePresenterProtocol: AnyObject {
     func viewReady()
     func dataUploaded()
-    var profile: ProfileModel { get set }
+    func updateProfile(profile: ProfileModel)
+    var profile: ProfileModel? { get set }
 }
 
 class ProfilePresenter {
     weak var view: ProfileViewProtocol?
     let router: RouterProtocol
     let interactor: ProfileInteractorProtocol
-    var profile: ProfileModel
+    var profile: ProfileModel?
 
-    init(router: RouterProtocol, interactor: ProfileInteractorProtocol, profile: ProfileModel) {
+    init(router: RouterProtocol, interactor: ProfileInteractorProtocol) {
         self.router = router
         self.interactor = interactor
-        self.profile = profile
     }
 }
 
 //MARK: ProfilePresenter + ProfilePresenterProtocol
 extension ProfilePresenter: ProfilePresenterProtocol {
     func dataUploaded() {
-        view?.showProfile(profile: profile)
+        view?.showProfile()
     }
-
+    
     func viewReady() {
         interactor.loadData()
+    }
+    
+    func updateProfile(profile: ProfileModel) {
+        interactor.updateData(profile: profile)
     }
 }
