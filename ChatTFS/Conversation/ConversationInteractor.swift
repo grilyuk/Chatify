@@ -2,12 +2,14 @@ import Foundation
 
 protocol ConversationInteractorProtocol: AnyObject {
     func loadData()
+    var handler: (([MessageCellModel]) -> Void)? { get set }
 }
 
 class ConversationInteractor: ConversationInteractorProtocol {
     
     //MARK: - Public
     weak var presenter: ConversationPresenterProtocol?
+    var handler: (([MessageCellModel]) -> Void)?
     
     //MARK: - Methods
     func loadData() {
@@ -33,7 +35,10 @@ class ConversationInteractor: ConversationInteractorProtocol {
             MessageCellModel(text: "Тестим тестим тестим \nТестим ттим тестим тестим", date: Date(timeIntervalSinceNow: 0), myMessage: false),
             MessageCellModel(text: "Тестим тестим тестим \nТестим ттим тестим тестим", date: Date(timeIntervalSinceNow: 215125), myMessage: false)
         ]
-        presenter?.handler?(historyChat)
-        presenter?.dataUploaded()
+        handler = { [weak self] history in
+            self?.presenter?.historyChat = history
+            self?.presenter?.dataUploaded()
+        }
+        handler?(historyChat)
     }
 }

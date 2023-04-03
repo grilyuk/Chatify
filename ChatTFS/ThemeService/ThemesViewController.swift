@@ -23,13 +23,9 @@ class ThemesViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
-    }
-    
     //MARK: - Private properties
     private var themeService: ThemeServiceProtocol?
+    private var themeHandler: ((Theme) -> Void)?
     
     private lazy var bubble: UIView = {
         let view = UIView()
@@ -96,6 +92,9 @@ class ThemesViewController: UIViewController {
     //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        themeHandler = { [weak self] theme in
+            self?.themeService?.currentTheme = theme
+        }
         guard let currentTheme = themeService?.currentTheme else { return }
         fetchTheme(currentTheme: currentTheme)
         setNavigationBar()
@@ -129,43 +128,33 @@ class ThemesViewController: UIViewController {
     
     @objc
     private func tappedDayButton(_ sender: UIButton) {
+        let lightTheme = Theme.light
+        themeHandler?(lightTheme)
         sender.isSelected = true
         sender.imageView?.tintColor = .systemBlue
         nightTickButton.isSelected = false
         nightTickButton.imageView?.tintColor = .gray
-        let lightTheme = Theme.light
         let navBarStyle = UINavigationBarAppearance()
         navBarStyle.backgroundColor = lightTheme.backgroundColor
         navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
-        
-//пояснения в Services -> ThemeService
-        guard let themeService = themeService as? ThemeService else { return }
-        themeService.updateTheme()
-        themeService.themeDelegate?.changeTheme(theme: lightTheme)
-        //        themeService.themeHandler?(lightTheme)
     }
     
     @objc
     private func tappedNightButton(_ sender: UIButton) {
+        let darkTheme = Theme.dark
+        themeHandler?(darkTheme)
         sender.isSelected = true
         sender.imageView?.tintColor = .systemBlue
         dayTickButton.isSelected = false
         dayTickButton.imageView?.tintColor = .gray
-        let darkTheme = Theme.dark
         let navBarStyle = UINavigationBarAppearance()
         navBarStyle.backgroundColor = darkTheme.backgroundColor
         navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
         navigationController?.navigationBar.backgroundColor = darkTheme.backgroundColor
-        
-//пояснения в Services -> ThemeService
-        guard let themeService = themeService as? ThemeService else { return }
-        themeService.updateTheme()
-        themeService.themeDelegate?.changeTheme(theme: darkTheme)
-        //        themeService.themeHandler?(darkTheme)
     }
     
     private func changeNavBar(appearance: UINavigationBarAppearance) {

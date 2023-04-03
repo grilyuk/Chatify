@@ -7,7 +7,7 @@ protocol RouterMain: AnyObject {
 
 protocol RouterProtocol: RouterMain {
     func initialViewController()
-    func showProfile(profile: ProfileModel)
+    func showProfile()
     func showConversation(conversation: ConversationListModel)
     func showThemePicker()
 }
@@ -15,7 +15,7 @@ protocol RouterProtocol: RouterMain {
 class Router: RouterProtocol {
     
     //MARK: - Public
-    var navigationController: UINavigationController?
+    weak var navigationController: UINavigationController?
     var moduleBuilder: ModuleBuilderProtocol?
     
     //MARK: - Init
@@ -32,9 +32,9 @@ class Router: RouterProtocol {
         }
     }
     
-    func showProfile(profile: ProfileModel) {
+    func showProfile() {
         if let navigationController = navigationController {
-            guard let profileViewController = moduleBuilder?.buildProfile(router: self, profile: profile) else { return }
+            guard let profileViewController = moduleBuilder?.buildProfile(router: self) else { return }
             navigationController.present(profileViewController, animated: true)
         }
     }
