@@ -66,13 +66,9 @@ class ConversationListCell: UITableViewCell {
     
     private lazy var userAvatar: UIImageView = {
         let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: UIConstants.avatarSize, height: UIConstants.avatarSize))
-        let gradient = CAGradientLayer()
-        gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
-                           UIConstants.imageProfileBottomColor.cgColor]
-        gradient.frame = imageView.bounds
-        imageView.layer.addSublayer(gradient)
         imageView.layer.cornerRadius = UIConstants.avatarSize / 2
         imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
@@ -116,6 +112,7 @@ class ConversationListCell: UITableViewCell {
     /// PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
+        userAvatar.layer.sublayers?.forEach({ $0.removeFromSuperlayer() })
         userAvatar.image = nil
         nameLabel.text = nil
         lastMessageText.text = nil
@@ -145,6 +142,7 @@ class ConversationListCell: UITableViewCell {
             
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.nameTopToContentTop),
             nameLabel.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToName),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -65),
             
             lastMessageText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: UIConstants.meesageBottomToContentBottom),
             lastMessageText.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToMessage),
@@ -190,8 +188,23 @@ extension ConversationListCell: ConfigurableViewProtocol {
             ])
         }
         
-        if userAvatar.image == nil {
-            setInitials(from: model.name ?? "Steve Jobs")
+        if model.channelImage == nil {
+            userAvatar.image = UIImage(systemName: "person.2.circle")
+        } else {
+            var channelImage = UIImage(systemName: "person.2.circle")
+            DispatchQueue.global().async {
+                guard let imageURL = URL(string: model.channelImage ?? "") else { return }
+                do {
+                    let imageData = try Data(contentsOf: imageURL)
+                    channelImage = UIImage(data: imageData)
+                } catch {
+                    channelImage = UIImage(systemName: "xmark.circle")
+                    print(CustomError(description: "Error with Data from URL"))
+                }
+                DispatchQueue.main.async { [weak self] in
+                    self?.userAvatar.image = channelImage
+                }
+            }
         }
         
         nameLabel.text = model.name

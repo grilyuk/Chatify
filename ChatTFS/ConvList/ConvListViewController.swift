@@ -8,6 +8,7 @@ enum Section: Hashable, CaseIterable {
 
 protocol ConvListViewProtocol: AnyObject {
     func showMain()
+    func addChannel(channel: ConversationListModel)
     var users: [ConversationListModel]? { get set }
 }
 
@@ -44,12 +45,15 @@ class ConvListViewController: UIViewController {
     private lazy var placeholder = UIImage.placeholder?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
     private lazy var tableView = UITableView()
     private lazy var buttonWithUserPhoto = UIButton(type: .custom)
+    private lazy var pullToRefresh = UIRefreshControl()
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .large)
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
+        pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         setupUI()
     }
     
@@ -103,12 +107,14 @@ class ConvListViewController: UIViewController {
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
+        tableView.addSubview(pullToRefresh)
     }
     
     private func setupNavigationBar() {
         navigationItem.title = "Channels"
         let addChannelButton = UIBarButtonItem(title: "Add Channel", style: .plain, target: self, action: #selector(addChannelTapped))
         navigationItem.rightBarButtonItem = addChannelButton
+        navigationItem.titleView = activityIndicator
         guard let currentTheme = themeService?.currentTheme else { return }
         switch currentTheme {
         case .light: changeNavigationBar(theme: currentTheme)
@@ -164,8 +170,7 @@ class ConvListViewController: UIViewController {
                 else {
                     return
                 }
-//                presenter.createChannel
-                print(channelName)
+                self?.presenter?.createChannel(name: channelName)
             }
         }
         addChanelAlert.addAction(cancel)
@@ -187,6 +192,11 @@ class ConvListViewController: UIViewController {
     @objc
     private func addChannelTapped() {
         showCreateChannelAC()
+    }
+    
+    @objc
+    private func updateChannelList() {
+        presenter?.viewReady()
     }
 }
 
@@ -215,5 +225,15 @@ extension ConvListViewController: UITableViewDelegate {
 extension ConvListViewController: ConvListViewProtocol {
     func showMain() {
         setupSnapshot()
+        pullToRefresh.endRefreshing()
+    }
+    
+    func addChannel(channel: ConversationListModel) {
+        guard let dataSource = dataSource else { return }
+        var snapshot = dataSource.snapshot()
+        snapshot.appendItems([channel], toSection: 0)
+        guard let indexOfNewChannel = snapshot.indexOfItem(channel) else { return }
+        dataSource.apply(snapshot)
+        tableView.scrollToRow(at: IndexPath(item: indexOfNewChannel, section: 0), at: .bottom, animated: true)
     }
 }

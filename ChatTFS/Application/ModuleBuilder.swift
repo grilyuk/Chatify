@@ -17,7 +17,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     private lazy var themeService = ThemeService()
     private lazy var dataManager = DataManager()
     private lazy var profilePublisher = dataManager.currentProfile
-    private lazy var chatService = ChatService(baseUrl: "167.235.86.234", port: 8080)
+    private lazy var chatService = ChatService(host: "167.235.86.234", port: 8080)
     
     // MARK: - Methods
     

@@ -1,12 +1,16 @@
 import UIKit
+import TFSChatTransport
 
 protocol ConvListPresenterProtocol: AnyObject {
     var router: RouterProtocol? {get set}
     var profile: ProfileModel? { get set }
-    var users: [ConversationListModel]? { get set }
+    var channels: [ConversationListModel] { get set }
+    var dataConverstions: [Channel]? { get set }
     func viewReady()
     func dataUploaded()
     func didTappedConversation(for conversation: ConversationListModel, navigationController: UINavigationController)
+    func addChannel(channel: Channel)
+    func createChannel(name: String)
     var handler: (([ConversationListModel]) -> Void)? { get set }
 }
 
@@ -18,7 +22,8 @@ class ConvListPresenter {
     var router: RouterProtocol?
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
-    var users: [ConversationListModel]?
+    var channels: [ConversationListModel] = []
+    var dataConverstions: [Channel]?
     var handler: (([ConversationListModel]) -> Void)?
     
     // MARK: - Initialization
@@ -39,24 +44,37 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     }
     
     func dataUploaded() {
-        var usersWithMessages: [ConversationListModel] = []
-        var usersWithoutMessages: [ConversationListModel] = []
-        guard let users = users else { return }
-        for user in users {
-            switch user.date != nil {
-            case true: usersWithMessages.append(user)
-            case false: usersWithoutMessages.append(user)
+        var channelsWithMessages: [ConversationListModel] = []
+        var channelsWithoutMessages: [ConversationListModel] = []
+        dataConverstions?.forEach({ channel in
+            switch channel.lastMessage {
+            case nil:
+                channelsWithoutMessages.append(ConversationListModel(channelImage: channel.logoURL,
+                                                                     name: channel.name,
+                                                                     message: channel.lastMessage,
+                                                                     date: channel.lastActivity,
+                                                                     isOnline: false,
+                                                                     hasUnreadMessages: true))
+            default:
+                channelsWithMessages.append(ConversationListModel(channelImage: channel.logoURL,
+                                                                  name: channel.name,
+                                                                  message: channel.lastMessage,
+                                                                  date: channel.lastActivity,
+                                                                  isOnline: false,
+                                                                  hasUnreadMessages: true))
             }
-        }
-        var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
-        sortedUsers.append(contentsOf: usersWithoutMessages)
+        })
         
-        handler = { [weak self] sortedUsers in
-            self?.view?.users = sortedUsers
+        var sortedChannels = channelsWithMessages
+            .sorted { $0.date ?? Date() > $1.date ?? Date() }
+        sortedChannels.append(contentsOf: channelsWithoutMessages)
+        channels = sortedChannels
+        
+        handler = { [weak self] conversations in
+            self?.view?.users = conversations
             self?.view?.showMain()
         }
-        
-        handler?(sortedUsers)
+        handler?(channels)
     }
     
     func didTappedConversation(for conversation: ConversationListModel, navigationController: UINavigationController) {
@@ -64,6 +82,16 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     }
     
     func createChannel(name: String) {
-//        interactor.
+        interactor.createChannel(channelName: name)
+    }
+    
+    func addChannel(channel: Channel) {
+        let channelModel = ConversationListModel(channelImage: channel.logoURL,
+                                                 name: channel.name,
+                                                 message: channel.lastMessage,
+                                                 date: channel.lastActivity,
+                                                 isOnline: false,
+                                                 hasUnreadMessages: true)
+        view?.addChannel(channel: channelModel)
     }
 }
