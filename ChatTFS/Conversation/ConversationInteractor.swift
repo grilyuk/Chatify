@@ -1,27 +1,54 @@
 import Foundation
+import Combine
+import TFSChatTransport
 
 protocol ConversationInteractorProtocol: AnyObject {
     func loadData()
-    var handler: (([MessageCellModel]) -> Void)? { get set }
+    var dataHandler: (([Message], Channel) -> Void)? { get set }
 }
 
 class ConversationInteractor: ConversationInteractorProtocol {
     
+    init(chatService: ChatService, channelID: String) {
+        self.chatService = chatService
+        self.channelID = channelID
+    }
+    
     // MARK: - Public
     
+    weak var chatService: ChatService?
     weak var presenter: ConversationPresenterProtocol?
-    var handler: (([MessageCellModel]) -> Void)?
+    var channelID: String?
+    var dataMessagesRequest: Cancellable?
+    var dataChannelRequest: Cancellable?
+    var dataHandler: (([Message], Channel) -> Void)?
     
     // MARK: - Methods
     
     func loadData() {
-        let historyChat = [
-            MessageCellModel(text: "Тестим тестим тестим \nТестим ттим тестим тестим", date: Date(timeIntervalSinceNow: 215125), myMessage: false)
-        ]
-        handler = { [weak self] history in
-            self?.presenter?.historyChat = history
+        
+        dataHandler = { [weak self] messagesData, channelData in
+            self?.presenter?.channelData = channelData
+            self?.presenter?.messagesData = messagesData
             self?.presenter?.dataUploaded()
+            self?.dataChannelRequest?.cancel()
+            self?.dataMessagesRequest?.cancel()
         }
-        handler?(historyChat)
+        
+        dataChannelRequest = chatService?.loadChannel(id: channelID ?? "")
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in
+            }, receiveValue: { [weak self] channel in
+                self?.loadMessagesData(channelID: channel.id, channelData: channel)
+            })
+    }
+    
+    func loadMessagesData(channelID: String, channelData: Channel) {
+        dataMessagesRequest = self.chatService?.loadMessages(channelId: channelID)
+            .receive(on: DispatchQueue.main)
+            .sink(receiveCompletion: { _ in
+            }, receiveValue: { [weak self] messagesData in
+                self?.dataHandler?(messagesData, channelData)
+            })
     }
 }

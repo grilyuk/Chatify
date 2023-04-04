@@ -187,11 +187,10 @@ extension ConversationListCell: ConfigurableViewProtocol {
                 onlineIndicator.trailingAnchor.constraint(equalTo: userAvatar.trailingAnchor)
             ])
         }
-        
+        var channelImage = UIImage(systemName: "person.2.circle")
         if model.channelImage == nil {
-            userAvatar.image = UIImage(systemName: "person.2.circle")
+            userAvatar.image = channelImage
         } else {
-            var channelImage = UIImage(systemName: "person.2.circle")
             DispatchQueue.global().async {
                 guard let imageURL = URL(string: model.channelImage ?? "") else { return }
                 do {

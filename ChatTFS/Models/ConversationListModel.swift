@@ -7,5 +7,6 @@ struct ConversationListModel: Hashable {
     let date: Date?
     let isOnline: Bool
     let hasUnreadMessages: Bool?
+    let conversationID: String?
     let id = UUID()
 }

@@ -1,4 +1,5 @@
 import UIKit
+import TFSChatTransport
 
 protocol RouterMain: AnyObject {
     var navigationController: UINavigationController? {get set}
@@ -6,7 +7,7 @@ protocol RouterMain: AnyObject {
 }
 
 protocol RouterProtocol: RouterMain {
-    func showConversation(conversation: ConversationListModel, navigationController: UINavigationController)
+    func showConversation(conversation: String, navigationController: UINavigationController)
 }
 
 class Router: RouterProtocol {
@@ -25,9 +26,8 @@ class Router: RouterProtocol {
     
     // MARK: - Methods
     
-    func showConversation(conversation: ConversationListModel, navigationController: UINavigationController) {
+    func showConversation(conversation: String, navigationController: UINavigationController) {
         guard let conversationViewController = moduleBuilder?.buildConversation(router: self, conversation: conversation) else { return }
         navigationController.pushViewController(conversationViewController, animated: true)
-        
     }
 }

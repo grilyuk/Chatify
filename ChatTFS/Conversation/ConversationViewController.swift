@@ -1,9 +1,9 @@
 import UIKit
 
 protocol ConversationViewProtocol: AnyObject {
-    func showConversation()
+    func showConversation(channel: ChannelModel)
     var userName: String { get set }
-    var historyChat: [MessageCellModel] { get set }
+    var messages: [MessageCellModel] { get set }
 }
 
 class ConversationViewController: UIViewController {
@@ -21,7 +21,7 @@ class ConversationViewController: UIViewController {
     // MARK: - Public
     
     var presenter: ConversationPresenterProtocol?
-    var historyChat: [MessageCellModel] = []
+    var messages: [MessageCellModel] = []
     var titlesSections: [String] = []
     var userName: String = "Steve Jobs"
     weak var themeService: ThemeServiceProtocol?
@@ -52,6 +52,7 @@ class ConversationViewController: UIViewController {
     private lazy var textField: UITextField = {
         let field = UITextField()
         field.placeholder = "Type message"
+        field.tintColor = themeService?.currentTheme.incomingTextColor
         return field
     }()
     
@@ -76,37 +77,17 @@ class ConversationViewController: UIViewController {
         return navBar
     }()
     
-    private lazy var companionAvatar: UIView = {
-        let view = UIView(frame: CGRect(origin: .zero, size: .init(width: UIConstants.avatarSize, height: UIConstants.avatarSize)))
-        let gradient = CAGradientLayer()
-        gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
-                           UIConstants.imageProfileBottomColor.cgColor]
-        gradient.frame = view.bounds
-        view.layer.addSublayer(gradient)
+    private lazy var conversationLogo: UIImageView = {
+        let view = UIImageView(frame: CGRect(origin: .zero, size: .init(width: UIConstants.avatarSize, height: UIConstants.avatarSize)))
         view.layer.cornerRadius = UIConstants.avatarSize / 2
         view.clipsToBounds = true
+        view.contentMode = .scaleAspectFill
         return view
     }()
     
-    private lazy var initials: UILabel = {
-        let label = UILabel()
-        let initialFontSizeCalc = UIConstants.avatarSize * 0.45
-        let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
-        guard let descriptor = descriptor else { return label }
-        label.font = UIFont(descriptor: descriptor, size: initialFontSizeCalc)
-        label.textColor = .white
-        let formatter = PersonNameComponentsFormatter()
-        let components = formatter.personNameComponents(from: userName)
-        guard let components = components else { return label }
-        formatter.style = .abbreviated
-        label.text = formatter.string(from: components)
-        return label
-    }()
-    
-    private lazy var companionName: UILabel = {
+    private lazy var conversationName: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13)
-        label.text = userName
         label.textColor = themeService?.currentTheme.textColor
         return label
     }()
@@ -136,7 +117,6 @@ class ConversationViewController: UIViewController {
         super.viewDidLoad()
         presenter?.viewReady()
         setupDataSource()
-        setupSnapshot()
         setTableView()
         setGesture()
         NotificationCenter.default.addObserver(self,
@@ -152,6 +132,7 @@ class ConversationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
         tabBarController?.tabBar.isHidden = true
     }
@@ -160,7 +141,7 @@ class ConversationViewController: UIViewController {
         super.viewWillDisappear(animated)
         navigationController?.navigationBar.isHidden = false
     }
-
+    
     // MARK: - Methods
     
     private func setupDataSource() {
@@ -190,8 +171,8 @@ class ConversationViewController: UIViewController {
         snapshot.deleteAllItems()
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy"
-
-        let groupedMessages = Dictionary(grouping: historyChat, by: { Calendar.current.startOfDay(for: $0.date) })
+        
+        let groupedMessages = Dictionary(grouping: messages, by: { Calendar.current.startOfDay(for: $0.date) })
         let sortedDates = groupedMessages.keys.sorted()
         
         for date in sortedDates {
@@ -214,19 +195,19 @@ class ConversationViewController: UIViewController {
     private func showKeyboard(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
-
+        
         let keyboardHeight = keyboardFrame.height
         let viewYMax = view.frame.maxY
         let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
         let height = viewYMax - safeAreaYMax
         let offset = keyboardHeight - height
-        let sections = tableView.numberOfSections
-        let rowCount = tableView.numberOfRows(inSection: sections - 1)
+        let lastSectionNumber = tableView.numberOfSections - 1
+        let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
         additionalSafeAreaInsets.bottom = offset
-        tableView.scrollToRow(at: IndexPath(row: rowCount - 1, section: sections - 1), at: .bottom, animated: true)
+        tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
         tableView.scrollsToTop = true
     }
-
+    
     @objc
     private func hideKeyboard(_ notification: Notification) {
         additionalSafeAreaInsets.bottom = 0
@@ -250,19 +231,20 @@ class ConversationViewController: UIViewController {
         textFieldView.addSubview(textField)
         textFieldView.addSubview(sendButton)
         view.addSubview(customNavBar)
-        customNavBar.addSubview(companionAvatar)
-        companionAvatar.addSubview(initials)
-        customNavBar.addSubview(companionName)
+        customNavBar.addSubview(conversationLogo)
+        customNavBar.addSubview(conversationName)
         customNavBar.addSubview(backButton)
+        if #available(iOS 15.0, *) {
+            tableView.sectionHeaderTopPadding = 0
+        }
         
         textFieldView.translatesAutoresizingMaskIntoConstraints = false
         textField.translatesAutoresizingMaskIntoConstraints = false
         tableView.translatesAutoresizingMaskIntoConstraints = false
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         customNavBar.translatesAutoresizingMaskIntoConstraints = false
-        companionAvatar.translatesAutoresizingMaskIntoConstraints = false
-        initials.translatesAutoresizingMaskIntoConstraints = false
-        companionName.translatesAutoresizingMaskIntoConstraints = false
+        conversationLogo.translatesAutoresizingMaskIntoConstraints = false
+        conversationName.translatesAutoresizingMaskIntoConstraints = false
         backButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -291,16 +273,13 @@ class ConversationViewController: UIViewController {
             customNavBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             customNavBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.16),
             
-            companionAvatar.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
-            companionAvatar.bottomAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: -30),
-            companionAvatar.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
-            companionAvatar.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
+            conversationLogo.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
+            conversationLogo.bottomAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: -30),
+            conversationLogo.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
+            conversationLogo.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
             
-            initials.centerYAnchor.constraint(equalTo: companionAvatar.centerYAnchor),
-            initials.centerXAnchor.constraint(equalTo: companionAvatar.centerXAnchor),
-            
-            companionName.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
-            companionName.topAnchor.constraint(equalTo: companionAvatar.bottomAnchor, constant: 5),
+            conversationName.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
+            conversationName.topAnchor.constraint(equalTo: conversationLogo.bottomAnchor, constant: 5),
             
             backButton.centerYAnchor.constraint(equalTo: customNavBar.centerYAnchor, constant: 10),
             backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18)
@@ -336,7 +315,9 @@ extension ConversationViewController: UITableViewDelegate {
 // MARK: - ConversationViewController + ConversationViewProtocol
 
 extension ConversationViewController: ConversationViewProtocol {
-    func showConversation() {
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
+    func showConversation(channel: ChannelModel) {
+        setupSnapshot()
+        conversationName.text = channel.channelName
+        conversationLogo.image = channel.channelImage
     }
 }

@@ -9,7 +9,7 @@ enum Section: Hashable, CaseIterable {
 protocol ConvListViewProtocol: AnyObject {
     func showMain()
     func addChannel(channel: ConversationListModel)
-    var users: [ConversationListModel]? { get set }
+    var conversations: [ConversationListModel]? { get set }
 }
 
 class ConvListViewController: UIViewController {
@@ -36,7 +36,7 @@ class ConvListViewController: UIViewController {
     // MARK: - Public
     
     var presenter: ConvListPresenterProtocol?
-    var users: [ConversationListModel]?
+    var conversations: [ConversationListModel]?
     weak var themeService: ThemeServiceProtocol?
 
     // MARK: - Private
@@ -46,7 +46,6 @@ class ConvListViewController: UIViewController {
     private lazy var tableView = UITableView()
     private lazy var buttonWithUserPhoto = UIButton(type: .custom)
     private lazy var pullToRefresh = UIRefreshControl()
-    private lazy var activityIndicator = UIActivityIndicatorView(style: .large)
     
     // MARK: - Lifecycle
     
@@ -93,9 +92,9 @@ class ConvListViewController: UIViewController {
         guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
-        guard let users = users else { return }
+        guard let conversations = conversations else { return }
         snapshot.appendSections([0])
-        snapshot.appendItems(users, toSection: 0)
+        snapshot.appendItems(conversations, toSection: 0)
         dataSource.apply(snapshot)
     }
     
@@ -114,7 +113,6 @@ class ConvListViewController: UIViewController {
         navigationItem.title = "Channels"
         let addChannelButton = UIBarButtonItem(title: "Add Channel", style: .plain, target: self, action: #selector(addChannelTapped))
         navigationItem.rightBarButtonItem = addChannelButton
-        navigationItem.titleView = activityIndicator
         guard let currentTheme = themeService?.currentTheme else { return }
         switch currentTheme {
         case .light: changeNavigationBar(theme: currentTheme)
@@ -213,9 +211,11 @@ extension ConvListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let users = users,
-              let navigationController = navigationController else {return}
-        presenter?.didTappedConversation(for: users[indexPath.row], navigationController: navigationController)
+        guard let conversations = conversations,
+              let navigationController = navigationController,
+        let channelID = conversations[indexPath.item].conversationID
+        else {return}
+        presenter?.didTappedConversation(to: channelID, navigationController: navigationController)
         tableView.deselectRow(at: indexPath, animated: true)
     }
 }

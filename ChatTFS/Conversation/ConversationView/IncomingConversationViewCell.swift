@@ -11,6 +11,7 @@ class IncomingConversationViewCell: UITableViewCell {
         static let edgeToTable: CGFloat = 10
         static let cornerRadius: CGFloat = 16
         static let fontSizeDate: CGFloat = 10
+        static let userNameFontSize: CGFloat = 14
     }
     
     // MARK: - Private
@@ -38,6 +39,13 @@ class IncomingConversationViewCell: UITableViewCell {
         return date
     }()
     
+    private lazy var userNameLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .gray
+        label.font = .systemFont(ofSize: UIConstants.userNameFontSize)
+        return label
+    }()
+    
     // MARK: - Lifecycle
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -54,26 +62,30 @@ class IncomingConversationViewCell: UITableViewCell {
         super.prepareForReuse()
         messageText.text = nil
         dateLabel.text = nil
+        userNameLabel.text = nil
     }
     
     // MARK: - SetupUI
     
     func setupUI() {
-        contentView.addSubview(messageBubble)
+        contentView.addSubviews(messageBubble, userNameLabel)
         messageBubble.addSubviews(messageText, dateLabel)
         
         messageBubble.translatesAutoresizingMaskIntoConstraints = false
         messageText.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
+        userNameLabel.translatesAutoresizingMaskIntoConstraints = false
         
-        let maxBubbleWidht = messageBubble.widthAnchor.constraint(lessThanOrEqualTo: self.contentView.widthAnchor, multiplier: 0.75)
-        maxBubbleWidht.priority = .required
-        maxBubbleWidht.isActive = true
+        let maxBubbleWidth = messageBubble.widthAnchor.constraint(lessThanOrEqualTo: self.contentView.widthAnchor, multiplier: 0.75)
+        maxBubbleWidth.priority = .required
+        maxBubbleWidth.isActive = true
         dateLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
         
         NSLayoutConstraint.activate([
             messageBubble.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -UIConstants.edgeVertical),
-            messageBubble.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.edgeVertical),
+            userNameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.edgeVertical),
+            userNameLabel.leadingAnchor.constraint(equalTo: messageText.leadingAnchor),
+            messageBubble.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: UIConstants.edgeVertical),
             dateLabel.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge),
             dateLabel.leadingAnchor.constraint(equalTo: messageText.trailingAnchor, constant: UIConstants.edge),
             dateLabel.bottomAnchor.constraint(equalTo: messageText.bottomAnchor),
@@ -93,6 +105,7 @@ extension IncomingConversationViewCell: ConfigurableViewProtocol {
         let format = DateFormatter()
         format.dateFormat = "HH:mm"
         dateLabel.text = format.string(from: model.date)
+        userNameLabel.text = model.userName
     }
     
     func configureTheme(theme: ThemeServiceProtocol) {

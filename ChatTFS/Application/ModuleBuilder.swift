@@ -5,7 +5,7 @@ import TFSChatTransport
 protocol ModuleBuilderProtocol: AnyObject {
     func buildConvList() -> UINavigationController
     func buildProfile() -> UINavigationController
-    func buildConversation(router: RouterProtocol, conversation: ConversationListModel) -> ConversationViewController
+    func buildConversation(router: RouterProtocol, conversation: String) -> ConversationViewController
     func buildThemePicker() -> UINavigationController
     func buildTabBarController() -> UITabBarController
 }
@@ -44,9 +44,9 @@ class ModuleBuilder: ModuleBuilderProtocol {
         return navigationController
     }
     
-    func buildConversation(router: RouterProtocol, conversation: ConversationListModel) -> ConversationViewController {
-        let interactor = ConversationInteractor()
-        let presenter = ConversationPresenter(router: router, interactor: interactor, conversation: conversation)
+    func buildConversation(router: RouterProtocol, conversation: String) -> ConversationViewController {
+        let interactor = ConversationInteractor(chatService: chatService, channelID: conversation)
+        let presenter = ConversationPresenter(router: router, interactor: interactor)
         let view = ConversationViewController(themeService: themeService)
         view.presenter = presenter
         interactor.presenter = presenter

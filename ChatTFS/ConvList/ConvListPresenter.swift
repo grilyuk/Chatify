@@ -8,7 +8,7 @@ protocol ConvListPresenterProtocol: AnyObject {
     var dataConverstions: [Channel]? { get set }
     func viewReady()
     func dataUploaded()
-    func didTappedConversation(for conversation: ConversationListModel, navigationController: UINavigationController)
+    func didTappedConversation(to conversation: String, navigationController: UINavigationController)
     func addChannel(channel: Channel)
     func createChannel(name: String)
     var handler: (([ConversationListModel]) -> Void)? { get set }
@@ -54,14 +54,16 @@ extension ConvListPresenter: ConvListPresenterProtocol {
                                                                      message: channel.lastMessage,
                                                                      date: channel.lastActivity,
                                                                      isOnline: false,
-                                                                     hasUnreadMessages: true))
+                                                                     hasUnreadMessages: true,
+                                                                     conversationID: channel.id))
             default:
                 channelsWithMessages.append(ConversationListModel(channelImage: channel.logoURL,
                                                                   name: channel.name,
                                                                   message: channel.lastMessage,
                                                                   date: channel.lastActivity,
                                                                   isOnline: false,
-                                                                  hasUnreadMessages: true))
+                                                                  hasUnreadMessages: true,
+                                                                  conversationID: channel.id))
             }
         })
         
@@ -71,13 +73,13 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         channels = sortedChannels
         
         handler = { [weak self] conversations in
-            self?.view?.users = conversations
+            self?.view?.conversations = conversations
             self?.view?.showMain()
         }
         handler?(channels)
     }
     
-    func didTappedConversation(for conversation: ConversationListModel, navigationController: UINavigationController) {
+    func didTappedConversation(to conversation: String, navigationController: UINavigationController) {
         router?.showConversation(conversation: conversation, navigationController: navigationController)
     }
     
@@ -91,7 +93,8 @@ extension ConvListPresenter: ConvListPresenterProtocol {
                                                  message: channel.lastMessage,
                                                  date: channel.lastActivity,
                                                  isOnline: false,
-                                                 hasUnreadMessages: true)
+                                                 hasUnreadMessages: true,
+                                                 conversationID: channel.id)
         view?.addChannel(channel: channelModel)
     }
 }
