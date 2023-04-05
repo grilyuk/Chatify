@@ -3,7 +3,6 @@ import UIKit
 protocol ConversationViewProtocol: AnyObject {
     func showConversation(channel: ChannelModel)
     func addMessage(message: MessageCellModel)
-    var userName: String { get set }
     var messages: [MessageCellModel] { get set }
 }
 
@@ -24,7 +23,6 @@ class ConversationViewController: UIViewController {
     var presenter: ConversationPresenterProtocol?
     var messages: [MessageCellModel] = []
     var titlesSections: [String] = []
-    var userName: String = "Steve Jobs"
     weak var themeService: ThemeServiceProtocol?
     
     // MARK: - Private
@@ -208,10 +206,12 @@ class ConversationViewController: UIViewController {
         let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
         let height = viewYMax - safeAreaYMax
         let offset = keyboardHeight - height
-        let lastSectionNumber = tableView.numberOfSections - 1
-        let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
         additionalSafeAreaInsets.bottom = offset
-        tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
+        if !messages.isEmpty {
+            let lastSectionNumber = tableView.numberOfSections - 1
+            let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
+            tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
+        }
         tableView.scrollsToTop = true
     }
     
@@ -241,6 +241,7 @@ class ConversationViewController: UIViewController {
         customNavBar.addSubview(conversationLogo)
         customNavBar.addSubview(conversationName)
         customNavBar.addSubview(backButton)
+        tableView.scrollsToTop = true
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
@@ -331,7 +332,22 @@ extension ConversationViewController: ConversationViewProtocol {
     func addMessage(message: MessageCellModel) {
         guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
-        snapshot.appendItems([message])
-        dataSource.apply(snapshot)
+        if snapshot.numberOfSections == 0 {
+            snapshot.appendSections([message.date])
+            snapshot.appendItems([message], toSection: message.date)
+        } else {
+            snapshot.appendItems([message])
+        }
+        
+        DispatchQueue.main.async {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd.MM.yyyy"
+            self.titlesSections.append(formatter.string(from: message.date))
+            self.dataSource?.apply(snapshot)
+            let lastSectionNumber = self.tableView.numberOfSections - 1
+            let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
+            self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),
+                                                     at: .none, animated: true)
+        }
     }
 }

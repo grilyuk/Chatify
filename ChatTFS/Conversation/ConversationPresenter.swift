@@ -38,7 +38,6 @@ extension ConversationPresenter: ConversationPresenterProtocol {
     
     func createMessage(messageText: String?) {
         if messageText == nil && messageText == "" {
-            print("Empty message")
         } else {
             interactor.createMessageData(messageText: messageText ?? "")
         }
@@ -57,20 +56,17 @@ extension ConversationPresenter: ConversationPresenterProtocol {
         
         var messages: [MessageCellModel] = []
         messagesData?.forEach({ message in
-            print(userID)
-            print(message.userID)
-            if message.userID == userID {
+            if message.userID == userID && message.text != "" {
                 messages.append(MessageCellModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: true,
                                                  userName: message.userName))
-            } else {
+            } else if message.text != "" {
                 messages.append(MessageCellModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: false,
                                                  userName: message.userName))
             }
-            
         })
         
         DispatchQueue.global().async { [weak self] in

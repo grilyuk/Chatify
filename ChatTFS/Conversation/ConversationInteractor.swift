@@ -56,8 +56,7 @@ class ConversationInteractor: ConversationInteractorProtocol {
             .catch({_ in
                 Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
             .sink(receiveValue: { [weak self] profile in
-                print(profile)
-                self?.userID = profile.id
+                self?.userID = self?.dataManager?.userId
                 self?.userName = profile.fullName
             })
     }
