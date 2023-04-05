@@ -58,6 +58,7 @@ class DataManager: DataManagerProtocol {
         else {
             return false
         }
+//        print(filePath)
         return FileManager.default.fileExists(atPath: filePath) ? true : false
     }
     

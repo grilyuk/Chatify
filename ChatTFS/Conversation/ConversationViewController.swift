@@ -2,6 +2,7 @@ import UIKit
 
 protocol ConversationViewProtocol: AnyObject {
     func showConversation(channel: ChannelModel)
+    func addMessage(message: MessageCellModel)
     var userName: String { get set }
     var messages: [MessageCellModel] { get set }
 }
@@ -119,6 +120,7 @@ class ConversationViewController: UIViewController {
         setupDataSource()
         setTableView()
         setGesture()
+        sendButton.addTarget(self, action: #selector(sendMessage), for: .touchUpInside)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(showKeyboard),
                                                name: UIResponder.keyboardWillShowNotification,
@@ -143,6 +145,11 @@ class ConversationViewController: UIViewController {
     }
     
     // MARK: - Methods
+    
+    @objc
+    private func sendMessage() {
+        presenter?.createMessage(messageText: textField.text)
+    }
     
     private func setupDataSource() {
         dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
@@ -319,5 +326,12 @@ extension ConversationViewController: ConversationViewProtocol {
         setupSnapshot()
         conversationName.text = channel.channelName
         conversationLogo.image = channel.channelImage
+    }
+    
+    func addMessage(message: MessageCellModel) {
+        guard let dataSource = dataSource else { return }
+        var snapshot = dataSource.snapshot()
+        snapshot.appendItems([message])
+        dataSource.apply(snapshot)
     }
 }

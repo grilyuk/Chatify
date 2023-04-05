@@ -45,7 +45,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     }
     
     func buildConversation(router: RouterProtocol, conversation: String) -> ConversationViewController {
-        let interactor = ConversationInteractor(chatService: chatService, channelID: conversation)
+        let interactor = ConversationInteractor(chatService: chatService, channelID: conversation, dataManager: dataManager)
         let presenter = ConversationPresenter(router: router, interactor: interactor)
         let view = ConversationViewController(themeService: themeService)
         view.presenter = presenter

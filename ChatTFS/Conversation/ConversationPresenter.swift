@@ -6,7 +6,9 @@ protocol ConversationPresenterProtocol: AnyObject {
     var messagesData: [Message]? { get set }
     var channelData: Channel? { get set }
     func viewReady()
-    func dataUploaded()
+    func dataUploaded(userID: String)
+    func uploadMessage(messageModel: Message)
+    func createMessage(messageText: String?)
 }
 
 class ConversationPresenter {
@@ -34,11 +36,19 @@ extension ConversationPresenter: ConversationPresenterProtocol {
     
     // MARK: - Methods
     
+    func createMessage(messageText: String?) {
+        if messageText == nil && messageText == "" {
+            print("Empty message")
+        } else {
+            interactor.createMessageData(messageText: messageText ?? "")
+        }
+    }
+    
     func viewReady() {
         interactor.loadData()
     }
     
-    func dataUploaded() {
+    func dataUploaded(userID: String) {
         
         handler = { [weak self] channel, messages in
             self?.view?.messages = messages
@@ -47,10 +57,20 @@ extension ConversationPresenter: ConversationPresenterProtocol {
         
         var messages: [MessageCellModel] = []
         messagesData?.forEach({ message in
-            messages.append(MessageCellModel(text: message.text,
-                                             date: message.date,
-                                             myMessage: false,
-                                             userName: message.userName))
+            print(userID)
+            print(message.userID)
+            if message.userID == userID {
+                messages.append(MessageCellModel(text: message.text,
+                                                 date: message.date,
+                                                 myMessage: true,
+                                                 userName: message.userName))
+            } else {
+                messages.append(MessageCellModel(text: message.text,
+                                                 date: message.date,
+                                                 myMessage: false,
+                                                 userName: message.userName))
+            }
+            
         })
         
         DispatchQueue.global().async { [weak self] in
@@ -75,5 +95,12 @@ extension ConversationPresenter: ConversationPresenterProtocol {
                 self?.handler?(channel, messages)
             }
         }
+    }
+    
+    func uploadMessage(messageModel: Message) {
+        view?.addMessage(message: MessageCellModel(text: messageModel.text,
+                                                   date: messageModel.date,
+                                                   myMessage: true,
+                                                   userName: ""))
     }
 }
