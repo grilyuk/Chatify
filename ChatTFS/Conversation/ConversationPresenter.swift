@@ -54,25 +54,36 @@ extension ConversationPresenter: ConversationPresenterProtocol {
             self?.view?.showConversation(channel: channel)
         }
         
+        var currentUserID = ""
         var messages: [MessageCellModel] = []
         messagesData?.forEach({ message in
             if message.userID == userID && message.text != "" {
                 messages.append(MessageCellModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: true,
-                                                 userName: message.userName))
+                                                 userName: message.userName,
+                                                 isSameUser: true))
             } else if message.text != "" {
+                let isSameUser = {
+                    if currentUserID == message.userID {
+                        return true
+                    } else {
+                        currentUserID = message.userID
+                        return false
+                    }
+                }()
                 messages.append(MessageCellModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: false,
-                                                 userName: message.userName))
+                                                 userName: message.userName,
+                                                 isSameUser: isSameUser))
             }
         })
         
         DispatchQueue.global().async { [weak self] in
             guard let channelName = self?.channelData?.name else { return }
             let channelImage: UIImage = {
-                var image = UIImage(systemName: "person.3") ?? UIImage()
+                var image = UIImage(systemName: "circle.slash") ?? UIImage()
                 do {
                     guard let imageURLString = self?.channelData?.logoURL,
                           let imageURL = URL(string: imageURLString)
@@ -97,6 +108,7 @@ extension ConversationPresenter: ConversationPresenterProtocol {
         view?.addMessage(message: MessageCellModel(text: messageModel.text,
                                                    date: messageModel.date,
                                                    myMessage: true,
-                                                   userName: ""))
+                                                   userName: "",
+                                                   isSameUser: true))
     }
 }

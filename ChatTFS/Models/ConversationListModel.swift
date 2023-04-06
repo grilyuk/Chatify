@@ -1,7 +1,8 @@
 import Foundation
+import UIKit
 
 struct ConversationListModel: Hashable {
-    let channelImage: String?
+    let channelImage: UIImage
     let name: String?
     let message: String?
     let date: Date?

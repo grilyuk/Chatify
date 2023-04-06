@@ -17,6 +17,7 @@ class ConversationListCell: UITableViewCell {
         static let nameLabelFontSize: CGFloat = 16
         static let lastMessageFontSize: CGFloat = 15
         static let dateLabelFontSize: CGFloat = 15
+        static let channelNameFontSize: CGFloat = 17
         static let meesageBottomToContentBottom: CGFloat = -17
         static let dateLabelToContentEdge: CGFloat = -5
         static let avatarToName: CGFloat = 10
@@ -187,24 +188,8 @@ extension ConversationListCell: ConfigurableViewProtocol {
                 onlineIndicator.trailingAnchor.constraint(equalTo: userAvatar.trailingAnchor)
             ])
         }
-        var channelImage = UIImage(systemName: "person.2.circle")
-        if model.channelImage == nil {
-            userAvatar.image = channelImage
-        } else {
-            DispatchQueue.global().async {
-                guard let imageURL = URL(string: model.channelImage ?? "") else { return }
-                do {
-                    let imageData = try Data(contentsOf: imageURL)
-                    channelImage = UIImage(data: imageData)
-                } catch {
-                    channelImage = UIImage(systemName: "xmark.circle")
-                    print(CustomError(description: "Error with Data from URL"))
-                }
-                DispatchQueue.main.async { [weak self] in
-                    self?.userAvatar.image = channelImage
-                }
-            }
-        }
+        
+        userAvatar.image = model.channelImage
         
         nameLabel.text = model.name
         

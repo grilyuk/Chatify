@@ -11,6 +11,7 @@ protocol ConvListPresenterProtocol: AnyObject {
     func didTappedConversation(to conversation: String, navigationController: UINavigationController)
     func addChannel(channel: Channel)
     func createChannel(name: String)
+    func interactorError()
     var handler: (([ConversationListModel]) -> Void)? { get set }
 }
 
@@ -47,36 +48,52 @@ extension ConvListPresenter: ConvListPresenterProtocol {
         var channelsWithMessages: [ConversationListModel] = []
         var channelsWithoutMessages: [ConversationListModel] = []
         dataConverstions?.forEach({ channel in
-            switch channel.lastMessage {
-            case nil:
-                channelsWithoutMessages.append(ConversationListModel(channelImage: channel.logoURL,
-                                                                     name: channel.name,
-                                                                     message: channel.lastMessage,
-                                                                     date: channel.lastActivity,
-                                                                     isOnline: false,
-                                                                     hasUnreadMessages: true,
-                                                                     conversationID: channel.id))
-            default:
-                channelsWithMessages.append(ConversationListModel(channelImage: channel.logoURL,
-                                                                  name: channel.name,
-                                                                  message: channel.lastMessage,
-                                                                  date: channel.lastActivity,
-                                                                  isOnline: false,
-                                                                  hasUnreadMessages: true,
-                                                                  conversationID: channel.id))
+            DispatchQueue.global().async {
+                
+                var channelImage = UIImage.channelPlaceholder
+                
+                if let imageURL = URL(string: channel.logoURL ?? "") {
+                    do {
+                        let imageData = try Data(contentsOf: imageURL)
+                        channelImage = UIImage(data: imageData) ?? UIImage()
+                    } catch {
+                        print(CustomError(description: "Error with Data from URL"))
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    switch channel.lastMessage {
+                    case nil:
+                        channelsWithoutMessages.append(ConversationListModel(channelImage: channelImage,
+                                                                             name: channel.name,
+                                                                             message: channel.lastMessage,
+                                                                             date: channel.lastActivity,
+                                                                             isOnline: false,
+                                                                             hasUnreadMessages: true,
+                                                                             conversationID: channel.id))
+                    default:
+                        channelsWithMessages.append(ConversationListModel(channelImage: channelImage,
+                                                                          name: channel.name,
+                                                                          message: channel.lastMessage,
+                                                                          date: channel.lastActivity,
+                                                                          isOnline: false,
+                                                                          hasUnreadMessages: true,
+                                                                          conversationID: channel.id))
+                    }
+                    var sortedChannels = channelsWithMessages
+                        .sorted { $0.date ?? Date() > $1.date ?? Date() }
+                    sortedChannels.append(contentsOf: channelsWithoutMessages)
+                    self.channels = sortedChannels
+                    
+                    self.handler = { [weak self] conversations in
+                        self?.view?.conversations = conversations
+                        self?.view?.showMain()
+                    }
+                    self.handler?(self.channels)
+                }
             }
         })
-        
-        var sortedChannels = channelsWithMessages
-            .sorted { $0.date ?? Date() > $1.date ?? Date() }
-        sortedChannels.append(contentsOf: channelsWithoutMessages)
-        channels = sortedChannels
-        
-        handler = { [weak self] conversations in
-            self?.view?.conversations = conversations
-            self?.view?.showMain()
-        }
-        handler?(channels)
+        view?.pullToRefresh.endRefreshing()
     }
     
     func didTappedConversation(to conversation: String, navigationController: UINavigationController) {
@@ -88,7 +105,8 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     }
     
     func addChannel(channel: Channel) {
-        let channelModel = ConversationListModel(channelImage: channel.logoURL,
+        let channelImage = UIImage.channelPlaceholder
+        let channelModel = ConversationListModel(channelImage: channelImage,
                                                  name: channel.name,
                                                  message: channel.lastMessage,
                                                  date: channel.lastActivity,
@@ -96,5 +114,9 @@ extension ConvListPresenter: ConvListPresenterProtocol {
                                                  hasUnreadMessages: true,
                                                  conversationID: channel.id)
         view?.addChannel(channel: channelModel)
+    }
+    
+    func interactorError() {
+        view?.showAlert()
     }
 }

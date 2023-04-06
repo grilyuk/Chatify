@@ -7,7 +7,9 @@ enum Section: Hashable, CaseIterable {
 }
 
 protocol ConvListViewProtocol: AnyObject {
+    var pullToRefresh: UIRefreshControl { get set }
     func showMain()
+    func showAlert()
     func addChannel(channel: ConversationListModel)
     var conversations: [ConversationListModel]? { get set }
 }
@@ -38,6 +40,7 @@ class ConvListViewController: UIViewController {
     var presenter: ConvListPresenterProtocol?
     var conversations: [ConversationListModel]?
     weak var themeService: ThemeServiceProtocol?
+    var pullToRefresh = UIRefreshControl()
 
     // MARK: - Private
     
@@ -45,7 +48,11 @@ class ConvListViewController: UIViewController {
     private lazy var placeholder = UIImage.placeholder?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
     private lazy var tableView = UITableView()
     private lazy var buttonWithUserPhoto = UIButton(type: .custom)
-    private lazy var pullToRefresh = UIRefreshControl()
+    private lazy var errorAlert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так", preferredStyle: .alert)
+    private lazy var cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+    private lazy var retryAction = UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
+        self?.presenter?.viewReady()
+    }
     
     // MARK: - Lifecycle
     
@@ -54,6 +61,9 @@ class ConvListViewController: UIViewController {
         presenter?.viewReady()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         setupUI()
+        
+        errorAlert.addAction(retryAction)
+        errorAlert.addAction(cancelAction)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -211,9 +221,9 @@ extension ConvListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        guard let conversations = conversations,
-              let navigationController = navigationController,
-        let channelID = conversations[indexPath.item].conversationID
+        guard let navigationController = navigationController,
+              let snapshot = dataSource?.snapshot(),
+              let channelID = snapshot.itemIdentifiers[indexPath.item].conversationID
         else {return}
         presenter?.didTappedConversation(to: channelID, navigationController: navigationController)
         tableView.deselectRow(at: indexPath, animated: true)
@@ -223,9 +233,16 @@ extension ConvListViewController: UITableViewDelegate {
 // MARK: - ConvListViewController + ConvListViewProtocol
 
 extension ConvListViewController: ConvListViewProtocol {
+    
     func showMain() {
         setupSnapshot()
-        pullToRefresh.endRefreshing()
+    }
+    
+    func showAlert() {
+        if errorAlert.presentingViewController?.isBeingPresented ?? true {
+            self.present(errorAlert, animated: true)
+            pullToRefresh.endRefreshing()
+        }
     }
     
     func addChannel(channel: ConversationListModel) {

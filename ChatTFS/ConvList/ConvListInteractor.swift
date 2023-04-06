@@ -40,7 +40,8 @@ class ConvListInteractor: ConvListInteractorProtocol {
         
         channelsRequest = chatService?.loadChannels()
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in
+            .sink(receiveCompletion: { [weak self] _ in
+                self?.presenter?.interactorError()
             }, receiveValue: { [weak self] channels in
                 self?.handler?(channels)
             })
@@ -50,6 +51,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
         channelsRequest = chatService?.createChannel(name: channelName)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] _ in
+                self?.presenter?.interactorError()
                 self?.channelsRequest?.cancel()
             }, receiveValue: { [weak self] channel in
                 self?.presenter?.addChannel(channel: channel)

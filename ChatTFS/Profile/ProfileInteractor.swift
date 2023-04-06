@@ -37,7 +37,6 @@ class ProfileInteractor: ProfileInteractorProtocol {
         dataRequest = dataManager?.readProfilePublisher()
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .handleEvents(receiveCancel: { print("Cancel sub in ProfileInteractor") })
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
             .catch({_ in
                 Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})

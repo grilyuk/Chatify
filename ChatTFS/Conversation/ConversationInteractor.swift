@@ -24,8 +24,8 @@ class ConversationInteractor: ConversationInteractorProtocol {
     var channelID: String?
     var dataMessagesRequest: Cancellable?
     var dataChannelRequest: Cancellable?
-    var request: Cancellable?
-    var data: Cancellable?
+    var sendMessageRequest: Cancellable?
+    var userDataRequest: Cancellable?
     var dataHandler: (([Message], Channel) -> Void)?
     var userID: String?
     var userName: String?
@@ -48,10 +48,9 @@ class ConversationInteractor: ConversationInteractorProtocol {
                 self?.loadMessagesData(channelID: channel.id, channelData: channel)
             })
         
-        data = dataManager?.readProfilePublisher()
+        userDataRequest = dataManager?.readProfilePublisher()
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .handleEvents(receiveCancel: { print("Cancel sub in ProfileInteractor") })
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
             .catch({_ in
                 Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
@@ -73,7 +72,7 @@ class ConversationInteractor: ConversationInteractorProtocol {
     
     func createMessageData(messageText: String) {
         guard let channelID = channelID else { return }
-        request = chatService?.sendMessage(text: messageText,
+        sendMessageRequest = chatService?.sendMessage(text: messageText,
                                                       channelId: channelID,
                                                       userId: userID ?? "",
                                                       userName: userName ?? "")

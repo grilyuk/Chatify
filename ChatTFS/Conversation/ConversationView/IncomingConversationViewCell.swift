@@ -63,6 +63,9 @@ class IncomingConversationViewCell: UITableViewCell {
         messageText.text = nil
         dateLabel.text = nil
         userNameLabel.text = nil
+        contentView.subviews.forEach {
+            $0.removeFromSuperview()
+        }
     }
     
     // MARK: - SetupUI
@@ -95,6 +98,32 @@ class IncomingConversationViewCell: UITableViewCell {
             messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable)
         ])
     }
+    
+    func setupSameUserUI() {
+        contentView.addSubviews(messageBubble)
+        messageBubble.addSubviews(messageText, dateLabel)
+        
+        messageBubble.translatesAutoresizingMaskIntoConstraints = false
+        messageText.translatesAutoresizingMaskIntoConstraints = false
+        dateLabel.translatesAutoresizingMaskIntoConstraints = false
+        
+        let maxBubbleWidth = messageBubble.widthAnchor.constraint(lessThanOrEqualTo: self.contentView.widthAnchor, multiplier: 0.75)
+        maxBubbleWidth.priority = .required
+        maxBubbleWidth.isActive = true
+        dateLabel.setContentCompressionResistancePriority(.required, for: .horizontal)
+        
+        NSLayoutConstraint.activate([
+            messageBubble.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -UIConstants.edgeVertical),
+            messageBubble.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.edgeVertical),
+            dateLabel.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge),
+            dateLabel.leadingAnchor.constraint(equalTo: messageText.trailingAnchor, constant: UIConstants.edge),
+            dateLabel.bottomAnchor.constraint(equalTo: messageText.bottomAnchor),
+            messageText.leadingAnchor.constraint(equalTo: messageBubble.leadingAnchor, constant: UIConstants.edge),
+            messageText.bottomAnchor.constraint(equalTo: messageBubble.bottomAnchor, constant: -UIConstants.edge + 2),
+            messageText.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edgeVertical),
+            messageBubble.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.edgeToTable)
+        ])
+    }
 }
 
 // MARK: - ConversationViewCell + ConfigurableViewProtocol
@@ -106,6 +135,12 @@ extension IncomingConversationViewCell: ConfigurableViewProtocol {
         format.dateFormat = "HH:mm"
         dateLabel.text = format.string(from: model.date)
         userNameLabel.text = model.userName
+        
+        if model.isSameUser {
+            setupSameUserUI()
+        } else {
+            setupUI()
+        }
     }
     
     func configureTheme(theme: ThemeServiceProtocol) {

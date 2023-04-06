@@ -34,9 +34,13 @@ class ConversationViewController: UIViewController {
         table.register(IncomingConversationViewCell.self, forCellReuseIdentifier: IncomingConversationViewCell.identifier)
         table.register(OutgoingConversationViewCell.self, forCellReuseIdentifier: OutgoingConversationViewCell.identifier)
         table.delegate = self
-        table.rowHeight = UITableView.automaticDimension
         table.separatorStyle = .none
         table.allowsSelection = false
+        table.scrollsToTop = true
+        table.rowHeight = UITableView.automaticDimension
+        if #available(iOS 15.0, *) {
+            table.sectionHeaderTopPadding = 0
+        }
         return table
     }()
     
@@ -118,7 +122,7 @@ class ConversationViewController: UIViewController {
         setupDataSource()
         setTableView()
         setGesture()
-        sendButton.addTarget(self, action: #selector(sendMessage), for: .touchUpInside)
+        sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(showKeyboard),
                                                name: UIResponder.keyboardWillShowNotification,
@@ -143,11 +147,6 @@ class ConversationViewController: UIViewController {
     }
     
     // MARK: - Methods
-    
-    @objc
-    private func sendMessage() {
-        presenter?.createMessage(messageText: textField.text)
-    }
     
     private func setupDataSource() {
         dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
@@ -196,6 +195,27 @@ class ConversationViewController: UIViewController {
         view.addGestureRecognizer(tapGesture)
     }
     
+    private func sendMessage() {
+        presenter?.createMessage(messageText: textField.text)
+        textField.text = ""
+    }
+    
+    private func scrollToLastRow() {
+        if !messages.isEmpty {
+            let lastSectionNumber = tableView.numberOfSections - 1
+            let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
+            tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
+        }
+    }
+    
+    @objc
+    private func checkMessage() {
+        if textField.text == nil || textField.text == "" {
+            return
+        }
+        sendMessage()
+    }
+    
     @objc
     private func showKeyboard(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
@@ -207,12 +227,7 @@ class ConversationViewController: UIViewController {
         let height = viewYMax - safeAreaYMax
         let offset = keyboardHeight - height
         additionalSafeAreaInsets.bottom = offset
-        if !messages.isEmpty {
-            let lastSectionNumber = tableView.numberOfSections - 1
-            let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
-            tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
-        }
-        tableView.scrollsToTop = true
+        scrollToLastRow()
     }
     
     @objc
@@ -241,10 +256,6 @@ class ConversationViewController: UIViewController {
         customNavBar.addSubview(conversationLogo)
         customNavBar.addSubview(conversationName)
         customNavBar.addSubview(backButton)
-        tableView.scrollsToTop = true
-        if #available(iOS 15.0, *) {
-            tableView.sectionHeaderTopPadding = 0
-        }
         
         textFieldView.translatesAutoresizingMaskIntoConstraints = false
         textField.translatesAutoresizingMaskIntoConstraints = false

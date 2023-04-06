@@ -3,6 +3,7 @@ import UIKit
 extension UIImage {
     
     static let placeholder = UIImage(systemName: "person.fill")?.withTintColor(.systemBlue)
+    static let channelPlaceholder = UIImage(systemName: "person.2.circle") ?? UIImage()
     
     func scalePreservingAspectRatio(targetSize: CGSize) -> UIImage {
         let widthRatio = targetSize.width / size.width
