@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E08ADC229A16B10004510A6 /* ProfileViewController.swift */; };
+		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
+		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E42B9D629C24FF700F472D1 /* MessageCellModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */; };
 		5E42B9D829C2502900F472D1 /* ConversationListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42B9D729C2502900F472D1 /* ConversationListModel.swift */; };
 		5E42E16029DC2A5800753269 /* ChannelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42E15F29DC2A5800753269 /* ChannelModel.swift */; };
@@ -44,6 +46,8 @@
 		4BB014E7FA9EFDF47E2C004A /* Pods-ChatTFS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.release.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.release.xcconfig"; sourceTree = "<group>"; };
 		4CE4628B252E8DEB6B3EB225 /* Pods-ChatTFS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.debug.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.debug.xcconfig"; sourceTree = "<group>"; };
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
+		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E42B9D529C24FF700F472D1 /* MessageCellModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageCellModel.swift; sourceTree = "<group>"; };
 		5E42B9D729C2502900F472D1 /* ConversationListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConversationListModel.swift; sourceTree = "<group>"; };
 		5E42E15F29DC2A5800753269 /* ChannelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelModel.swift; sourceTree = "<group>"; };
@@ -194,6 +198,7 @@
 				5E9F20C929C861140027EAFE /* DataManager.swift */,
 				5E86E6A829D90C25008D047B /* PhotoChoose */,
 				5EC1749C29CE296B00F1ADA8 /* ThemeService */,
+				5E2033B729E17D1E0014B1CC /* CoreDataService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -247,6 +252,7 @@
 				5EDC659B299ECEAE009B6586 /* Assets.xcassets */,
 				5EDC659D299ECEAE009B6586 /* LaunchScreen.storyboard */,
 				5EDC65A0299ECEAE009B6586 /* Info.plist */,
+				5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -404,6 +410,8 @@
 				5E92E9F229B72B930038EED2 /* ConversationInteractor.swift in Sources */,
 				5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */,
 				5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */,
+				5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */,
+				5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */,
 				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ConversationViewController.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ConvListPresenter.swift in Sources */,
@@ -633,6 +641,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */,
+			);
+			currentVersion = 5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */;
+			path = Chat.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = 5EDC6587299ECEAD009B6586 /* Project object */;
 }

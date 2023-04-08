@@ -2,17 +2,19 @@ import UIKit
 import TFSChatTransport
 
 protocol ConvListPresenterProtocol: AnyObject {
+    
     var router: RouterProtocol? {get set}
     var profile: ProfileModel? { get set }
     var channels: [ConversationListModel] { get set }
-    var dataConverstions: [Channel]? { get set }
+    var dataConversations: [Channel]? { get set }
+    var handler: (([ConversationListModel]) -> Void)? { get set }
+    
     func viewReady()
     func dataUploaded()
     func didTappedConversation(to conversation: String, navigationController: UINavigationController)
     func addChannel(channel: Channel)
     func createChannel(name: String)
     func interactorError()
-    var handler: (([ConversationListModel]) -> Void)? { get set }
 }
 
 class ConvListPresenter {
@@ -24,7 +26,7 @@ class ConvListPresenter {
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
     var channels: [ConversationListModel] = []
-    var dataConverstions: [Channel]?
+    var dataConversations: [Channel]?
     var handler: (([ConversationListModel]) -> Void)?
     
     // MARK: - Initialization
@@ -45,13 +47,18 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     }
     
     func dataUploaded() {
+        
         var channelsWithMessages: [ConversationListModel] = []
         var channelsWithoutMessages: [ConversationListModel] = []
-        dataConverstions?.forEach({ channel in
+        let channelsGroup = DispatchGroup()
+        
+        dataConversations?.forEach({ channel in
+            
+            var channelImage = UIImage.channelPlaceholder
+            channelsGroup.enter()
+            
             DispatchQueue.global().async {
-                
-                var channelImage = UIImage.channelPlaceholder
-                
+
                 if let imageURL = URL(string: channel.logoURL ?? "") {
                     do {
                         let imageData = try Data(contentsOf: imageURL)
@@ -60,8 +67,6 @@ extension ConvListPresenter: ConvListPresenterProtocol {
                         print(CustomError(description: "Error with Data from URL"))
                     }
                 }
-                
-                DispatchQueue.main.async {
                     switch channel.lastMessage {
                     case nil:
                         channelsWithoutMessages.append(ConversationListModel(channelImage: channelImage,
@@ -80,20 +85,24 @@ extension ConvListPresenter: ConvListPresenterProtocol {
                                                                           hasUnreadMessages: true,
                                                                           conversationID: channel.id))
                     }
+
                     var sortedChannels = channelsWithMessages
                         .sorted { $0.date ?? Date() > $1.date ?? Date() }
                     sortedChannels.append(contentsOf: channelsWithoutMessages)
+                
                     self.channels = sortedChannels
-                    
-                    self.handler = { [weak self] conversations in
-                        self?.view?.conversations = conversations
-                        self?.view?.showMain()
-                    }
-                    self.handler?(self.channels)
-                }
+                channelsGroup.leave()
             }
         })
-        view?.pullToRefresh.endRefreshing()
+        
+        handler = { [weak self] conversations in
+            self?.view?.conversations = conversations
+            self?.view?.showMain()
+        }
+        
+        channelsGroup.notify(queue: .main) { [weak self] in
+            self?.handler?(self?.channels ?? [])
+        }
     }
     
     func didTappedConversation(to conversation: String, navigationController: UINavigationController) {

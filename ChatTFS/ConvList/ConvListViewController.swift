@@ -7,7 +7,6 @@ enum Section: Hashable, CaseIterable {
 }
 
 protocol ConvListViewProtocol: AnyObject {
-    var pullToRefresh: UIRefreshControl { get set }
     func showMain()
     func showAlert()
     func addChannel(channel: ConversationListModel)
@@ -53,6 +52,7 @@ class ConvListViewController: UIViewController {
     private lazy var retryAction = UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
         self?.presenter?.viewReady()
     }
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     
     // MARK: - Lifecycle
     
@@ -61,7 +61,7 @@ class ConvListViewController: UIViewController {
         presenter?.viewReady()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         setupUI()
-        
+        activityIndicator.startAnimating()
         errorAlert.addAction(retryAction)
         errorAlert.addAction(cancelAction)
     }
@@ -187,13 +187,19 @@ class ConvListViewController: UIViewController {
     }
     
     private func setupTableViewConstraints() {
-        view.addSubviews(tableView)
+        view.addSubviews(tableView, activityIndicator)
+        
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
     
@@ -236,6 +242,8 @@ extension ConvListViewController: ConvListViewProtocol {
     
     func showMain() {
         setupSnapshot()
+        pullToRefresh.endRefreshing()
+        activityIndicator.stopAnimating()
     }
     
     func showAlert() {

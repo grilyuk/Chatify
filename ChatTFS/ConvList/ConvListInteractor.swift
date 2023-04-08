@@ -25,7 +25,6 @@ class ConvListInteractor: ConvListInteractorProtocol {
     // MARK: - Private
     
     private var handler: (([Channel]) -> Void)?
-    private var dataRequest: Cancellable?
     private var channelsRequest: Cancellable?
     
     // MARK: - Methods
@@ -33,7 +32,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
     func loadData() {
 
         handler = { [weak self] conversations in
-            self?.presenter?.dataConverstions = conversations
+            self?.presenter?.dataConversations = conversations
             self?.presenter?.dataUploaded()
             self?.channelsRequest?.cancel()
         }
@@ -52,7 +51,6 @@ class ConvListInteractor: ConvListInteractorProtocol {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] _ in
                 self?.presenter?.interactorError()
-                self?.channelsRequest?.cancel()
             }, receiveValue: { [weak self] channel in
                 self?.presenter?.addChannel(channel: channel)
             })

@@ -49,6 +49,7 @@ class ConversationViewController: UIViewController {
         view.layer.cornerRadius = UIConstants.textFieldHeight / 2
         view.layer.borderWidth = UIConstants.borderWidth
         view.layer.borderColor = UIColor.systemGray5.cgColor
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
         return view
     }()
     
@@ -56,6 +57,7 @@ class ConversationViewController: UIViewController {
         let field = UITextField()
         field.placeholder = "Type message"
         field.tintColor = themeService?.currentTheme.incomingTextColor
+        field.backgroundColor = themeService?.currentTheme.backgroundColor
         return field
     }()
     
@@ -103,6 +105,8 @@ class ConversationViewController: UIViewController {
         return button
     }()
     
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
+    
     // MARK: - Initialization
     
     init(themeService: ThemeServiceProtocol) {
@@ -122,6 +126,7 @@ class ConversationViewController: UIViewController {
         setupDataSource()
         setTableView()
         setGesture()
+        activityIndicator.startAnimating()
         sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(showKeyboard),
@@ -201,6 +206,7 @@ class ConversationViewController: UIViewController {
     }
     
     private func scrollToLastRow() {
+        
         if !messages.isEmpty {
             let lastSectionNumber = tableView.numberOfSections - 1
             let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
@@ -227,6 +233,7 @@ class ConversationViewController: UIViewController {
         let height = viewYMax - safeAreaYMax
         let offset = keyboardHeight - height
         additionalSafeAreaInsets.bottom = offset
+        view.layoutIfNeeded()
         scrollToLastRow()
     }
     
@@ -250,6 +257,7 @@ class ConversationViewController: UIViewController {
     private func setTableView() {
         view.addSubview(tableView)
         view.addSubview(textFieldView)
+        view.addSubview(activityIndicator)
         textFieldView.addSubview(textField)
         textFieldView.addSubview(sendButton)
         view.addSubview(customNavBar)
@@ -265,6 +273,7 @@ class ConversationViewController: UIViewController {
         conversationLogo.translatesAutoresizingMaskIntoConstraints = false
         conversationName.translatesAutoresizingMaskIntoConstraints = false
         backButton.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             tableView.bottomAnchor.constraint(equalTo: textFieldView.topAnchor),
@@ -301,7 +310,10 @@ class ConversationViewController: UIViewController {
             conversationName.topAnchor.constraint(equalTo: conversationLogo.bottomAnchor, constant: 5),
             
             backButton.centerYAnchor.constraint(equalTo: customNavBar.centerYAnchor, constant: 10),
-            backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18)
+            backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
 }
@@ -338,6 +350,7 @@ extension ConversationViewController: ConversationViewProtocol {
         setupSnapshot()
         conversationName.text = channel.channelName
         conversationLogo.image = channel.channelImage
+        activityIndicator.stopAnimating()
     }
     
     func addMessage(message: MessageCellModel) {
