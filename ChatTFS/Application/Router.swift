@@ -7,7 +7,7 @@ protocol RouterMain: AnyObject {
 }
 
 protocol RouterProtocol: RouterMain {
-    func showConversation(conversation: String, navigationController: UINavigationController)
+    func showChannel(channel: String, navigationController: UINavigationController)
 }
 
 class Router: RouterProtocol {
@@ -26,8 +26,8 @@ class Router: RouterProtocol {
     
     // MARK: - Methods
     
-    func showConversation(conversation: String, navigationController: UINavigationController) {
-        guard let conversationViewController = moduleBuilder?.buildConversation(router: self, conversation: conversation) else { return }
-        navigationController.pushViewController(conversationViewController, animated: true)
+    func showChannel(channel: String, navigationController: UINavigationController) {
+        guard let channelViewController = moduleBuilder?.buildChannel(router: self, channel: channel) else { return }
+        navigationController.pushViewController(channelViewController, animated: true)
     }
 }

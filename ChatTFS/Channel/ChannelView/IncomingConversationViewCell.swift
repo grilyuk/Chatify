@@ -1,7 +1,7 @@
 import UIKit
 
-class IncomingConversationViewCell: UITableViewCell {
-    static let identifier = String(describing: IncomingConversationViewCell.self)
+class IncomingChannelViewCell: UITableViewCell {
+    static let identifier = String(describing: IncomingChannelViewCell.self)
     
     // MARK: - UIConstants
     
@@ -126,10 +126,10 @@ class IncomingConversationViewCell: UITableViewCell {
     }
 }
 
-// MARK: - ConversationViewCell + ConfigurableViewProtocol
+// MARK: - ChannelViewCell + ConfigurableViewProtocol
 
-extension IncomingConversationViewCell: ConfigurableViewProtocol {
-    func configure(with model: MessageCellModel) {
+extension IncomingChannelViewCell: ConfigurableViewProtocol {
+    func configure(with model: MessageModel) {
         messageText.text = model.text
         let format = DateFormatter()
         format.dateFormat = "HH:mm"

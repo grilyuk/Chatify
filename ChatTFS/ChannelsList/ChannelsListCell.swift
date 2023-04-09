@@ -5,7 +5,7 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-class ConversationListCell: UITableViewCell {
+class ChannelListCell: UITableViewCell {
     static let identifier = "conListCell"
 
     // MARK: - UIConstants
@@ -168,7 +168,7 @@ class ConversationListCell: UITableViewCell {
 
 // MARK: - ConverstionListCell + ConfigurableViewProtocol
 
-extension ConversationListCell: ConfigurableViewProtocol {
+extension ChannelListCell: ConfigurableViewProtocol {
     func configure(with model: ChannelModel) {
         if model.message == nil {
             dateLabel.text = nil

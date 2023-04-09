@@ -1,8 +1,8 @@
 import UIKit
 import TFSChatTransport
 
-protocol ConversationPresenterProtocol: AnyObject {
-    var handler: ((ChannelModel, [MessageCellModel]) -> Void)? { get set }
+protocol ChannelPresenterProtocol: AnyObject {
+    var handler: ((ChannelModel, [MessageModel]) -> Void)? { get set }
     var messagesData: [Message]? { get set }
     var channelData: Channel? { get set }
     func viewReady()
@@ -11,28 +11,28 @@ protocol ConversationPresenterProtocol: AnyObject {
     func createMessage(messageText: String?)
 }
 
-class ConversationPresenter {
+class ChannelPresenter {
     
     // MARK: - Public
     
-    weak var view: ConversationViewProtocol?
+    weak var view: ChannelViewProtocol?
     let router: RouterProtocol?
-    let interactor: ConversationInteractorProtocol
+    let interactor: ChannelInteractorProtocol
     var messagesData: [Message]?
     var channelData: Channel?
-    var handler: ((ChannelModel, [MessageCellModel]) -> Void)?
+    var handler: ((ChannelModel, [MessageModel]) -> Void)?
     
     // MARK: - Initialization
     
-    init(router: RouterProtocol, interactor: ConversationInteractorProtocol) {
+    init(router: RouterProtocol, interactor: ChannelInteractorProtocol) {
         self.router = router
         self.interactor = interactor
     }
 }
 
-// MARK: - ConversationPresenter + ConversationPresenterProtocol
+// MARK: - ChannelPresenter + ChannelPresenterProtocol
 
-extension ConversationPresenter: ConversationPresenterProtocol {
+extension ChannelPresenter: ChannelPresenterProtocol {
     
     // MARK: - Methods
     
@@ -51,14 +51,14 @@ extension ConversationPresenter: ConversationPresenterProtocol {
         
         handler = { [weak self] channel, messages in
             self?.view?.messages = messages
-            self?.view?.showConversation(channel: channel)
+            self?.view?.showChannel(channel: channel)
         }
         
         var currentUserID = ""
-        var messages: [MessageCellModel] = []
+        var messages: [MessageModel] = []
         messagesData?.forEach({ message in
             if message.userID == userID && message.text != "" {
-                messages.append(MessageCellModel(text: message.text,
+                messages.append(MessageModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: true,
                                                  userName: message.userName,
@@ -72,7 +72,7 @@ extension ConversationPresenter: ConversationPresenterProtocol {
                         return false
                     }
                 }()
-                messages.append(MessageCellModel(text: message.text,
+                messages.append(MessageModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: false,
                                                  userName: message.userName,
@@ -91,7 +91,7 @@ extension ConversationPresenter: ConversationPresenterProtocol {
                     let imageData = try Data(contentsOf: imageURL)
                     image = UIImage(data: imageData) ?? UIImage()
                 } catch {
-                    print(CustomError(description: "Error convert conversation image"))
+                    print(CustomError(description: "Error convert channel image"))
                 }
                 return image
             }()
@@ -102,7 +102,7 @@ extension ConversationPresenter: ConversationPresenterProtocol {
                                        date: nil,
                                        isOnline: false,
                                        hasUnreadMessages: nil,
-                                       conversationID: nil)
+                                       channelID: nil)
             
             DispatchQueue.main.async { [weak self] in
                 self?.handler?(channel, messages)
@@ -111,7 +111,7 @@ extension ConversationPresenter: ConversationPresenterProtocol {
     }
     
     func uploadMessage(messageModel: Message) {
-        view?.addMessage(message: MessageCellModel(text: messageModel.text,
+        view?.addMessage(message: MessageModel(text: messageModel.text,
                                                    date: messageModel.date,
                                                    myMessage: true,
                                                    userName: "",

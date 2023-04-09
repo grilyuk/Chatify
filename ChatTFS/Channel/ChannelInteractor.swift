@@ -2,13 +2,13 @@ import Foundation
 import Combine
 import TFSChatTransport
 
-protocol ConversationInteractorProtocol: AnyObject {
+protocol ChannelInteractorProtocol: AnyObject {
     func loadData()
     func createMessageData(messageText: String)
     var dataHandler: (([Message], Channel) -> Void)? { get set }
 }
 
-class ConversationInteractor: ConversationInteractorProtocol {
+class ChannelInteractor: ChannelInteractorProtocol {
     
     init(chatService: ChatService, channelID: String, dataManager: DataManagerProtocol) {
         self.chatService = chatService
@@ -19,7 +19,7 @@ class ConversationInteractor: ConversationInteractorProtocol {
     // MARK: - Public
     
     weak var chatService: ChatService?
-    weak var presenter: ConversationPresenterProtocol?
+    weak var presenter: ChannelPresenterProtocol?
     weak var dataManager: DataManagerProtocol?
     var channelID: String?
     var dataMessagesRequest: Cancellable?

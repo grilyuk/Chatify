@@ -1,19 +1,14 @@
 import UIKit
 import Combine
 
-enum Section: Hashable, CaseIterable {
-    case online
-    case offline
-}
-
-protocol ConvListViewProtocol: AnyObject {
-    func showMain()
+protocol ChannelsListViewProtocol: AnyObject {
+    func showChannelsList()
     func showAlert()
     func addChannel(channel: ChannelModel)
-    var conversations: [ChannelModel]? { get set }
+    var channels: [ChannelModel]? { get set }
 }
 
-class ConvListViewController: UIViewController {
+class ChannelsListViewController: UIViewController {
     
     // MARK: - Initialization
     
@@ -36,8 +31,8 @@ class ConvListViewController: UIViewController {
     
     // MARK: - Public
     
-    var presenter: ConvListPresenterProtocol?
-    var conversations: [ChannelModel]?
+    var presenter: ChannelsListPresenterProtocol?
+    var channels: [ChannelModel]?
     weak var themeService: ThemeServiceProtocol?
     var pullToRefresh = UIRefreshControl()
 
@@ -89,9 +84,9 @@ class ConvListViewController: UIViewController {
     
     private func setupDataSource() {
         dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationListCell.identifier) as? ConversationListCell,
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier) as? ChannelListCell,
                   let themeService = self?.themeService
-            else { return ConversationListCell()}
+            else { return ChannelListCell()}
             cell.configureTheme(theme: themeService)
             cell.configure(with: itemIdentifier)
             return cell
@@ -102,14 +97,14 @@ class ConvListViewController: UIViewController {
         guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
-        guard let conversations = conversations else { return }
+        guard let channels = channels else { return }
         snapshot.appendSections([0])
-        snapshot.appendItems(conversations, toSection: 0)
+        snapshot.appendItems(channels, toSection: 0)
         dataSource.apply(snapshot)
     }
     
     private func configureTableView() {
-        tableView.register(ConversationListCell.self, forCellReuseIdentifier: ConversationListCell.identifier)
+        tableView.register(ChannelListCell.self, forCellReuseIdentifier: ChannelListCell.identifier)
         tableView.delegate = self
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
@@ -214,9 +209,9 @@ class ConvListViewController: UIViewController {
     }
 }
 
-// MARK: - ConvListViewController + UITableViewDelegate
+// MARK: - ChannelsListViewController + UITableViewDelegate
 
-extension ConvListViewController: UITableViewDelegate {
+extension ChannelsListViewController: UITableViewDelegate {
 
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         UIConstants.sectionHeight
@@ -229,18 +224,23 @@ extension ConvListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let navigationController = navigationController,
               let snapshot = dataSource?.snapshot(),
-              let channelID = snapshot.itemIdentifiers[indexPath.item].conversationID
+              let channelID = snapshot.itemIdentifiers[indexPath.item].channelID
         else {return}
-        presenter?.didTappedConversation(to: channelID, navigationController: navigationController)
+        presenter?.didTappedChannel(to: channelID, navigationController: navigationController)
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        // TODO: 1 10.04
+        return UISwipeActionsConfiguration()
     }
 }
 
-// MARK: - ConvListViewController + ConvListViewProtocol
+// MARK: - ChannelsListViewController + ChannelsListViewProtocol
 
-extension ConvListViewController: ConvListViewProtocol {
+extension ChannelsListViewController: ChannelsListViewProtocol {
     
-    func showMain() {
+    func showChannelsList() {
         setupSnapshot()
         pullToRefresh.endRefreshing()
         activityIndicator.stopAnimating()
@@ -249,8 +249,8 @@ extension ConvListViewController: ConvListViewProtocol {
     func showAlert() {
         if errorAlert.presentingViewController?.isBeingPresented ?? true {
             self.present(errorAlert, animated: true)
-            pullToRefresh.endRefreshing()
         }
+        pullToRefresh.endRefreshing()
     }
     
     func addChannel(channel: ChannelModel) {
