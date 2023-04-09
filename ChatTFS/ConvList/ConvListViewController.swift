@@ -9,8 +9,8 @@ enum Section: Hashable, CaseIterable {
 protocol ConvListViewProtocol: AnyObject {
     func showMain()
     func showAlert()
-    func addChannel(channel: ConversationListModel)
-    var conversations: [ConversationListModel]? { get set }
+    func addChannel(channel: ChannelModel)
+    var conversations: [ChannelModel]? { get set }
 }
 
 class ConvListViewController: UIViewController {
@@ -37,13 +37,13 @@ class ConvListViewController: UIViewController {
     // MARK: - Public
     
     var presenter: ConvListPresenterProtocol?
-    var conversations: [ConversationListModel]?
+    var conversations: [ChannelModel]?
     weak var themeService: ThemeServiceProtocol?
     var pullToRefresh = UIRefreshControl()
 
     // MARK: - Private
     
-    private var dataSource: UITableViewDiffableDataSource<Int, ConversationListModel>?
+    private var dataSource: UITableViewDiffableDataSource<Int, ChannelModel>?
     private lazy var placeholder = UIImage.placeholder?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
     private lazy var tableView = UITableView()
     private lazy var buttonWithUserPhoto = UIButton(type: .custom)
@@ -253,7 +253,7 @@ extension ConvListViewController: ConvListViewProtocol {
         }
     }
     
-    func addChannel(channel: ConversationListModel) {
+    func addChannel(channel: ChannelModel) {
         guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         snapshot.appendItems([channel], toSection: 0)

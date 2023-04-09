@@ -348,7 +348,7 @@ extension ConversationViewController: UITableViewDelegate {
 extension ConversationViewController: ConversationViewProtocol {
     func showConversation(channel: ChannelModel) {
         setupSnapshot()
-        conversationName.text = channel.channelName
+        conversationName.text = channel.name
         conversationLogo.image = channel.channelImage
         activityIndicator.stopAnimating()
     }

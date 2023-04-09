@@ -5,9 +5,8 @@ protocol ConvListPresenterProtocol: AnyObject {
     
     var router: RouterProtocol? {get set}
     var profile: ProfileModel? { get set }
-    var channels: [ConversationListModel] { get set }
-    var dataConversations: [Channel]? { get set }
-    var handler: (([ConversationListModel]) -> Void)? { get set }
+    var dataChannels: [Channel]? { get set }
+    var handler: (([ChannelModel]) -> Void)? { get set }
     
     func viewReady()
     func dataUploaded()
@@ -25,9 +24,8 @@ class ConvListPresenter {
     var router: RouterProtocol?
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
-    var channels: [ConversationListModel] = []
-    var dataConversations: [Channel]?
-    var handler: (([ConversationListModel]) -> Void)?
+    var dataChannels: [Channel]?
+    var handler: (([ChannelModel]) -> Void)?
     
     // MARK: - Initialization
     
@@ -48,60 +46,44 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     
     func dataUploaded() {
         
-        var channelsWithMessages: [ConversationListModel] = []
-        var channelsWithoutMessages: [ConversationListModel] = []
-        let channelsGroup = DispatchGroup()
-        
-        dataConversations?.forEach({ channel in
-            
-            var channelImage = UIImage.channelPlaceholder
-            channelsGroup.enter()
-            
-            DispatchQueue.global().async {
-
-                if let imageURL = URL(string: channel.logoURL ?? "") {
-                    do {
-                        let imageData = try Data(contentsOf: imageURL)
-                        channelImage = UIImage(data: imageData) ?? UIImage()
-                    } catch {
-                        print(CustomError(description: "Error with Data from URL"))
-                    }
-                }
-                    switch channel.lastMessage {
-                    case nil:
-                        channelsWithoutMessages.append(ConversationListModel(channelImage: channelImage,
-                                                                             name: channel.name,
-                                                                             message: channel.lastMessage,
-                                                                             date: channel.lastActivity,
-                                                                             isOnline: false,
-                                                                             hasUnreadMessages: true,
-                                                                             conversationID: channel.id))
-                    default:
-                        channelsWithMessages.append(ConversationListModel(channelImage: channelImage,
-                                                                          name: channel.name,
-                                                                          message: channel.lastMessage,
-                                                                          date: channel.lastActivity,
-                                                                          isOnline: false,
-                                                                          hasUnreadMessages: true,
-                                                                          conversationID: channel.id))
-                    }
-
-                    var sortedChannels = channelsWithMessages
-                        .sorted { $0.date ?? Date() > $1.date ?? Date() }
-                    sortedChannels.append(contentsOf: channelsWithoutMessages)
-                
-                    self.channels = sortedChannels
-                channelsGroup.leave()
-            }
-        })
-        
-        handler = { [weak self] conversations in
-            self?.view?.conversations = conversations
-            self?.view?.showMain()
+        handler = { sortedChannels in
+            self.view?.conversations = sortedChannels
+            self.view?.showMain()
         }
-        
-        channelsGroup.notify(queue: .main) { [weak self] in
-            self?.handler?(self?.channels ?? [])
+        var channels: [ChannelModel] = []
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            self?.dataChannels?.forEach({ dataChannel in
+                
+                let placeholderImage = UIImage.channelPlaceholder
+                var channelLogo: UIImage
+                
+                if let urlString = dataChannel.logoURL,
+                   let logoURL = URL(string: urlString) {
+                    do {
+                        let imageData = try Data(contentsOf: logoURL)
+                        channelLogo = UIImage(data: imageData) ?? UIImage()
+                    } catch {
+                        print(error)
+                        channelLogo = placeholderImage
+                    }
+                } else {
+                    channelLogo = placeholderImage
+                }
+
+                channels.append(ChannelModel(channelImage: channelLogo,
+                                                      name: dataChannel.name,
+                                                      message: dataChannel.lastMessage,
+                                                      date: dataChannel.lastActivity,
+                                                      isOnline: false,
+                                                      hasUnreadMessages: false,
+                                                      conversationID: dataChannel.id))
+                
+            })
+            
+            DispatchQueue.main.async { [weak self] in
+                channels.sort { $0.date ?? Date() > $1.date ?? Date() }
+                self?.handler?(channels)
+            }
         }
     }
     
@@ -115,7 +97,7 @@ extension ConvListPresenter: ConvListPresenterProtocol {
     
     func addChannel(channel: Channel) {
         let channelImage = UIImage.channelPlaceholder
-        let channelModel = ConversationListModel(channelImage: channelImage,
+        let channelModel = ChannelModel(channelImage: channelImage,
                                                  name: channel.name,
                                                  message: channel.lastMessage,
                                                  date: channel.lastActivity,

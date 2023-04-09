@@ -169,7 +169,7 @@ class ConversationListCell: UITableViewCell {
 // MARK: - ConverstionListCell + ConfigurableViewProtocol
 
 extension ConversationListCell: ConfigurableViewProtocol {
-    func configure(with model: ConversationListModel) {
+    func configure(with model: ChannelModel) {
         if model.message == nil {
             dateLabel.text = nil
             lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)

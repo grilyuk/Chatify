@@ -96,7 +96,13 @@ extension ConversationPresenter: ConversationPresenterProtocol {
                 return image
             }()
             
-            let channel = ChannelModel(channelName: channelName, channelImage: channelImage)
+            let channel = ChannelModel(channelImage: channelImage,
+                                       name: channelName,
+                                       message: nil,
+                                       date: nil,
+                                       isOnline: false,
+                                       hasUnreadMessages: nil,
+                                       conversationID: nil)
             
             DispatchQueue.main.async { [weak self] in
                 self?.handler?(channel, messages)

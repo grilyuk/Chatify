@@ -32,7 +32,7 @@ class ConvListInteractor: ConvListInteractorProtocol {
     func loadData() {
 
         handler = { [weak self] conversations in
-            self?.presenter?.dataConversations = conversations
+            self?.presenter?.dataChannels = conversations
             self?.presenter?.dataUploaded()
             self?.channelsRequest?.cancel()
         }
