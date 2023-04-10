@@ -28,6 +28,20 @@ class CoreDataService: CoreDataServiceProtocol {
         return try viewContext.fetch(fetchRequest)
     }
     
+    func fetchChannelMessages(for channelID: String) throws -> [DBMessage] {
+        let fetchRequest = DBChannel.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "uuid == %@", channelID as CVarArg)
+        let DBChannel = try viewContext.fetch(fetchRequest).first
+        guard
+            let DBChannel,
+            let DBMessage = DBChannel.messages?.array as? [DBMessage]
+        else {
+            return []
+        }
+        
+        return DBMessage
+    }
+    
     func save(block: (NSManagedObjectContext) throws -> Void) {
         let backgroundContext = persistentContainer.newBackgroundContext()
         backgroundContext.performAndWait {

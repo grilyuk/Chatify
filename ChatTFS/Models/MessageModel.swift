@@ -9,7 +9,7 @@ struct MessageModel: Hashable {
     let uuid = UUID()
 }
 
-public struct MessageNetworkModel: Hashable {
+struct MessageNetworkModel: Hashable {
     let id: String
     let text: String
     let userID: String

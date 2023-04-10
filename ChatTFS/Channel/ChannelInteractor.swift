@@ -10,25 +10,30 @@ protocol ChannelInteractorProtocol: AnyObject {
 
 class ChannelInteractor: ChannelInteractorProtocol {
     
-    init(chatService: ChatService, channelID: String, dataManager: DataManagerProtocol) {
+    init(chatService: ChatService, channelID: String, dataManager: DataManagerProtocol, coreDataService: CoreDataServiceProtocol) {
         self.chatService = chatService
         self.channelID = channelID
         self.dataManager = dataManager
+        self.coreDataService = coreDataService
     }
     
-    // MARK: - Public
+    // MARK: - Public properties
     
     weak var chatService: ChatService?
     weak var presenter: ChannelPresenterProtocol?
     weak var dataManager: DataManagerProtocol?
-    var channelID: String?
-    var dataMessagesRequest: Cancellable?
-    var dataChannelRequest: Cancellable?
-    var sendMessageRequest: Cancellable?
-    var userDataRequest: Cancellable?
+    weak var coreDataService: CoreDataServiceProtocol?
     var dataHandler: (([Message], Channel) -> Void)?
-    var userID: String?
-    var userName: String?
+    
+    // MARK: - Private properties
+    
+    private var userID: String?
+    private var userName: String?
+    private var channelID: String?
+    private var dataMessagesRequest: Cancellable?
+    private var dataChannelRequest: Cancellable?
+    private var sendMessageRequest: Cancellable?
+    private var userDataRequest: Cancellable?
     
     // MARK: - Methods
     
@@ -63,7 +68,8 @@ class ChannelInteractor: ChannelInteractorProtocol {
     func loadMessagesData(channelID: String, channelData: Channel) {
         dataMessagesRequest = self.chatService?.loadMessages(channelId: channelID)
             .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in
+            .sink(receiveCompletion: { [weak self] _ in
+                self?.dataMessagesRequest?.cancel()
             }, receiveValue: { [weak self] messagesData in
                 self?.dataHandler?(messagesData, channelData)
                 self?.presenter?.dataUploaded(userID: self?.userID ?? "")
@@ -76,7 +82,8 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                                       channelId: channelID,
                                                       userId: userID ?? "",
                                                       userName: userName ?? "")
-            .sink(receiveCompletion: { _ in
+            .sink(receiveCompletion: { [weak self] _ in
+                self?.sendMessageRequest?.cancel()
             }, receiveValue: { [weak self] message in
                 self?.presenter?.uploadMessage(messageModel: message)
             })

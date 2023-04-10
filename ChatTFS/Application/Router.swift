@@ -2,7 +2,6 @@ import UIKit
 import TFSChatTransport
 
 protocol RouterMain: AnyObject {
-    var navigationController: UINavigationController? {get set}
     var moduleBuilder: ModuleBuilderProtocol? {get set}
 }
 
@@ -14,13 +13,11 @@ class Router: RouterProtocol {
     
     // MARK: - Public
     
-    weak var navigationController: UINavigationController?
     var moduleBuilder: ModuleBuilderProtocol?
     
     // MARK: - Init
     
-    init(navigationController: UINavigationController, moduleBuilder: ModuleBuilderProtocol) {
-        self.navigationController = navigationController
+    init(moduleBuilder: ModuleBuilderProtocol) {
         self.moduleBuilder = moduleBuilder
     }
     

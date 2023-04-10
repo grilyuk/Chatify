@@ -14,6 +14,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     
     // MARK: - Private
     
+    private lazy var router = Router(moduleBuilder: self)
     private lazy var themeService = ThemeService()
     private lazy var dataManager = DataManager()
     private lazy var coreDataService = CoreDataService()
@@ -30,12 +31,15 @@ class ModuleBuilder: ModuleBuilderProtocol {
         interactor.presenter = presenter
         presenter.view = view
         let navigationController = UINavigationController(rootViewController: view)
-        presenter.router = Router(navigationController: navigationController, moduleBuilder: self)
+        presenter.router = router
         return navigationController
     }
 
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController {
-        let interactor = ChannelInteractor(chatService: chatService, channelID: channel, dataManager: dataManager)
+        let interactor = ChannelInteractor(chatService: chatService,
+                                           channelID: channel,
+                                           dataManager: dataManager,
+                                           coreDataService: coreDataService)
         let presenter = ChannelPresenter(router: router, interactor: interactor)
         let view = ChannelViewController(themeService: themeService)
         view.presenter = presenter

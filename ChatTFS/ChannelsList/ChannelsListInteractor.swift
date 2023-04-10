@@ -40,7 +40,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             self?.channelsRequest?.cancel()
         }
         
-//        coreDataService.clearAllData()
         loadFromCoreData()
         loadFromNetwork()
     }

@@ -51,9 +51,9 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
         
         var channels: [ChannelModel] = []
         
-        handler = { sortedChannels in
-            self.view?.channels = sortedChannels
-            self.view?.showChannelsList()
+        handler = { [weak self] sortedChannels in
+            self?.view?.channels = sortedChannels
+            self?.view?.showChannelsList()
         }
         
         DispatchQueue.global(qos: .background).async { [weak self] in
