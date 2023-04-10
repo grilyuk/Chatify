@@ -27,7 +27,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     private var handler: (([ChannelNetworkModel]) -> Void)?
     private var channelsRequest: Cancellable?
-    private var channelsFromNetwork: [ChannelNetworkModel] = []
+    private var sentChannels: [ChannelNetworkModel] = []
     
     // MARK: - Public methods
     
@@ -36,10 +36,11 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         handler = { [weak self] channels in
             self?.presenter?.dataChannels = channels
             self?.presenter?.dataUploaded()
-            self?.channelsFromNetwork = []
+            self?.sentChannels = []
             self?.channelsRequest?.cancel()
         }
-
+        
+//        coreDataService.clearAllData()
         loadFromCoreData()
         loadFromNetwork()
     }
@@ -79,44 +80,55 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                lastMessage: channelsDB.lastMessage,
                                                lastActivity: channelsDB.lastActivity)
                 }
-            channelsFromNetwork.append(contentsOf: channelsModel)
+            
+            sentChannels.append(contentsOf: channelsModel)
         } catch {
             print(error)
         }
     }
     
     private func loadFromNetwork() {
+        
         channelsRequest = chatService.loadChannels()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] _ in
-                self?.handler?(self?.channelsFromNetwork ?? [])
+                self?.handler?(self?.sentChannels ?? [])
                 self?.presenter?.interactorError()
             }, receiveValue: { [weak self] channels in
+                
+                guard
+                    let self
+                else {
+                    return
+                }
+                
+                self.coreDataService.clearAllData()
+                self.sentChannels = []
+                
                 channels.forEach { channel in
-                    guard let self else { return }
-                    if !self.channelsFromNetwork.contains(where: { $0.id == channel.id }) {
+                    if !self.sentChannels.contains(where: { $0.id == channel.id }) {
                         let convertedChannel = ChannelNetworkModel(id: channel.id,
                                                                    name: channel.name,
                                                                    logoURL: channel.logoURL,
                                                                    lastMessage: channel.lastMessage,
                                                                    lastActivity: channel.lastActivity)
                         self.saveChannelsList(with: convertedChannel)
-                        self.channelsFromNetwork.append(convertedChannel)
+                        self.sentChannels.append(convertedChannel)
                     }
                 }
-                self?.handler?(self?.channelsFromNetwork ?? [])
+                self.handler?(self.sentChannels)
             })
     }
     
     private func saveChannelsList(with channel: ChannelNetworkModel) {
-        if !channelsFromNetwork.contains(where: { $0.id == channel.id }) {
+        if !sentChannels.contains(where: { $0.id == channel.id }) {
             coreDataService.save { context in
                 let channelManagedObject = DBChannel(context: context)
                 channelManagedObject.id = channel.id
                 channelManagedObject.name = channel.name
                 channelManagedObject.lastActivity = channel.lastActivity
                 channelManagedObject.lastMessage = channel.lastMessage
-                print("It's alive")
+                print("Save channel")
             }
         }
     }
