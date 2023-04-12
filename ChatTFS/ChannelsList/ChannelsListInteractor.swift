@@ -40,13 +40,12 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             self?.channelsRequest?.cancel()
         }
         
-        loadFromCoreData()
         loadFromNetwork()
     }
     
     func createChannel(channelName: String) {
-        channelsRequest = chatService.createChannel(name: channelName)
-//                                                    logoUrl: "https://www.meme-arsenal.com/memes/ebe4ef7b116bd11fd99f2f4d2f94044c.jpg")
+        channelsRequest = chatService.createChannel(name: channelName,
+                                                    logoUrl: "https://source.unsplash.com/random/600x600")
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in
             }, receiveValue: { [weak self] channel in
@@ -81,6 +80,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 }
             
             sentChannels.append(contentsOf: channelsModel)
+            self.handler?(self.sentChannels)
         } catch {
             print(error)
         }
@@ -91,7 +91,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         channelsRequest = chatService.loadChannels()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] _ in
-                self?.handler?(self?.sentChannels ?? [])
+                self?.loadFromCoreData()
                 self?.presenter?.interactorError()
             }, receiveValue: { [weak self] channels in
                 
@@ -100,9 +100,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 else {
                     return
                 }
-                
-                self.coreDataService.clearAllData()
-                self.sentChannels = []
                 
                 channels.forEach { channel in
                     if !self.sentChannels.contains(where: { $0.id == channel.id }) {
@@ -120,15 +117,15 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     }
     
     private func saveChannelsList(with channel: ChannelNetworkModel) {
-        if !sentChannels.contains(where: { $0.id == channel.id }) {
-            coreDataService.save { context in
-                let channelManagedObject = DBChannel(context: context)
-                channelManagedObject.id = channel.id
-                channelManagedObject.name = channel.name
-                channelManagedObject.lastActivity = channel.lastActivity
-                channelManagedObject.lastMessage = channel.lastMessage
-                print("Save channel")
-            }
+        
+        coreDataService.save { context in
+            let channelManagedObject = DBChannel(context: context)
+            channelManagedObject.id = channel.id
+            channelManagedObject.name = channel.name
+            channelManagedObject.lastActivity = channel.lastActivity
+            channelManagedObject.lastMessage = channel.lastMessage
+            channelManagedObject.messages = NSOrderedSet()
+            print("Save channel")
         }
     }
 }

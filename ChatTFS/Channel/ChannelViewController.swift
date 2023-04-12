@@ -33,8 +33,8 @@ class ChannelViewController: UIViewController {
         let table = UITableView()
         table.register(IncomingChannelViewCell.self, forCellReuseIdentifier: IncomingChannelViewCell.identifier)
         table.register(OutgoingChannelViewCell.self, forCellReuseIdentifier: OutgoingChannelViewCell.identifier)
-        table.delegate = self
         table.separatorStyle = .none
+        table.delegate = self
         table.allowsSelection = false
         table.scrollsToTop = true
         table.rowHeight = UITableView.automaticDimension
@@ -123,8 +123,8 @@ class ChannelViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        setupDataSource()
         setTableView()
+        setupDataSource()
         setGesture()
         activityIndicator.startAnimating()
         sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
@@ -139,6 +139,7 @@ class ChannelViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
         view.backgroundColor = themeService?.currentTheme.backgroundColor
@@ -321,6 +322,7 @@ class ChannelViewController: UIViewController {
 // MARK: - ChannelViewController + UITableViewDelegate
 
 extension ChannelViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let title = UILabel()
         let blur = UIBlurEffect(style: .regular)

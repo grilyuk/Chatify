@@ -1,12 +1,15 @@
 import UIKit
 import TFSChatTransport
+import Combine
 
 protocol ChannelPresenterProtocol: AnyObject {
+    
     var handler: ((ChannelModel, [MessageModel]) -> Void)? { get set }
-    var messagesData: [Message]? { get set }
-    var channelData: Channel? { get set }
+    var messagesData: [MessageNetworkModel]? { get set }
+    var channelData: ChannelNetworkModel? { get set }
+    
     func viewReady()
-    func dataUploaded(userID: String)
+    func dataUploaded()
     func uploadMessage(messageModel: Message)
     func createMessage(messageText: String?)
 }
@@ -18,15 +21,24 @@ class ChannelPresenter {
     weak var view: ChannelViewProtocol?
     let router: RouterProtocol?
     let interactor: ChannelInteractorProtocol
-    var messagesData: [Message]?
-    var channelData: Channel?
+    var messagesData: [MessageNetworkModel]?
+    var channelData: ChannelNetworkModel?
     var handler: ((ChannelModel, [MessageModel]) -> Void)?
+    
+    // MARK: - Private properties
+    
+    var dataManager: DataManagerProtocol
+    private var userDataRequest: Cancellable?
+    private var userID: String
+    private var userName: String?
     
     // MARK: - Initialization
     
-    init(router: RouterProtocol, interactor: ChannelInteractorProtocol) {
+    init(router: RouterProtocol, interactor: ChannelInteractorProtocol, dataManager: DataManagerProtocol) {
         self.router = router
         self.interactor = interactor
+        self.dataManager = dataManager
+        self.userID = dataManager.userId
     }
 }
 
@@ -35,19 +47,24 @@ class ChannelPresenter {
 extension ChannelPresenter: ChannelPresenterProtocol {
     
     // MARK: - Methods
-    
-    func createMessage(messageText: String?) {
-        if messageText == nil && messageText == "" {
-        } else {
-            interactor.createMessageData(messageText: messageText ?? "")
-        }
-    }
-    
+
     func viewReady() {
+
+        userDataRequest = dataManager.readProfilePublisher()
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .decode(type: ProfileModel.self, decoder: JSONDecoder())
+            .catch({_ in
+                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))
+            })
+            .sink(receiveValue: { [weak self] profile in
+                self?.userName = profile.fullName
+            })
+                    
         interactor.loadData()
     }
     
-    func dataUploaded(userID: String) {
+    func dataUploaded() {
         
         handler = { [weak self] channel, messages in
             self?.view?.messages = messages
@@ -56,13 +73,14 @@ extension ChannelPresenter: ChannelPresenterProtocol {
         
         var currentUserID = ""
         var messages: [MessageModel] = []
-        messagesData?.forEach({ message in
-            if message.userID == userID && message.text != "" {
+        messagesData?.forEach({ [weak self] message in
+            if message.userID == self?.userID && message.text != "" {
                 messages.append(MessageModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: true,
                                                  userName: message.userName,
                                                  isSameUser: true))
+                
             } else if message.text != "" {
                 let isSameUser = {
                     if currentUserID == message.userID {
@@ -81,23 +99,16 @@ extension ChannelPresenter: ChannelPresenterProtocol {
         })
         
         DispatchQueue.global().async { [weak self] in
-            guard let channelName = self?.channelData?.name else { return }
-            let channelImage: UIImage = {
-                var image = UIImage(systemName: "circle.slash") ?? UIImage()
-                do {
-                    guard let imageURLString = self?.channelData?.logoURL,
-                          let imageURL = URL(string: imageURLString)
-                    else { return image }
-                    let imageData = try Data(contentsOf: imageURL)
-                    image = UIImage(data: imageData) ?? UIImage()
-                } catch {
-                    print(CustomError(description: "Error convert channel image"))
-                }
-                return image
-            }()
+            guard
+                let channelData = self?.channelData
+            else {
+                return
+            }
+            
+            let channelImage: UIImage = self?.dataManager.getChannelImage(for: channelData) ?? UIImage()
             
             let channel = ChannelModel(channelImage: channelImage,
-                                       name: channelName,
+                                       name: channelData.name,
                                        message: nil,
                                        date: nil,
                                        isOnline: false,
@@ -107,6 +118,20 @@ extension ChannelPresenter: ChannelPresenterProtocol {
             DispatchQueue.main.async { [weak self] in
                 self?.handler?(channel, messages)
             }
+        }
+    }
+    
+    func createMessage(messageText: String?) {
+        if messageText != nil && messageText != "" {
+            guard
+                let userName,
+                let messageText
+            else {
+                return
+            }
+            interactor.createMessageData(messageText: messageText,
+                                         userID: userID,
+                                         userName: userName)
         }
     }
     

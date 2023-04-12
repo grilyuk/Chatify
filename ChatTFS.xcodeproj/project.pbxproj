@@ -14,6 +14,7 @@
 		5E42B9D829C2502900F472D1 /* ChannelModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E42B9D729C2502900F472D1 /* ChannelModel.swift */; };
 		5E74BCB429A8DCA3009236A1 /* ChooseSourceAlertController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB329A8DCA3009236A1 /* ChooseSourceAlertController.swift */; };
 		5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */; };
+		5E834B9129E61D2E006215AE /* Logger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E834B9029E61D2E006215AE /* Logger.swift */; };
 		5E92E9E029B2A7570038EED2 /* Router.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9DF29B2A7570038EED2 /* Router.swift */; };
 		5E92E9E229B33C900038EED2 /* ModuleBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9E129B33C900038EED2 /* ModuleBuilder.swift */; };
 		5E92E9E629B4B4C60038EED2 /* ChannelsListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E92E9E529B4B4C60038EED2 /* ChannelsListCell.swift */; };
@@ -24,7 +25,7 @@
 		5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */; };
 		5E97BF3729BE33B3003BBA1B /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E97BF3629BE33B3003BBA1B /* UIViewExtension.swift */; };
 		5E97BF3D29BE8542003BBA1B /* OutgoingConversationViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E97BF3C29BE8542003BBA1B /* OutgoingConversationViewCell.swift */; };
-		5E9F20CA29C861140027EAFE /* ProfileDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F20C929C861140027EAFE /* ProfileDataManager.swift */; };
+		5E9F20CA29C861140027EAFE /* DataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E9F20C929C861140027EAFE /* DataManager.swift */; };
 		5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218229AB609700029FB8 /* ProfilePresenter.swift */; };
 		5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */; };
 		5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218A29AB683B00029FB8 /* ProfileModel.swift */; };
@@ -51,6 +52,7 @@
 		5E42B9D729C2502900F472D1 /* ChannelModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelModel.swift; sourceTree = "<group>"; };
 		5E74BCB329A8DCA3009236A1 /* ChooseSourceAlertController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChooseSourceAlertController.swift; sourceTree = "<group>"; };
 		5E74BCB529A8E438009236A1 /* PhotoPickerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoPickerController.swift; sourceTree = "<group>"; };
+		5E834B9029E61D2E006215AE /* Logger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Logger.swift; sourceTree = "<group>"; };
 		5E92E9DF29B2A7570038EED2 /* Router.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Router.swift; sourceTree = "<group>"; };
 		5E92E9E129B33C900038EED2 /* ModuleBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleBuilder.swift; sourceTree = "<group>"; };
 		5E92E9E529B4B4C60038EED2 /* ChannelsListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsListCell.swift; sourceTree = "<group>"; };
@@ -61,7 +63,7 @@
 		5E97BF2F29BCEB61003BBA1B /* ThemesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemesViewController.swift; sourceTree = "<group>"; };
 		5E97BF3629BE33B3003BBA1B /* UIViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
 		5E97BF3C29BE8542003BBA1B /* OutgoingConversationViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingConversationViewCell.swift; sourceTree = "<group>"; };
-		5E9F20C929C861140027EAFE /* ProfileDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileDataManager.swift; sourceTree = "<group>"; };
+		5E9F20C929C861140027EAFE /* DataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataManager.swift; sourceTree = "<group>"; };
 		5EB6218229AB609700029FB8 /* ProfilePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePresenter.swift; sourceTree = "<group>"; };
 		5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInteractor.swift; sourceTree = "<group>"; };
 		5EB6218A29AB683B00029FB8 /* ProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileModel.swift; sourceTree = "<group>"; };
@@ -192,10 +194,11 @@
 		5EB621A029ABBA6700029FB8 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				5E9F20C929C861140027EAFE /* ProfileDataManager.swift */,
+				5E9F20C929C861140027EAFE /* DataManager.swift */,
 				5E2033B729E17D1E0014B1CC /* CoreDataService.swift */,
 				5E86E6A829D90C25008D047B /* PhotoChoose */,
 				5EC1749C29CE296B00F1ADA8 /* ThemeService */,
+				5E834B9029E61D2E006215AE /* Logger.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -389,7 +392,7 @@
 			files = (
 				5EB624B029C0CAD7006D19B2 /* ThemeService.swift in Sources */,
 				5E92E9E629B4B4C60038EED2 /* ChannelsListCell.swift in Sources */,
-				5E9F20CA29C861140027EAFE /* ProfileDataManager.swift in Sources */,
+				5E9F20CA29C861140027EAFE /* DataManager.swift in Sources */,
 				5EB6218B29AB683B00029FB8 /* ProfileModel.swift in Sources */,
 				5ECA720429D3858E0049E635 /* ErrorExtension.swift in Sources */,
 				5E97BF3729BE33B3003BBA1B /* UIViewExtension.swift in Sources */,
@@ -412,6 +415,7 @@
 				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ChannelViewController.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ChannelsListPresenter.swift in Sources */,
+				5E834B9129E61D2E006215AE /* Logger.swift in Sources */,
 				5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */,
 				5E92E9E029B2A7570038EED2 /* Router.swift in Sources */,
 				5E92E9F629B72C6E0038EED2 /* IncomingConversationViewCell.swift in Sources */,

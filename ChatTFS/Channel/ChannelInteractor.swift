@@ -3,17 +3,17 @@ import Combine
 import TFSChatTransport
 
 protocol ChannelInteractorProtocol: AnyObject {
+    
     func loadData()
-    func createMessageData(messageText: String)
-    var dataHandler: (([Message], Channel) -> Void)? { get set }
+    func createMessageData(messageText: String, userID: String, userName: String)
+    var dataHandler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)? { get set }
 }
 
 class ChannelInteractor: ChannelInteractorProtocol {
     
-    init(chatService: ChatService, channelID: String, dataManager: DataManagerProtocol, coreDataService: CoreDataServiceProtocol) {
+    init(chatService: ChatService, channelID: String, coreDataService: CoreDataServiceProtocol) {
         self.chatService = chatService
         self.channelID = channelID
-        self.dataManager = dataManager
         self.coreDataService = coreDataService
     }
     
@@ -22,70 +22,168 @@ class ChannelInteractor: ChannelInteractorProtocol {
     weak var chatService: ChatService?
     weak var presenter: ChannelPresenterProtocol?
     weak var dataManager: DataManagerProtocol?
-    weak var coreDataService: CoreDataServiceProtocol?
-    var dataHandler: (([Message], Channel) -> Void)?
+    var coreDataService: CoreDataServiceProtocol
+    var dataHandler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)?
     
     // MARK: - Private properties
     
-    private var userID: String?
-    private var userName: String?
     private var channelID: String?
     private var dataMessagesRequest: Cancellable?
     private var dataChannelRequest: Cancellable?
     private var sendMessageRequest: Cancellable?
-    private var userDataRequest: Cancellable?
+    private var sentMessages: [MessageNetworkModel] = []
     
-    // MARK: - Methods
+    // MARK: - Public methods
     
     func loadData() {
         
         dataHandler = { [weak self] messagesData, channelData in
             self?.presenter?.channelData = channelData
             self?.presenter?.messagesData = messagesData
+            self?.presenter?.dataUploaded()
             self?.dataChannelRequest?.cancel()
             self?.dataMessagesRequest?.cancel()
         }
         
-        dataChannelRequest = chatService?.loadChannel(id: channelID ?? "")
+        guard
+            let channelID
+        else {
+            return
+        }
+        
+        loadFromCoreData(channel: channelID)
+        loadFromNetwork(channel: channelID)
+        
+    }
+    
+    func createMessageData(messageText: String, userID: String, userName: String) {
+        guard let channelID = channelID else { return }
+        sendMessageRequest = chatService?.sendMessage(text: messageText,
+                                                      channelId: channelID,
+                                                      userId: userID,
+                                                      userName: userName)
+            .sink(receiveCompletion: { [weak self] _ in
+                self?.sendMessageRequest?.cancel()
+            }, receiveValue: { [weak self] message in
+                self?.saveMessagesForChannel(for: channelID,
+                                             message: MessageNetworkModel(id: message.id,
+                                                                          text: messageText,
+                                                                          userID: userID,
+                                                                          userName: userName,
+                                                                          date: message.date))
+                self?.presenter?.uploadMessage(messageModel: message)
+            })
+    }
+    
+    // MARK: - Private methods
+    
+    private func loadFromCoreData(channel: String) {
+        
+        do {
+            let messagesDB = try coreDataService.fetchChannelMessages(for: channel)
+            let channelDB = try coreDataService.fetchChannel(for: channel)
+            let messages: [MessageNetworkModel] = messagesDB
+                .compactMap { messagesBD in
+                    guard
+                        let id = messagesBD.id,
+                        let text = messagesBD.text,
+                        let userID = messagesBD.userID,
+                        let userName = messagesBD.userName,
+                        let date = messagesBD.date
+                    else {
+                        return MessageNetworkModel(id: "",
+                                                   text: "",
+                                                   userID: "",
+                                                   userName: "",
+                                                   date: Date())
+                    }
+                    return MessageNetworkModel(id: id,
+                                               text: text,
+                                               userID: userID,
+                                               userName: userName,
+                                               date: date)
+                }
+            
+            guard
+                let id = channelDB.id,
+                let name = channelDB.name
+            else {
+                return
+            }
+            
+            let channelNetworkModel = ChannelNetworkModel(id: id,
+                                                          name: name,
+                                                          logoURL: nil,
+                                                          lastMessage: nil,
+                                                          lastActivity: nil)
+            sentMessages.append(contentsOf: messages)
+            dataHandler?(sentMessages, channelNetworkModel)
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    private func loadFromNetwork(channel: String) {
+        
+        dataChannelRequest = chatService?.loadChannel(id: channel)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in
             }, receiveValue: { [weak self] channel in
                 self?.loadMessagesData(channelID: channel.id, channelData: channel)
             })
-        
-        userDataRequest = dataManager?.readProfilePublisher()
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
-            .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .catch({_ in
-                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
-            .sink(receiveValue: { [weak self] profile in
-                self?.userID = self?.dataManager?.userId
-                self?.userName = profile.fullName
-            })
     }
     
-    func loadMessagesData(channelID: String, channelData: Channel) {
+    private func loadMessagesData(channelID: String, channelData: Channel) {
+        
         dataMessagesRequest = self.chatService?.loadMessages(channelId: channelID)
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] _ in
+                
                 self?.dataMessagesRequest?.cancel()
             }, receiveValue: { [weak self] messagesData in
-                self?.dataHandler?(messagesData, channelData)
-                self?.presenter?.dataUploaded(userID: self?.userID ?? "")
+                
+                let networkChannelModel = ChannelNetworkModel(id: channelData.id,
+                                                              name: channelData.name,
+                                                              logoURL: nil,
+                                                              lastMessage: nil,
+                                                              lastActivity: nil)
+                
+                let networkMessages = messagesData
+                    .compactMap({
+                        let convertedMessage = MessageNetworkModel(id: $0.id,
+                                                                   text: $0.text,
+                                                                   userID: $0.userID,
+                                                                   userName: $0.userName,
+                                                                   date: $0.date)
+                        self?.saveMessagesForChannel(for: channelID,
+                                                     message: convertedMessage)
+                        return convertedMessage
+                    })
+
+                self?.dataHandler?(networkMessages, networkChannelModel)
+                self?.presenter?.dataUploaded()
             })
     }
     
-    func createMessageData(messageText: String) {
-        guard let channelID = channelID else { return }
-        sendMessageRequest = chatService?.sendMessage(text: messageText,
-                                                      channelId: channelID,
-                                                      userId: userID ?? "",
-                                                      userName: userName ?? "")
-            .sink(receiveCompletion: { [weak self] _ in
-                self?.sendMessageRequest?.cancel()
-            }, receiveValue: { [weak self] message in
-                self?.presenter?.uploadMessage(messageModel: message)
-            })
+    private func saveMessagesForChannel(for channelID: String, message: MessageNetworkModel) {
+        coreDataService.save { context in
+            let fetchRequest = DBChannel.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", channelID)
+            let channelManagedObject = try context.fetch(fetchRequest).first
+            
+            guard
+                let channelManagedObject
+            else {
+                return
+            }
+            
+            let messageManagedObject = DBMessage(context: context)
+                messageManagedObject.id = message.id
+                messageManagedObject.date = message.date
+                messageManagedObject.text = message.text
+                messageManagedObject.userID = message.userID
+                messageManagedObject.userName = message.userName
+                channelManagedObject.addToMessages(messageManagedObject)
+        }
     }
 }

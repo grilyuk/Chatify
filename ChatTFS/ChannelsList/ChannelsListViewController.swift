@@ -76,8 +76,6 @@ class ChannelsListViewController: UIViewController {
     private func setupUI() {
         configureTableView()
         setupTableViewConstraints()
-        setupDataSource()
-        setupSnapshot()
     }
     
     // MARK: - Private methods
@@ -98,6 +96,7 @@ class ChannelsListViewController: UIViewController {
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
         guard let channels = channels else { return }
+        print(channels.count)
         snapshot.appendSections([0])
         snapshot.appendItems(channels, toSection: 0)
         dataSource.apply(snapshot)
@@ -241,6 +240,7 @@ extension ChannelsListViewController: UITableViewDelegate {
 extension ChannelsListViewController: ChannelsListViewProtocol {
     
     func showChannelsList() {
+        setupDataSource()
         setupSnapshot()
         pullToRefresh.endRefreshing()
         activityIndicator.stopAnimating()

@@ -6,6 +6,7 @@
         <attribute name="lastMessage" optional="YES" attributeType="String"/>
         <attribute name="logoURL" optional="YES" attributeType="String"/>
         <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="messages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="DBMessage" inverseName="relationship" inverseEntity="DBMessage"/>
         <uniquenessConstraints>
             <uniquenessConstraint>
