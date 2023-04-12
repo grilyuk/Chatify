@@ -74,14 +74,14 @@ extension ChannelPresenter: ChannelPresenterProtocol {
         var currentUserID = ""
         var messages: [MessageModel] = []
         messagesData?.forEach({ [weak self] message in
-            if message.userID == self?.userID && message.text != "" {
+            if message.userID == self?.userID && message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                 messages.append(MessageModel(text: message.text,
                                                  date: message.date,
                                                  myMessage: true,
                                                  userName: message.userName,
                                                  isSameUser: true))
                 
-            } else if message.text != "" {
+            } else if message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                 let isSameUser = {
                     if currentUserID == message.userID {
                         return true

@@ -115,7 +115,8 @@ class DataManager: DataManagerProtocol {
                 print(CustomError(description: "Error decoding userID"))
             }
         } else {
-            let userId = UUID().uuidString
+            guard let deviceId = UIDevice.current.identifierForVendor else { return "" }
+            let userId = deviceId.uuidString
             do {
                 let userIdData = try JSONEncoder().encode(userId)
                 try userIdData.write(to: fileURL)

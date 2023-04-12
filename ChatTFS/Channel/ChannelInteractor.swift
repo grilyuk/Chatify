@@ -159,14 +159,14 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                                      message: convertedMessage)
                         return convertedMessage
                     })
-
                 self?.dataHandler?(networkMessages, networkChannelModel)
                 self?.presenter?.dataUploaded()
             })
     }
     
     private func saveMessagesForChannel(for channelID: String, message: MessageNetworkModel) {
-        coreDataService.save { context in
+        let loggerText = "Message saving from channel \(channelID)"
+        coreDataService.save(loggerText: loggerText) { context in
             let fetchRequest = DBChannel.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "id == %@", channelID)
             let channelManagedObject = try context.fetch(fetchRequest).first

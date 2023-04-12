@@ -40,6 +40,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             self?.channelsRequest?.cancel()
         }
         
+        loadFromCoreData()
         loadFromNetwork()
     }
     
@@ -91,15 +92,10 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         channelsRequest = chatService.loadChannels()
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { [weak self] _ in
-                self?.loadFromCoreData()
                 self?.presenter?.interactorError()
             }, receiveValue: { [weak self] channels in
                 
-                guard
-                    let self
-                else {
-                    return
-                }
+                guard let self else { return }
                 
                 channels.forEach { channel in
                     if !self.sentChannels.contains(where: { $0.id == channel.id }) {
@@ -110,6 +106,8 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                                    lastActivity: channel.lastActivity)
                         self.saveChannelsList(with: convertedChannel)
                         self.sentChannels.append(convertedChannel)
+                    } else {
+                        self.deleteChannelFromList(channelID: channel.id)
                     }
                 }
                 self.handler?(self.sentChannels)
@@ -117,15 +115,24 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     }
     
     private func saveChannelsList(with channel: ChannelNetworkModel) {
-        
-        coreDataService.save { context in
+        let loggerText = "Save channel \(channel.name)"
+        coreDataService.save(loggerText: loggerText) { context in
             let channelManagedObject = DBChannel(context: context)
             channelManagedObject.id = channel.id
             channelManagedObject.name = channel.name
             channelManagedObject.lastActivity = channel.lastActivity
             channelManagedObject.lastMessage = channel.lastMessage
             channelManagedObject.messages = NSOrderedSet()
-            print("Save channel")
+        }
+    }
+    
+    private func deleteChannelFromList(channelID: String) {
+        let loggerText = "Delete channel \(channelID)"
+        coreDataService.save(loggerText: loggerText) { context in
+            
+            let channelManagedObject = DBChannel(context: context)
+            channelManagedObject.id = channelID
+            context.delete(channelManagedObject)
         }
     }
 }

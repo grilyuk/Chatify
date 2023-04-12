@@ -6,12 +6,13 @@ protocol CoreDataServiceProtocol: AnyObject {
     func fetchChannelsList() throws -> [DBChannel]
     func fetchChannel(for channelID: String) throws -> DBChannel
     func fetchChannelMessages(for channelID: String) throws -> [DBMessage]
-    func save(block: (NSManagedObjectContext) throws -> Void )
-    func clearMessagesData()
+    func save(loggerText: String, block: @escaping (NSManagedObjectContext) throws -> Void )
     func clearEntitiesData(entity: String)
 }
 
 class CoreDataService: CoreDataServiceProtocol {
+    
+    var logger = Logger()
     
     private lazy var persistentContainer: NSPersistentContainer = {
         let persistentContainer = NSPersistentContainer(name: "Chat")
@@ -28,21 +29,31 @@ class CoreDataService: CoreDataServiceProtocol {
     
     func fetchChannelsList() throws -> [DBChannel] {
         let fetchRequest = DBChannel.fetchRequest()
-        return try viewContext.fetch(fetchRequest)
+        do {
+            let request = try viewContext.fetch(fetchRequest)
+            logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: "DBChannels fetching")
+            return request
+        } catch {
+            logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "")
+            return [DBChannel()]
+        }
     }
     
     func fetchChannel(for channelID: String) throws -> DBChannel {
         let fetchRequest = DBChannel.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "id == %@", channelID as CVarArg)
-        let DBChannell = try viewContext.fetch(fetchRequest).first
+        let DBChannelObject = try viewContext.fetch(fetchRequest).first
         guard
-            let DBChannell
+            let DBChannelObject,
+            let id = DBChannelObject.id
         else {
-            print("fail")
-            return DBChannel(context: viewContext)
+            logger
+                .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "DBChannel fetching")
+            return DBChannel()
         }
-        print("success")
-        return DBChannell
+        logger
+            .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: "DBChannel \(id) fetching")
+        return DBChannelObject
     }
     
     func fetchChannelMessages(for channelID: String) throws -> [DBMessage] {
@@ -59,16 +70,25 @@ class CoreDataService: CoreDataServiceProtocol {
         return DBMessage
     }
     
-    func save(block: (NSManagedObjectContext) throws -> Void) {
+    func save(loggerText: String, block: @escaping (NSManagedObjectContext) throws -> Void) {
         let backgroundContext = persistentContainer.newBackgroundContext()
-        backgroundContext.performAndWait {
+        backgroundContext.perform { [weak self] in
+            guard let self else { return }
             do {
                 try block(backgroundContext)
                 if backgroundContext.hasChanges {
-                    try backgroundContext.save()
+                    do {
+                        try backgroundContext.save()
+                        self.logger
+                            .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: "\(loggerText)")
+                    } catch {
+                        self.logger
+                            .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "\(loggerText)")
+                    }
                 }
             } catch {
-                print(error)
+                self.logger
+                    .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "\(loggerText)")
             }
         }
     }
@@ -80,20 +100,6 @@ class CoreDataService: CoreDataServiceProtocol {
         do {
             try viewContext.execute(deleteRequest)
             try viewContext.save()
-            print("Чистим чистим...")
-        } catch let error as NSError {
-            print("Could not delete. \(error), \(error.userInfo)")
-        }
-    }
-    
-    func clearMessagesData() {
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "DBMessage")
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-        do {
-            try viewContext.execute(deleteRequest)
-            try viewContext.save()
-            print("Чистим чистим...")
         } catch let error as NSError {
             print("Could not delete. \(error), \(error.userInfo)")
         }

@@ -134,7 +134,16 @@ extension IncomingChannelViewCell: ConfigurableViewProtocol {
         let format = DateFormatter()
         format.dateFormat = "HH:mm"
         dateLabel.text = format.string(from: model.date)
-        userNameLabel.text = model.userName
+        
+        let trimmedUserName = model.userName.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmedUserName == "" {
+            userNameLabel.text = "No name user"
+            userNameLabel.font = .systemFont(ofSize: UIConstants.userNameFontSize, weight: .light)
+        } else {
+            userNameLabel.text = model.userName
+            userNameLabel.font = .systemFont(ofSize: UIConstants.userNameFontSize, weight: .regular)
+        }
         
         if model.isSameUser {
             setupSameUserUI()

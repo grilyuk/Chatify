@@ -12,9 +12,9 @@ class Logger {
     func displayLog(result: Result, isMainThread: Bool, activity: String) {
         switch result {
         case .success:
-            description = "Is main thread: - \(isMainThread), \(activity)"
+            description = "success \(activity) -- Is main thread: - \(isMainThread)"
         case .failure:
-            description = "Failure during \(activity)"
+            description = "failure \(activity) -- Is main thread: - \(isMainThread) "
         }
     #if DEBUG
         print(description)

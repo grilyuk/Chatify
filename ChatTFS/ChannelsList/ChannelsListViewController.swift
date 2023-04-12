@@ -5,6 +5,7 @@ protocol ChannelsListViewProtocol: AnyObject {
     func showChannelsList()
     func showAlert()
     func addChannel(channel: ChannelModel)
+    func appendNewChannel(channels: [ChannelModel])
     var channels: [ChannelModel]? { get set }
 }
 
@@ -96,7 +97,6 @@ class ChannelsListViewController: UIViewController {
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
         guard let channels = channels else { return }
-        print(channels.count)
         snapshot.appendSections([0])
         snapshot.appendItems(channels, toSection: 0)
         dataSource.apply(snapshot)
@@ -244,6 +244,11 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
         setupSnapshot()
         pullToRefresh.endRefreshing()
         activityIndicator.stopAnimating()
+        appendNewChannel(channels: [ChannelModel(channelImage: UIImage(),
+                                                 name: "sss", message: "ss",
+                                                 date: Date(), isOnline: true,
+                                                 hasUnreadMessages: false,
+                                                 channelID: "fasfds")])
     }
     
     func showAlert() {
@@ -251,6 +256,10 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
             self.present(errorAlert, animated: true)
         }
         pullToRefresh.endRefreshing()
+    }
+    
+    func appendNewChannel(channels: [ChannelModel]) {
+
     }
     
     func addChannel(channel: ChannelModel) {

@@ -27,6 +27,7 @@ class ChannelsListPresenter {
     var profile: ProfileModel?
     var dataChannels: [ChannelNetworkModel]?
     var handler: (([ChannelModel]) -> Void)?
+    var newChannelsHandler: (([ChannelModel]) -> Void)?
     var channels: [ChannelModel] = []
     
     // MARK: - Initialization
@@ -54,6 +55,10 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
         handler = { [weak self] sortedChannels in
             self?.view?.channels = sortedChannels
             self?.view?.showChannelsList()
+        }
+        
+        newChannelsHandler = { [weak self] newChannels in
+            self?.view?.appendNewChannel(channels: newChannels)
         }
         
         DispatchQueue.global(qos: .background).async { [weak self] in

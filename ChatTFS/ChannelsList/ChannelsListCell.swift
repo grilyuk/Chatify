@@ -191,7 +191,15 @@ extension ChannelListCell: ConfigurableViewProtocol {
         
         userAvatar.image = model.channelImage
         
-        nameLabel.text = model.name
+        let trimmedNameLabel = model.name?.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmedNameLabel == "" {
+            nameLabel.text = "No name channel"
+            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .light)
+        } else {
+            nameLabel.text = model.name
+            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .semibold)
+        }
         
         guard let date = model.date else { return }
         let nowDate = Date()
