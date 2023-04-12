@@ -66,11 +66,11 @@ class ChannelInteractor: ChannelInteractorProtocol {
                 self?.sendMessageRequest?.cancel()
             }, receiveValue: { [weak self] message in
                 self?.saveMessagesForChannel(for: channelID,
-                                             message: MessageNetworkModel(id: message.id,
+                                             messages: [MessageNetworkModel(id: message.id,
                                                                           text: messageText,
                                                                           userID: userID,
                                                                           userName: userName,
-                                                                          date: message.date))
+                                                                          date: message.date)])
                 self?.presenter?.uploadMessage(messageModel: message)
             })
     }
@@ -149,23 +149,21 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                                               lastActivity: nil)
                 
                 let networkMessages = messagesData
-                    .compactMap({
-                        let convertedMessage = MessageNetworkModel(id: $0.id,
-                                                                   text: $0.text,
-                                                                   userID: $0.userID,
-                                                                   userName: $0.userName,
-                                                                   date: $0.date)
-                        self?.saveMessagesForChannel(for: channelID,
-                                                     message: convertedMessage)
-                        return convertedMessage
+                    .compactMap({ MessageNetworkModel(id: $0.id,
+                                                      text: $0.text,
+                                                      userID: $0.userID,
+                                                      userName: $0.userName,
+                                                      date: $0.date)
                     })
+                self?.saveMessagesForChannel(for: channelID,
+                                             messages: networkMessages)
                 self?.dataHandler?(networkMessages, networkChannelModel)
                 self?.presenter?.dataUploaded()
             })
     }
     
-    private func saveMessagesForChannel(for channelID: String, message: MessageNetworkModel) {
-        let loggerText = "Message saving from channel \(channelID)"
+    private func saveMessagesForChannel(for channelID: String, messages: [MessageNetworkModel]) {
+        let loggerText = "Messages saving from channel \(channelID)"
         coreDataService.save(loggerText: loggerText) { context in
             let fetchRequest = DBChannel.fetchRequest()
             fetchRequest.predicate = NSPredicate(format: "id == %@", channelID)
@@ -177,13 +175,15 @@ class ChannelInteractor: ChannelInteractorProtocol {
                 return
             }
             
-            let messageManagedObject = DBMessage(context: context)
-                messageManagedObject.id = message.id
-                messageManagedObject.date = message.date
-                messageManagedObject.text = message.text
-                messageManagedObject.userID = message.userID
-                messageManagedObject.userName = message.userName
-                channelManagedObject.addToMessages(messageManagedObject)
+            for message in messages {
+                let messageManagedObject = DBMessage(context: context)
+                    messageManagedObject.id = message.id
+                    messageManagedObject.date = message.date
+                    messageManagedObject.text = message.text
+                    messageManagedObject.userID = message.userID
+                    messageManagedObject.userName = message.userName
+                    channelManagedObject.addToMessages(messageManagedObject)
+            }
         }
     }
 }

@@ -14,7 +14,7 @@ class Logger {
         case .success:
             description = "success \(activity) -- Is main thread: - \(isMainThread)"
         case .failure:
-            description = "failure \(activity) -- Is main thread: - \(isMainThread) "
+            description = "failure \(activity) -- Is main thread: - \(isMainThread)"
         }
     #if DEBUG
         print(description)

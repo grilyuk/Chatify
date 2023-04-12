@@ -36,7 +36,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         handler = { [weak self] channels in
             self?.presenter?.dataChannels = channels
             self?.presenter?.dataUploaded()
-            self?.sentChannels = []
             self?.channelsRequest?.cancel()
         }
         
@@ -56,7 +55,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                            lastMessage: channel.lastMessage,
                                                            lastActivity: channel.lastActivity)
                 self?.presenter?.addChannel(channel: convertedChannel)
-                self?.saveChannelsList(with: convertedChannel)
+                self?.saveChannelsList(with: [convertedChannel])
             })
     }
     
@@ -82,6 +81,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             
             sentChannels.append(contentsOf: channelsModel)
             self.handler?(self.sentChannels)
+            self.sentChannels = []
         } catch {
             print(error)
         }
@@ -94,45 +94,42 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             .sink(receiveCompletion: { [weak self] _ in
                 self?.presenter?.interactorError()
             }, receiveValue: { [weak self] channels in
-                
+
                 guard let self else { return }
+                var newChannels: [ChannelNetworkModel] = []
+                channels.forEach { networkChannel in
+                    
+                    newChannels.append(ChannelNetworkModel(id: networkChannel.id,
+                                                           name: networkChannel.name,
+                                                           logoURL: networkChannel.logoURL,
+                                                           lastMessage: networkChannel.lastMessage,
+                                                           lastActivity: networkChannel.lastActivity))
+                }
                 
-                channels.forEach { channel in
-                    if !self.sentChannels.contains(where: { $0.id == channel.id }) {
-                        let convertedChannel = ChannelNetworkModel(id: channel.id,
-                                                                   name: channel.name,
-                                                                   logoURL: channel.logoURL,
-                                                                   lastMessage: channel.lastMessage,
-                                                                   lastActivity: channel.lastActivity)
-                        self.saveChannelsList(with: convertedChannel)
-                        self.sentChannels.append(convertedChannel)
-                    } else {
-                        self.deleteChannelFromList(channelID: channel.id)
+                for sentChannel in sentChannels {
+                    for newChannel in newChannels where newChannel.id != sentChannel.id {
+                        sentChannels.removeAll(where: { newChannel.id != $0.id })
                     }
                 }
-                self.handler?(self.sentChannels)
+                self.coreDataService.deleteObject(loggerText: "Deleting object",
+                                                  channelID: "a0ff5a19-809c-48a8-a385-b87cdc50fa3d")
+                self.saveChannelsList(with: newChannels)
+                self.handler?(newChannels)
             })
     }
     
-    private func saveChannelsList(with channel: ChannelNetworkModel) {
-        let loggerText = "Save channel \(channel.name)"
-        coreDataService.save(loggerText: loggerText) { context in
-            let channelManagedObject = DBChannel(context: context)
-            channelManagedObject.id = channel.id
-            channelManagedObject.name = channel.name
-            channelManagedObject.lastActivity = channel.lastActivity
-            channelManagedObject.lastMessage = channel.lastMessage
-            channelManagedObject.messages = NSOrderedSet()
-        }
-    }
-    
-    private func deleteChannelFromList(channelID: String) {
-        let loggerText = "Delete channel \(channelID)"
-        coreDataService.save(loggerText: loggerText) { context in
-            
-            let channelManagedObject = DBChannel(context: context)
-            channelManagedObject.id = channelID
-            context.delete(channelManagedObject)
+    private func saveChannelsList(with channels: [ChannelNetworkModel]) {
+        for channel in channels {
+            let loggerText = "Save channel \(channel.name)"
+            coreDataService.save(loggerText: loggerText) { context in
+                
+                let channelManagedObject = DBChannel(context: context)
+                channelManagedObject.id = channel.id
+                channelManagedObject.name = channel.name
+                channelManagedObject.lastActivity = channel.lastActivity
+                channelManagedObject.lastMessage = channel.lastMessage
+                channelManagedObject.messages = NSOrderedSet()
+            }
         }
     }
 }

@@ -7,6 +7,7 @@ protocol CoreDataServiceProtocol: AnyObject {
     func fetchChannel(for channelID: String) throws -> DBChannel
     func fetchChannelMessages(for channelID: String) throws -> [DBMessage]
     func save(loggerText: String, block: @escaping (NSManagedObjectContext) throws -> Void )
+    func deleteObject(loggerText: String, channelID: String)
     func clearEntitiesData(entity: String)
 }
 
@@ -16,10 +17,13 @@ class CoreDataService: CoreDataServiceProtocol {
     
     private lazy var persistentContainer: NSPersistentContainer = {
         let persistentContainer = NSPersistentContainer(name: "Chat")
-        persistentContainer.loadPersistentStores { _, error in
+        persistentContainer.loadPersistentStores { [weak self] _, error in
             guard let error else { return }
-            print(error)
+            self?.logger.displayLog(result: .failure, isMainThread: Thread.isMainThread,
+                                    activity: "PersistentContainer not loaded: error: \(error.localizedDescription)")
         }
+        logger.displayLog(result: .success, isMainThread: Thread.isMainThread,
+                                activity: "PersistentContainer loaded")
         return persistentContainer
     }()
     
@@ -29,12 +33,13 @@ class CoreDataService: CoreDataServiceProtocol {
     
     func fetchChannelsList() throws -> [DBChannel] {
         let fetchRequest = DBChannel.fetchRequest()
+        let loggerText = "DBChannels fetching"
         do {
             let request = try viewContext.fetch(fetchRequest)
-            logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: "DBChannels fetching")
+            logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
             return request
         } catch {
-            logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "")
+            logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
             return [DBChannel()]
         }
     }
@@ -77,19 +82,32 @@ class CoreDataService: CoreDataServiceProtocol {
             do {
                 try block(backgroundContext)
                 if backgroundContext.hasChanges {
-                    do {
-                        try backgroundContext.save()
-                        self.logger
-                            .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: "\(loggerText)")
-                    } catch {
-                        self.logger
-                            .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "\(loggerText)")
-                    }
+                    try backgroundContext.save()
+                    self.logger
+                        .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
                 }
             } catch {
                 self.logger
-                    .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "\(loggerText)")
+                    .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
             }
+        }
+    }
+    
+    func deleteObject(loggerText: String, channelID: String) {
+        do {
+            let DBChannel = try fetchChannel(for: channelID)
+            let channelContext = DBChannel.managedObjectContext
+            guard let channelContext else { return }
+            channelContext.delete(DBChannel)
+            logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
+            do {
+                try channelContext.save()
+                logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
+            } catch {
+                logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
+            }
+        } catch {
+            logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
         }
     }
     
@@ -100,8 +118,8 @@ class CoreDataService: CoreDataServiceProtocol {
         do {
             try viewContext.execute(deleteRequest)
             try viewContext.save()
-        } catch let error as NSError {
-            print("Could not delete. \(error), \(error.userInfo)")
+        } catch {
+            print(error)
         }
     }
 }
