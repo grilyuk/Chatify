@@ -33,6 +33,7 @@ class ChannelViewController: UIViewController {
         let table = UITableView()
         table.register(IncomingChannelViewCell.self, forCellReuseIdentifier: IncomingChannelViewCell.identifier)
         table.register(OutgoingChannelViewCell.self, forCellReuseIdentifier: OutgoingChannelViewCell.identifier)
+        table.register(SameIncomingChannelViewCell.self, forCellReuseIdentifier: SameIncomingChannelViewCell.identifier)
         table.separatorStyle = .none
         table.delegate = self
         table.allowsSelection = false
@@ -165,12 +166,23 @@ class ChannelViewController: UIViewController {
                 cell.configure(with: itemIdentifier)
                 return cell
             case false:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier) as? IncomingChannelViewCell,
-                      let themeService = self?.themeService
-                else {return UITableViewCell()}
-                cell.configureTheme(theme: themeService)
-                cell.configure(with: itemIdentifier)
-                return cell
+                switch itemIdentifier.isSameUser {
+                case true:
+                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SameIncomingChannelViewCell.identifier) as? SameIncomingChannelViewCell,
+                          let themeService = self?.themeService
+                    else {return UITableViewCell()}
+                    cell.configureTheme(theme: themeService)
+                    cell.configure(with: itemIdentifier)
+                    return cell
+                case false:
+                    guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier) as? IncomingChannelViewCell,
+                          let themeService = self?.themeService
+                    else {return UITableViewCell()}
+                    cell.configureTheme(theme: themeService)
+                    cell.configure(with: itemIdentifier)
+                    return cell
+                }
+                
             }
         })
     }

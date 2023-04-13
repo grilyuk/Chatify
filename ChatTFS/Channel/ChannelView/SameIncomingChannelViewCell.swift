@@ -1,7 +1,7 @@
 import UIKit
 
-class IncomingChannelViewCell: UITableViewCell {
-    static let identifier = String(describing: IncomingChannelViewCell.self)
+class SameIncomingChannelViewCell: UITableViewCell {
+    static let identifier = String(describing: SameIncomingChannelViewCell.self)
     
     // MARK: - UIConstants
     
@@ -50,7 +50,7 @@ class IncomingChannelViewCell: UITableViewCell {
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupUI()
+        setupSameUserUI()
     }
     
     required init?(coder: NSCoder) {
@@ -67,14 +67,13 @@ class IncomingChannelViewCell: UITableViewCell {
     
     // MARK: - SetupUI
     
-    func setupUI() {
-        contentView.addSubviews(messageBubble, userNameLabel)
+    func setupSameUserUI() {
+        contentView.addSubviews(messageBubble)
         messageBubble.addSubviews(messageText, dateLabel)
         
         messageBubble.translatesAutoresizingMaskIntoConstraints = false
         messageText.translatesAutoresizingMaskIntoConstraints = false
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
-        userNameLabel.translatesAutoresizingMaskIntoConstraints = false
         
         let maxBubbleWidth = messageBubble.widthAnchor.constraint(lessThanOrEqualTo: self.contentView.widthAnchor, multiplier: 0.75)
         maxBubbleWidth.priority = .required
@@ -83,9 +82,7 @@ class IncomingChannelViewCell: UITableViewCell {
         
         NSLayoutConstraint.activate([
             messageBubble.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -UIConstants.edgeVertical),
-            userNameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.edgeVertical),
-            userNameLabel.leadingAnchor.constraint(equalTo: messageText.leadingAnchor),
-            messageBubble.topAnchor.constraint(equalTo: userNameLabel.bottomAnchor, constant: UIConstants.edgeVertical),
+            messageBubble.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.edgeVertical),
             dateLabel.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge),
             dateLabel.leadingAnchor.constraint(equalTo: messageText.trailingAnchor, constant: UIConstants.edge),
             dateLabel.bottomAnchor.constraint(equalTo: messageText.bottomAnchor),
@@ -99,7 +96,7 @@ class IncomingChannelViewCell: UITableViewCell {
 
 // MARK: - ChannelViewCell + ConfigurableViewProtocol
 
-extension IncomingChannelViewCell: ConfigurableViewProtocol {
+extension SameIncomingChannelViewCell: ConfigurableViewProtocol {
     func configure(with model: MessageModel) {
         messageText.text = model.text
         let format = DateFormatter()
