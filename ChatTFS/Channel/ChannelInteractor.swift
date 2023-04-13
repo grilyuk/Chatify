@@ -185,8 +185,10 @@ class ChannelInteractor: ChannelInteractorProtocol {
                 channelManagedObject.lastMessage = message.text
                 channelManagedObject.lastActivity = message.date
                 channelManagedObject.addToMessages(messageManagedObject)
-                channelManagedObject.messages = NSOrderedSet()
             }
+            
+            channelManagedObject.lastMessage = messages.last?.text
+            channelManagedObject.lastActivity = messages.last?.date
         }
     }
 }

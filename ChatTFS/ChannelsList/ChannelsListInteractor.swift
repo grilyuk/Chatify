@@ -64,7 +64,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     }
     
     func deleteChannel(id: String) -> Bool {
-        var result = true
         deleteChannelRequest = chatService.deleteChannel(id: id)
             .receive(on: DispatchQueue.main)
             .subscribe(on: DispatchQueue.global())
@@ -78,7 +77,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 }
             }, receiveValue: { _ in
             })
-        return result
+        return true
     }
     
     // MARK: - Private methods
