@@ -62,17 +62,17 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                                       channelId: channelID,
                                                       userId: userID,
                                                       userName: userName)
-            .sink(receiveCompletion: { [weak self] _ in
-                self?.sendMessageRequest?.cancel()
-            }, receiveValue: { [weak self] message in
-                self?.saveMessagesForChannel(for: channelID,
-                                             messages: [MessageNetworkModel(id: message.id,
-                                                                          text: messageText,
-                                                                          userID: userID,
-                                                                          userName: userName,
-                                                                          date: message.date)])
-                self?.presenter?.uploadMessage(messageModel: message)
-            })
+        .sink(receiveCompletion: { [weak self] _ in
+            self?.sendMessageRequest?.cancel()
+        }, receiveValue: { [weak self] message in
+            self?.saveMessagesForChannel(for: channelID,
+                                         messages: [MessageNetworkModel(id: message.id,
+                                                                        text: messageText,
+                                                                        userID: userID,
+                                                                        userName: userName,
+                                                                        date: message.date)])
+            self?.presenter?.uploadMessage(messageModel: message)
+        })
     }
     
     // MARK: - Private methods
@@ -177,12 +177,15 @@ class ChannelInteractor: ChannelInteractorProtocol {
             
             for message in messages {
                 let messageManagedObject = DBMessage(context: context)
-                    messageManagedObject.id = message.id
-                    messageManagedObject.date = message.date
-                    messageManagedObject.text = message.text
-                    messageManagedObject.userID = message.userID
-                    messageManagedObject.userName = message.userName
-                    channelManagedObject.addToMessages(messageManagedObject)
+                messageManagedObject.id = message.id
+                messageManagedObject.date = message.date
+                messageManagedObject.text = message.text
+                messageManagedObject.userID = message.userID
+                messageManagedObject.userName = message.userName
+                channelManagedObject.lastMessage = message.text
+                channelManagedObject.lastActivity = message.date
+                channelManagedObject.addToMessages(messageManagedObject)
+                channelManagedObject.messages = NSOrderedSet()
             }
         }
     }
