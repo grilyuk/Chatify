@@ -8,20 +8,24 @@ protocol ProfileInteractorProtocol: AnyObject {
 
 class ProfileInteractor: ProfileInteractorProtocol {
     
-    //MARK: - Initializer
+    // MARK: - Initialization
+    
     init(dataManager: DataManagerProtocol) {
         self.dataManager = dataManager
     }
     
-    //MARK: - Public
+    // MARK: - Public
+    
     weak var presenter: ProfilePresenterProtocol?
     weak var dataManager: DataManagerProtocol?
     
-    //MARK: - Private
+    // MARK: - Private
+    
     private var handler: ((ProfileModel) -> Void)?
     private var dataRequest: Cancellable?
 
-    //MARK: - Methods
+    // MARK: - Methods
+    
     func loadData() {
         
         handler = { [weak self] profile in
@@ -33,10 +37,11 @@ class ProfileInteractor: ProfileInteractorProtocol {
         dataRequest = dataManager?.readProfilePublisher()
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
-            .handleEvents(receiveCancel: { print("Cancel sub in ProfileInteractor") })
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .catch({_ in Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
+            .catch({_ in
+                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
             .sink(receiveValue: { [weak self] profile in
+                self?.dataManager?.currentProfile.send(profile)
                 self?.handler?(profile)
             })
     }

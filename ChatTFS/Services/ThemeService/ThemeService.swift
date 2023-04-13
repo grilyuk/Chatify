@@ -6,19 +6,21 @@ protocol ThemeServiceProtocol: AnyObject {
 
 class ThemeService: ThemeServiceProtocol {
     
-    //MARK: - Private
-    private let standart = UserDefaults.standard
+    // MARK: - Private
+    
+    private let standard = UserDefaults.standard
     private let key = "Theme"
     
-    //MARK: - Public
+    // MARK: - Public
+    
     var currentTheme: Theme {
         get {
-            guard let value = standart.value(forKey: key) as? String,
+            guard let value = standard.value(forKey: key) as? String,
                   let theme = Theme(rawValue: value) else { return .light }
             return theme
         }
         set {
-            standart.set(newValue.rawValue, forKey: key)
+            standard.set(newValue.rawValue, forKey: key)
         }
     }
 }

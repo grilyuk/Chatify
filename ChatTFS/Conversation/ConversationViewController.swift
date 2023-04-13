@@ -1,14 +1,15 @@
 import UIKit
 
 protocol ConversationViewProtocol: AnyObject {
-    func showConversation()
-    var userName: String { get set }
-    var historyChat: [MessageCellModel] { get set }
+    func showConversation(channel: ChannelModel)
+    func addMessage(message: MessageCellModel)
+    var messages: [MessageCellModel] { get set }
 }
 
 class ConversationViewController: UIViewController {
     
-    //MARK: - UIConstants
+    // MARK: - UIConstants
+    
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
         static let textFieldHeight: CGFloat = 36
@@ -17,14 +18,15 @@ class ConversationViewController: UIViewController {
         static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.6705197704, green: 0.6906016156, blue: 0.8105463435, alpha: 1)
     }
     
-    //MARK: - Public
+    // MARK: - Public
+    
     var presenter: ConversationPresenterProtocol?
-    var historyChat: [MessageCellModel] = []
+    var messages: [MessageCellModel] = []
     var titlesSections: [String] = []
-    var userName: String = "Steve Jobs"
     weak var themeService: ThemeServiceProtocol?
     
-    //MARK: - Private
+    // MARK: - Private
+    
     private var dataSource: UITableViewDiffableDataSource<Date, MessageCellModel>?
     
     private lazy var tableView: UITableView = {
@@ -32,15 +34,19 @@ class ConversationViewController: UIViewController {
         table.register(IncomingConversationViewCell.self, forCellReuseIdentifier: IncomingConversationViewCell.identifier)
         table.register(OutgoingConversationViewCell.self, forCellReuseIdentifier: OutgoingConversationViewCell.identifier)
         table.delegate = self
-        table.rowHeight = UITableView.automaticDimension
         table.separatorStyle = .none
         table.allowsSelection = false
+        table.scrollsToTop = true
+        table.rowHeight = UITableView.automaticDimension
+        if #available(iOS 15.0, *) {
+            table.sectionHeaderTopPadding = 0
+        }
         return table
     }()
     
     private lazy var textFieldView: UIView = {
         let view = UIView()
-        view.layer.cornerRadius = UIConstants.textFieldHeight/2
+        view.layer.cornerRadius = UIConstants.textFieldHeight / 2
         view.layer.borderWidth = UIConstants.borderWidth
         view.layer.borderColor = UIColor.systemGray5.cgColor
         return view
@@ -49,6 +55,7 @@ class ConversationViewController: UIViewController {
     private lazy var textField: UITextField = {
         let field = UITextField()
         field.placeholder = "Type message"
+        field.tintColor = themeService?.currentTheme.incomingTextColor
         return field
     }()
     
@@ -62,7 +69,7 @@ class ConversationViewController: UIViewController {
     private lazy var customNavBar: UIView = {
         let navBar = UIView(frame: CGRect(x: 0, y: 0,
                                           width: view.frame.width,
-                                          height: view.frame.height * (137/844)))
+                                          height: view.frame.height * (137 / 844)))
         let blur = UIBlurEffect(style: .regular)
         let blurEffectView = UIVisualEffectView(effect: blur)
         blurEffectView.frame = navBar.bounds
@@ -73,35 +80,17 @@ class ConversationViewController: UIViewController {
         return navBar
     }()
     
-    private lazy var companionAvatar: UIView = {
-        let view = UIView(frame: CGRect(origin: .zero, size: .init(width: UIConstants.avatarSize, height: UIConstants.avatarSize)))
-        let gradient = CAGradientLayer()
-        gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
-                           UIConstants.imageProfileBottomColor.cgColor]
-        gradient.frame = view.bounds
-        view.layer.addSublayer(gradient)
-        view.layer.cornerRadius = UIConstants.avatarSize/2
+    private lazy var conversationLogo: UIImageView = {
+        let view = UIImageView(frame: CGRect(origin: .zero, size: .init(width: UIConstants.avatarSize, height: UIConstants.avatarSize)))
+        view.layer.cornerRadius = UIConstants.avatarSize / 2
         view.clipsToBounds = true
+        view.contentMode = .scaleAspectFill
         return view
     }()
     
-    private lazy var initials: UILabel = {
-        let label = UILabel()
-        let initialFontSizeCalc = UIConstants.avatarSize * 0.45
-        let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
-        label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
-        label.textColor = .white
-        let formatter = PersonNameComponentsFormatter()
-        let components = formatter.personNameComponents(from: userName)
-        formatter.style = .abbreviated
-        label.text = formatter.string(from: components!)
-        return label
-    }()
-    
-    private lazy var companionName: UILabel = {
+    private lazy var conversationName: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13)
-        label.text = userName
         label.textColor = themeService?.currentTheme.textColor
         return label
     }()
@@ -114,7 +103,8 @@ class ConversationViewController: UIViewController {
         return button
     }()
     
-    //MARK: - Initializer
+    // MARK: - Initialization
+    
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
@@ -124,14 +114,15 @@ class ConversationViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
         setupDataSource()
-        setupSnapshot()
         setTableView()
         setGesture()
+        sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(showKeyboard),
                                                name: UIResponder.keyboardWillShowNotification,
@@ -145,18 +136,20 @@ class ConversationViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
+        tabBarController?.tabBar.isHidden = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         navigationController?.navigationBar.isHidden = false
     }
-
-    //MARK: - Methods
+    
+    // MARK: - Methods
+    
     private func setupDataSource() {
-        dataSource = UITableViewDiffableDataSource<Date, MessageCellModel> (tableView: tableView) { [weak self]
-            (tableView: UITableView, indexPath: IndexPath, itemIdentifier: MessageCellModel) -> UITableViewCell in
+        dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
             switch itemIdentifier.myMessage {
             case true:
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingConversationViewCell.identifier) as? OutgoingConversationViewCell,
@@ -173,7 +166,7 @@ class ConversationViewController: UIViewController {
                 cell.configure(with: itemIdentifier)
                 return cell
             }
-        }
+        })
     }
     
     private func setupSnapshot() {
@@ -182,8 +175,8 @@ class ConversationViewController: UIViewController {
         snapshot.deleteAllItems()
         let formatter = DateFormatter()
         formatter.dateFormat = "dd.MM.yyyy"
-
-        let groupedMessages = Dictionary(grouping: historyChat, by: { Calendar.current.startOfDay(for: $0.date) })
+        
+        let groupedMessages = Dictionary(grouping: messages, by: { Calendar.current.startOfDay(for: $0.date) })
         let sortedDates = groupedMessages.keys.sorted()
         
         for date in sortedDates {
@@ -202,23 +195,41 @@ class ConversationViewController: UIViewController {
         view.addGestureRecognizer(tapGesture)
     }
     
+    private func sendMessage() {
+        presenter?.createMessage(messageText: textField.text)
+        textField.text = ""
+    }
+    
+    private func scrollToLastRow() {
+        if !messages.isEmpty {
+            let lastSectionNumber = tableView.numberOfSections - 1
+            let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
+            tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
+        }
+    }
+    
+    @objc
+    private func checkMessage() {
+        if textField.text == nil || textField.text == "" {
+            return
+        }
+        sendMessage()
+    }
+    
     @objc
     private func showKeyboard(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
               let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
-
+        
         let keyboardHeight = keyboardFrame.height
         let viewYMax = view.frame.maxY
         let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
         let height = viewYMax - safeAreaYMax
         let offset = keyboardHeight - height
-        let sections = tableView.numberOfSections
-        let rowCount = tableView.numberOfRows(inSection: sections - 1)
         additionalSafeAreaInsets.bottom = offset
-        tableView.scrollToRow(at: IndexPath(row: rowCount - 1, section: sections - 1), at: .bottom, animated: true)
-        tableView.scrollsToTop = true
+        scrollToLastRow()
     }
-
+    
     @objc
     private func hideKeyboard(_ notification: Notification) {
         additionalSafeAreaInsets.bottom = 0
@@ -234,16 +245,16 @@ class ConversationViewController: UIViewController {
         navigationController?.popToRootViewController(animated: true)
     }
     
-    //MARK: - Setup UI
+    // MARK: - Setup UI
+    
     private func setTableView() {
         view.addSubview(tableView)
         view.addSubview(textFieldView)
         textFieldView.addSubview(textField)
         textFieldView.addSubview(sendButton)
         view.addSubview(customNavBar)
-        customNavBar.addSubview(companionAvatar)
-        companionAvatar.addSubview(initials)
-        customNavBar.addSubview(companionName)
+        customNavBar.addSubview(conversationLogo)
+        customNavBar.addSubview(conversationName)
         customNavBar.addSubview(backButton)
         
         textFieldView.translatesAutoresizingMaskIntoConstraints = false
@@ -251,9 +262,8 @@ class ConversationViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         customNavBar.translatesAutoresizingMaskIntoConstraints = false
-        companionAvatar.translatesAutoresizingMaskIntoConstraints = false
-        initials.translatesAutoresizingMaskIntoConstraints = false
-        companionName.translatesAutoresizingMaskIntoConstraints = false
+        conversationLogo.translatesAutoresizingMaskIntoConstraints = false
+        conversationName.translatesAutoresizingMaskIntoConstraints = false
         backButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -282,16 +292,13 @@ class ConversationViewController: UIViewController {
             customNavBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             customNavBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.16),
             
-            companionAvatar.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
-            companionAvatar.bottomAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: -30),
-            companionAvatar.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
-            companionAvatar.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
+            conversationLogo.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
+            conversationLogo.bottomAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: -30),
+            conversationLogo.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
+            conversationLogo.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
             
-            initials.centerYAnchor.constraint(equalTo: companionAvatar.centerYAnchor),
-            initials.centerXAnchor.constraint(equalTo: companionAvatar.centerXAnchor),
-            
-            companionName.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
-            companionName.topAnchor.constraint(equalTo: companionAvatar.bottomAnchor, constant: 5),
+            conversationName.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
+            conversationName.topAnchor.constraint(equalTo: conversationLogo.bottomAnchor, constant: 5),
             
             backButton.centerYAnchor.constraint(equalTo: customNavBar.centerYAnchor, constant: 10),
             backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18)
@@ -299,7 +306,8 @@ class ConversationViewController: UIViewController {
     }
 }
 
-//MARK: - ConversationViewController + UITableViewDelegate
+// MARK: - ConversationViewController + UITableViewDelegate
+
 extension ConversationViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let title = UILabel()
@@ -323,9 +331,34 @@ extension ConversationViewController: UITableViewDelegate {
     }
 }
 
-//MARK: - ConversationViewController + ConversationViewProtocol
+// MARK: - ConversationViewController + ConversationViewProtocol
+
 extension ConversationViewController: ConversationViewProtocol {
-    func showConversation() {
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
+    func showConversation(channel: ChannelModel) {
+        setupSnapshot()
+        conversationName.text = channel.channelName
+        conversationLogo.image = channel.channelImage
+    }
+    
+    func addMessage(message: MessageCellModel) {
+        guard let dataSource = dataSource else { return }
+        var snapshot = dataSource.snapshot()
+        if snapshot.numberOfSections == 0 {
+            snapshot.appendSections([message.date])
+            snapshot.appendItems([message], toSection: message.date)
+        } else {
+            snapshot.appendItems([message])
+        }
+        
+        DispatchQueue.main.async {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "dd.MM.yyyy"
+            self.titlesSections.append(formatter.string(from: message.date))
+            self.dataSource?.apply(snapshot)
+            let lastSectionNumber = self.tableView.numberOfSections - 1
+            let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
+            self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),
+                                                     at: .none, animated: true)
+        }
     }
 }

@@ -3,6 +3,7 @@ import Combine
 
 protocol DataManagerProtocol: AnyObject {
     var currentProfile: CurrentValueSubject<ProfileModel, Never> { get set }
+    var userId: String { get }
     func readProfilePublisher() -> AnyPublisher<Data, Error>
     func writeProfilePublisher(profile: ProfileModel) -> AnyPublisher<ProfileModel, Error>
 }
@@ -10,18 +11,27 @@ protocol DataManagerProtocol: AnyObject {
 class DataManager: DataManagerProtocol {
     
     static var defaultProfile = ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
-    var currentProfile = CurrentValueSubject<ProfileModel, Never>.init(defaultProfile)
+    var currentProfile = CurrentValueSubject<ProfileModel, Never>(defaultProfile)
+    var userId: String {
+        readUserID(fileName: DataManager.userIdFileName)
+    }
     
-    //MARK: - Private properties
+    // MARK: - Private properties
+    
+    private let fileManager = FileManager.default
+    static let profileFileName = "profileData.json"
+    static let userIdFileName = "userId.json"
+    
     private var backgroundQueue = DispatchQueue.global(qos: .utility)
     
-    //MARK: - Publishers
+    // MARK: - Publishers
+    
     func readProfilePublisher() -> AnyPublisher<Data, Error> {
         Deferred {
             Future { promise in
                 self.backgroundQueue.async {
                     do {
-                        promise(.success(try self.readData()))
+                        promise(.success(try self.readData(fileName: DataManager.profileFileName)))
                     } catch {
                         promise(.failure(error))
                     }
@@ -46,18 +56,45 @@ class DataManager: DataManagerProtocol {
         .eraseToAnyPublisher()
     }
     
-    //MARK: - Private methods
-    private func checkPath() -> Bool {
-        guard let filePath = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json").path
+    // MARK: - Private methods
+    
+    private func readUserID(fileName: String) -> String {
+        guard let fileURL = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            .appendingPathComponent(fileName) else { return "" }
+        if checkPath(fileName: fileName) {
+            do {
+                let jsonData = try Data(contentsOf: fileURL)
+                let userId = try JSONDecoder().decode(String.self, from: jsonData)
+                return userId
+            } catch {
+                print(CustomError(description: "Error decoding userID"))
+            }
+        } else {
+            let userId = UUID().uuidString
+            do {
+                let userIdData = try JSONEncoder().encode(userId)
+                try userIdData.write(to: fileURL)
+                return userId
+            } catch {
+                print(CustomError(description: "Error encoding userID"))
+            }
+        }
+        return ""
+    }
+    
+    private func checkPath(fileName: String) -> Bool {
+        guard let filePath = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            .appendingPathComponent(fileName).path
         else {
             return false
         }
         return FileManager.default.fileExists(atPath: filePath) ? true : false
     }
     
-    private func readData() throws -> Data {
-        guard let fileURL = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false).appendingPathComponent("profileData.json"),
-              checkPath() == true,
+    private func readData(fileName: String) throws -> Data {
+        guard let fileURL = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+            .appendingPathComponent(fileName),
+              checkPath(fileName: fileName) == true,
               let jsonData = try? Data(contentsOf: fileURL)
         else {
             throw CustomError(description: "readData failed")
@@ -71,7 +108,6 @@ class DataManager: DataManagerProtocol {
         else {
             return ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
         }
-        sleep(3)
         return profileData
     }
 }

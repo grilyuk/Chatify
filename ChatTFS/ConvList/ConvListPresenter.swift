@@ -1,71 +1,122 @@
 import UIKit
+import TFSChatTransport
 
 protocol ConvListPresenterProtocol: AnyObject {
+    var router: RouterProtocol? {get set}
     var profile: ProfileModel? { get set }
-    var users: [ConversationListModel]? { get set }
+    var channels: [ConversationListModel] { get set }
+    var dataConverstions: [Channel]? { get set }
     func viewReady()
     func dataUploaded()
-    func didTappedProfile()
-    func didTappedThemesPicker()
-    func didTappedConversation(for conversation: ConversationListModel)
-    var handler:(([ConversationListModel]) -> Void)? { get set }
+    func didTappedConversation(to conversation: String, navigationController: UINavigationController)
+    func addChannel(channel: Channel)
+    func createChannel(name: String)
+    func interactorError()
+    var handler: (([ConversationListModel]) -> Void)? { get set }
 }
 
 class ConvListPresenter {
     
-    //MARK: - Public
+    // MARK: - Public
+    
     weak var view: ConvListViewProtocol?
     var router: RouterProtocol?
     let interactor: ConvListInteractorProtocol
     var profile: ProfileModel?
-    var users: [ConversationListModel]?
-    var handler:(([ConversationListModel]) -> Void)?
+    var channels: [ConversationListModel] = []
+    var dataConverstions: [Channel]?
+    var handler: (([ConversationListModel]) -> Void)?
     
-    //MARK: - Initializer
-    init(router: RouterProtocol, interactor: ConvListInteractorProtocol) {
-        self.router = router
+    // MARK: - Initialization
+    
+    init(interactor: ConvListInteractorProtocol) {
         self.interactor = interactor
     }
 }
 
-//MARK: - ConvListPresenter + ConvListPresenterProtocol
+// MARK: - ConvListPresenter + ConvListPresenterProtocol
+
 extension ConvListPresenter: ConvListPresenterProtocol {
     
-    //MARK: - Methods
+    // MARK: - Methods
+    
     func viewReady() {
         interactor.loadData()
     }
     
     func dataUploaded() {
-        var usersWithMessages: [ConversationListModel] = []
-        var usersWithoutMessages: [ConversationListModel] = []
-        guard let users = users else { return }
-        for user in users {
-            switch user.date != nil {
-            case true: usersWithMessages.append(user)
-            case false: usersWithoutMessages.append(user)
+        var channelsWithMessages: [ConversationListModel] = []
+        var channelsWithoutMessages: [ConversationListModel] = []
+        dataConverstions?.forEach({ channel in
+            DispatchQueue.global().async {
+                
+                var channelImage = UIImage.channelPlaceholder
+                
+                if let imageURL = URL(string: channel.logoURL ?? "") {
+                    do {
+                        let imageData = try Data(contentsOf: imageURL)
+                        channelImage = UIImage(data: imageData) ?? UIImage()
+                    } catch {
+                        print(CustomError(description: "Error with Data from URL"))
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    switch channel.lastMessage {
+                    case nil:
+                        channelsWithoutMessages.append(ConversationListModel(channelImage: channelImage,
+                                                                             name: channel.name,
+                                                                             message: channel.lastMessage,
+                                                                             date: channel.lastActivity,
+                                                                             isOnline: false,
+                                                                             hasUnreadMessages: true,
+                                                                             conversationID: channel.id))
+                    default:
+                        channelsWithMessages.append(ConversationListModel(channelImage: channelImage,
+                                                                          name: channel.name,
+                                                                          message: channel.lastMessage,
+                                                                          date: channel.lastActivity,
+                                                                          isOnline: false,
+                                                                          hasUnreadMessages: true,
+                                                                          conversationID: channel.id))
+                    }
+                    var sortedChannels = channelsWithMessages
+                        .sorted { $0.date ?? Date() > $1.date ?? Date() }
+                    sortedChannels.append(contentsOf: channelsWithoutMessages)
+                    self.channels = sortedChannels
+                    
+                    self.handler = { [weak self] conversations in
+                        self?.view?.conversations = conversations
+                        self?.view?.showMain()
+                    }
+                    self.handler?(self.channels)
+                }
             }
-        }
-        var sortedUsers = usersWithMessages.sorted { $0.date ?? Date() > $1.date ?? Date() }
-        sortedUsers.append(contentsOf: usersWithoutMessages)
-        
-        handler = { [weak self] sortedUsers in
-            self?.view?.users = sortedUsers
-            self?.view?.showMain()
-        }
-        
-        handler?(sortedUsers)
+        })
+        view?.pullToRefresh.endRefreshing()
     }
     
-    func didTappedProfile() {
-        router?.showProfile()
+    func didTappedConversation(to conversation: String, navigationController: UINavigationController) {
+        router?.showConversation(conversation: conversation, navigationController: navigationController)
     }
     
-    func didTappedConversation(for conversation: ConversationListModel) {
-        router?.showConversation(conversation: conversation)
+    func createChannel(name: String) {
+        interactor.createChannel(channelName: name)
     }
     
-    func didTappedThemesPicker() {
-        router?.showThemePicker()
+    func addChannel(channel: Channel) {
+        let channelImage = UIImage.channelPlaceholder
+        let channelModel = ConversationListModel(channelImage: channelImage,
+                                                 name: channel.name,
+                                                 message: channel.lastMessage,
+                                                 date: channel.lastActivity,
+                                                 isOnline: false,
+                                                 hasUnreadMessages: true,
+                                                 conversationID: channel.id)
+        view?.addChannel(channel: channelModel)
+    }
+    
+    func interactorError() {
+        view?.showAlert()
     }
 }

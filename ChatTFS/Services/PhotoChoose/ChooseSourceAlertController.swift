@@ -2,17 +2,20 @@ import UIKit
 
 class ChooseSourceAlertController: UIAlertController {
 
-    //MARK: - Properties
+    // MARK: - Properties
+    
     weak var profileVC: ProfileViewProtocol?
     var photoPickerController: PhotoPickerController?
 
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         addActions()
     }
 
-    //MARK: - Methods
+    // MARK: - Methods
+    
     private func addActions() {
         addAction(UIAlertAction(title: "Сделать фото", style: .default) { [weak self] _ in
             self?.photoPickerController = PhotoPickerController()

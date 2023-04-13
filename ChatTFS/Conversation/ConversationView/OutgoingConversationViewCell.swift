@@ -3,7 +3,8 @@ import UIKit
 class OutgoingConversationViewCell: UITableViewCell {
     static let identifier = String(describing: OutgoingConversationViewCell.self)
     
-    //MARK: - UIConstants
+    // MARK: - UIConstants
+    
     private enum UIConstants {
         static let edge: CGFloat = 12
         static let edgeVertical: CGFloat = 8
@@ -12,7 +13,8 @@ class OutgoingConversationViewCell: UITableViewCell {
         static let fontSizeDate: CGFloat = 10
     }
     
-    //MARK: - Private
+    // MARK: - Private
+    
     private lazy var messageText: UILabel = {
         let message = UILabel()
         message.isUserInteractionEnabled = true
@@ -36,7 +38,8 @@ class OutgoingConversationViewCell: UITableViewCell {
         return date
     }()
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -46,17 +49,19 @@ class OutgoingConversationViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - PrepareForReuse
+    // MARK: - PrepareForReuse
+    
     override func prepareForReuse() {
         super.prepareForReuse()
         messageText.text = nil
         dateLabel.text = nil
     }
     
-    //MARK: - SetupUI
+    // MARK: - SetupUI
+    
     func setupUI() {
         contentView.addSubview(messageBubble)
-        messageBubble.addSubviews(messageText,dateLabel)
+        messageBubble.addSubviews(messageText, dateLabel)
         
         messageBubble.translatesAutoresizingMaskIntoConstraints = false
         messageText.translatesAutoresizingMaskIntoConstraints = false
@@ -81,7 +86,8 @@ class OutgoingConversationViewCell: UITableViewCell {
     }
 }
 
-//MARK: - ConversationViewCell + ConfigurableViewProtocol
+// MARK: - ConversationViewCell + ConfigurableViewProtocol
+
 extension OutgoingConversationViewCell: ConfigurableViewProtocol {
     func configure(with model: MessageCellModel) {
         messageText.text = model.text

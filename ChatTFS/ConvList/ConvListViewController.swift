@@ -7,16 +7,19 @@ enum Section: Hashable, CaseIterable {
 }
 
 protocol ConvListViewProtocol: AnyObject {
+    var pullToRefresh: UIRefreshControl { get set }
     func showMain()
-    var users: [ConversationListModel]? { get set }
+    func showAlert()
+    func addChannel(channel: ConversationListModel)
+    var conversations: [ConversationListModel]? { get set }
 }
 
 class ConvListViewController: UIViewController {
     
-    //MARK: - Initializer
-    init(themeService: ThemeServiceProtocol, profilePublisher: CurrentValueSubject<ProfileModel, Never>) {
+    // MARK: - Initialization
+    
+    init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
-        self.profilePublisher = profilePublisher
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -24,40 +27,43 @@ class ConvListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - UIConstants
+    // MARK: - UIConstants
+    
     private enum UIConstants {
         static let rowHeight: CGFloat = 76
         static let sectionHeight: CGFloat = 44
         static let imageSize: CGSize = CGSize(width: 44, height: 44)
     }
     
-    //MARK: - Public
+    // MARK: - Public
+    
     var presenter: ConvListPresenterProtocol?
-    var users: [ConversationListModel]?
-    var profilePublisher: CurrentValueSubject<ProfileModel, Never>
-    var profileRequest: Cancellable?
+    var conversations: [ConversationListModel]?
     weak var themeService: ThemeServiceProtocol?
+    var pullToRefresh = UIRefreshControl()
 
-    //MARK: - Private
-    private var dataSource: UITableViewDiffableDataSource<Section, ConversationListModel>?
+    // MARK: - Private
+    
+    private var dataSource: UITableViewDiffableDataSource<Int, ConversationListModel>?
     private lazy var placeholder = UIImage.placeholder?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
     private lazy var tableView = UITableView()
     private lazy var buttonWithUserPhoto = UIButton(type: .custom)
+    private lazy var errorAlert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так", preferredStyle: .alert)
+    private lazy var cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
+    private lazy var retryAction = UIAlertAction(title: "Retry", style: .default) { [weak self] _ in
+        self?.presenter?.viewReady()
+    }
     
-    //MARK: - Lifeсycle
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        setupNavigationBar()
+        pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         setupUI()
-        profileRequest = profilePublisher
-            .sink(receiveValue: { profile in
-                if let imageData = profile.profileImageData {
-                    self.buttonWithUserPhoto.setBackgroundImage(UIImage(data: imageData)?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize), for: .normal)
-                } else {
-                    self.buttonWithUserPhoto.setBackgroundImage(self.placeholder, for: .normal)
-                }
-            })
+        
+        errorAlert.addAction(retryAction)
+        errorAlert.addAction(cancelAction)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -65,10 +71,13 @@ class ConvListViewController: UIViewController {
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
         navigationController?.navigationBar.prefersLargeTitles = true
+        tabBarController?.tabBar.isHidden = false
         updateColorsCells()
+        setupNavigationBar()
     }
     
-    //MARK: - Setup UI
+    // MARK: - Setup UI
+    
     private func setupUI() {
         configureTableView()
         setupTableViewConstraints()
@@ -76,55 +85,44 @@ class ConvListViewController: UIViewController {
         setupSnapshot()
     }
     
-    //MARK: - Private methods
+    // MARK: - Private methods
+    
     private func setupDataSource() {
-        dataSource = UITableViewDiffableDataSource<Section, ConversationListModel> (tableView: tableView) { [weak self]
-            (tableView: UITableView, indexPath: IndexPath, itemIdentifier: ConversationListModel) -> ConverstionListCell in
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConverstionListCell.identifier) as? ConverstionListCell,
+        dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ConversationListCell.identifier) as? ConversationListCell,
                   let themeService = self?.themeService
-            else { return ConverstionListCell()}
+            else { return ConversationListCell()}
             cell.configureTheme(theme: themeService)
             cell.configure(with: itemIdentifier)
             return cell
-        }
+        })
     }
     
     private func setupSnapshot() {
         guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
-        snapshot.appendSections([Section.online, Section.offline])
-        guard let users = users else { return }
-        for user in users {
-            switch user.isOnline {
-            case true:
-                snapshot.appendItems([user], toSection: .online)
-            case false:
-                snapshot.appendItems([user], toSection: .offline)
-            }
-        }
+        guard let conversations = conversations else { return }
+        snapshot.appendSections([0])
+        snapshot.appendItems(conversations, toSection: 0)
         dataSource.apply(snapshot)
     }
     
     private func configureTableView() {
-        tableView.register(ConverstionListCell.self, forCellReuseIdentifier: ConverstionListCell.identifier)
+        tableView.register(ConversationListCell.self, forCellReuseIdentifier: ConversationListCell.identifier)
         tableView.delegate = self
         tableView.separatorStyle = .none
         tableView.showsVerticalScrollIndicator = false
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
+        tableView.addSubview(pullToRefresh)
     }
     
     private func setupNavigationBar() {
-        let settingButton = UIBarButtonItem(image: UIImage(systemName: "gear"), style: .plain, target: self, action: #selector(chooseThemes))
-        let profileButton = UIBarButtonItem(customView: buttonWithUserPhoto)
-        buttonWithUserPhoto.addTarget(self, action: #selector(tappedProfile), for: .touchUpInside)
-        profileButton.customView?.layer.cornerRadius = UIConstants.imageSize.height/2
-        profileButton.customView?.clipsToBounds = true
-        navigationItem.title = "Chat"
-        navigationItem.leftBarButtonItem = settingButton
-        navigationItem.rightBarButtonItem = profileButton
+        navigationItem.title = "Channels"
+        let addChannelButton = UIBarButtonItem(title: "Add Channel", style: .plain, target: self, action: #selector(addChannelTapped))
+        navigationItem.rightBarButtonItem = addChannelButton
         guard let currentTheme = themeService?.currentTheme else { return }
         switch currentTheme {
         case .light: changeNavigationBar(theme: currentTheme)
@@ -149,56 +147,71 @@ class ConvListViewController: UIViewController {
     private func updateColorsCells() {
         guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
-        snapshot.sectionIdentifiers.forEach { section in
-            snapshot.reloadSections([section])
-        }
         snapshot.itemIdentifiers.forEach { item in
             snapshot.reloadItems([item])
         }
         dataSource.apply(snapshot, animatingDifferences: false)
     }
     
-    @objc
-    private func chooseThemes() {
-        presenter?.didTappedThemesPicker()
-    }
-    
-    @objc
-    private func tappedProfile() {
-        presenter?.didTappedProfile()
+    private func showCreateChannelAC() {
+        let addChanelAlert = UIAlertController(title: "New channel", message: nil, preferredStyle: .alert)
+        addChanelAlert.addTextField()
+        addChanelAlert.textFields?.first?.placeholder = "Channel Name"
+
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel)
+        let createChannel = UIAlertAction(title: "Create", style: .default) { [weak addChanelAlert, weak self] _ in
+            guard let textFieldIsEmpty = addChanelAlert?.textFields?.first?.text?.isEmpty
+            else {
+                return
+            }
+            if textFieldIsEmpty {
+                let errorAlert = UIAlertController(title: "Channel name empty!",
+                                                   message: "Имя канала не может быть пустым. \nВведите имя канала.",
+                                                   preferredStyle: .alert)
+                let action = UIAlertAction(title: "Retry", style: .cancel) { [weak self] _ in
+                    self?.showCreateChannelAC()
+                }
+                errorAlert.addAction(action)
+                self?.present(errorAlert, animated: true)
+            } else {
+                guard let channelName = addChanelAlert?.textFields?.first?.text
+                else {
+                    return
+                }
+                self?.presenter?.createChannel(name: channelName)
+            }
+        }
+        addChanelAlert.addAction(cancel)
+        addChanelAlert.addAction(createChannel)
+        present(addChanelAlert, animated: true)
     }
     
     private func setupTableViewConstraints() {
-        view.addSubview(tableView)
+        view.addSubviews(tableView)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
     }
-}
-
-//MARK: - ConvListViewController + UITableViewDelegate
-extension ConvListViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        
-        let headerView = UITableViewHeaderFooterView()
-        switch section {
-        case 0:
-            headerView.textLabel?.text = "ONLINE"
-        case 1:
-            headerView.textLabel?.text = "HISTORY"
-        default:
-            break
-        }
-        
-        headerView.tintColor = themeService?.currentTheme.backgroundColor
-        headerView.textLabel?.textColor = themeService?.currentTheme.incomingTextColor
-        return headerView
+    
+    @objc
+    private func addChannelTapped() {
+        showCreateChannelAC()
     }
     
+    @objc
+    private func updateChannelList() {
+        presenter?.viewReady()
+    }
+}
+
+// MARK: - ConvListViewController + UITableViewDelegate
+
+extension ConvListViewController: UITableViewDelegate {
+
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         UIConstants.sectionHeight
     }
@@ -208,25 +221,36 @@ extension ConvListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard let navigationController = navigationController,
+              let snapshot = dataSource?.snapshot(),
+              let channelID = snapshot.itemIdentifiers[indexPath.item].conversationID
+        else {return}
+        presenter?.didTappedConversation(to: channelID, navigationController: navigationController)
         tableView.deselectRow(at: indexPath, animated: true)
-        var section = Section.offline
-        switch indexPath.section {
-        case 0:
-            section = .online
-        case 1:
-            section = .offline
-        default:
-            break
-        }
-        guard let dataSource = dataSource else { return }
-        let usersInSection = dataSource.snapshot().itemIdentifiers(inSection: section)
-        presenter?.didTappedConversation(for: usersInSection[indexPath.row])
     }
 }
 
-//MARK: - ConvListViewController + ConvListViewProtocol
+// MARK: - ConvListViewController + ConvListViewProtocol
+
 extension ConvListViewController: ConvListViewProtocol {
+    
     func showMain() {
         setupSnapshot()
+    }
+    
+    func showAlert() {
+        if errorAlert.presentingViewController?.isBeingPresented ?? true {
+            self.present(errorAlert, animated: true)
+            pullToRefresh.endRefreshing()
+        }
+    }
+    
+    func addChannel(channel: ConversationListModel) {
+        guard let dataSource = dataSource else { return }
+        var snapshot = dataSource.snapshot()
+        snapshot.appendItems([channel], toSection: 0)
+        guard let indexOfNewChannel = snapshot.indexOfItem(channel) else { return }
+        dataSource.apply(snapshot)
+        tableView.scrollToRow(at: IndexPath(item: indexOfNewChannel, section: 0), at: .bottom, animated: true)
     }
 }

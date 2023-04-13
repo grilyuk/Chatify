@@ -5,10 +5,11 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-class ConverstionListCell: UITableViewCell {
+class ConversationListCell: UITableViewCell {
     static let identifier = "conListCell"
 
-    //MARK: - UIConstants
+    // MARK: - UIConstants
+    
     private enum UIConstants {
         static let avatarToContentEdge: CGFloat = 5
         static let avatarSize: CGFloat = 60
@@ -16,6 +17,7 @@ class ConverstionListCell: UITableViewCell {
         static let nameLabelFontSize: CGFloat = 16
         static let lastMessageFontSize: CGFloat = 15
         static let dateLabelFontSize: CGFloat = 15
+        static let channelNameFontSize: CGFloat = 17
         static let meesageBottomToContentBottom: CGFloat = -17
         static let dateLabelToContentEdge: CGFloat = -5
         static let avatarToName: CGFloat = 10
@@ -25,7 +27,8 @@ class ConverstionListCell: UITableViewCell {
         static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.1823898468, green: 0.5700650811, blue: 0.6495155096, alpha: 1)
     }
     
-    //MARK: - Private
+    // MARK: - Private
+    
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .bold)
@@ -64,13 +67,9 @@ class ConverstionListCell: UITableViewCell {
     
     private lazy var userAvatar: UIImageView = {
         let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: UIConstants.avatarSize, height: UIConstants.avatarSize))
-        let gradient = CAGradientLayer()
-        gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
-                           UIConstants.imageProfileBottomColor.cgColor]
-        gradient.frame = imageView.bounds
-        imageView.layer.addSublayer(gradient)
-        imageView.layer.cornerRadius = UIConstants.avatarSize/2
+        imageView.layer.cornerRadius = UIConstants.avatarSize / 2
         imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFill
         return imageView
     }()
     
@@ -78,7 +77,8 @@ class ConverstionListCell: UITableViewCell {
         let label = UILabel()
         let initialFontSizeCalc = UIConstants.avatarSize * 0.45
         let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
-        label.font = UIFont(descriptor: descriptor!, size: initialFontSizeCalc)
+        guard let descriptor = descriptor else { return label }
+        label.font = UIFont(descriptor: descriptor, size: initialFontSizeCalc)
         label.textColor = .white
         return label
     }()
@@ -89,7 +89,8 @@ class ConverstionListCell: UITableViewCell {
         return view
     }()
     
-    //MARK: - Initializater
+    // MARK: - Initializater
+    
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -99,17 +100,20 @@ class ConverstionListCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    //MARK: - Methods
+    // MARK: - Methods
+    
     private func setInitials(from name: String) {
         let formatter = PersonNameComponentsFormatter()
         let components = formatter.personNameComponents(from: name)
         formatter.style = .abbreviated
-        initialsLabel.text = formatter.string(from: components!)
+        guard let components = components else { return }
+        initialsLabel.text = formatter.string(from: components)
     }
     
-    //MARK: PrepareForReuse
+    /// PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
+        userAvatar.layer.sublayers?.forEach({ $0.removeFromSuperlayer() })
         userAvatar.image = nil
         nameLabel.text = nil
         lastMessageText.text = nil
@@ -118,7 +122,8 @@ class ConverstionListCell: UITableViewCell {
         lastMessageText.font = .systemFont(ofSize: UIConstants.lastMessageFontSize)
     }
     
-    //MARK: - Setup UI
+    // MARK: - Setup UI
+    
     private func setupUI() {
         contentView.addSubviews(userAvatar, nameLabel, lastMessageText, dateLabel, initialsLabel, chevronIndicator, separatorLine)
         
@@ -133,11 +138,12 @@ class ConverstionListCell: UITableViewCell {
         NSLayoutConstraint.activate([
             userAvatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
             userAvatar.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
-            userAvatar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor,constant: UIConstants.avatarToContentEdge),
+            userAvatar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: UIConstants.avatarToContentEdge),
             userAvatar.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
             
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.nameTopToContentTop),
             nameLabel.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToName),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -65),
             
             lastMessageText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: UIConstants.meesageBottomToContentBottom),
             lastMessageText.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToMessage),
@@ -160,8 +166,9 @@ class ConverstionListCell: UITableViewCell {
     }
 }
 
-//MARK: - ConverstionListCell + ConfigurableViewProtocol
-extension ConverstionListCell: ConfigurableViewProtocol {
+// MARK: - ConverstionListCell + ConfigurableViewProtocol
+
+extension ConversationListCell: ConfigurableViewProtocol {
     func configure(with model: ConversationListModel) {
         if model.message == nil {
             dateLabel.text = nil
@@ -182,9 +189,7 @@ extension ConverstionListCell: ConfigurableViewProtocol {
             ])
         }
         
-        if userAvatar.image == nil {
-            setInitials(from: model.name ?? "Steve Jobs")
-        }
+        userAvatar.image = model.channelImage
         
         nameLabel.text = model.name
         
