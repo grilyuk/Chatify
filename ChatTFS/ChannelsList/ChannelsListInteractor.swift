@@ -6,6 +6,7 @@ import TFSChatTransport
 protocol ChannelsListInteractorProtocol: AnyObject {
     func loadData()
     func createChannel(channelName: String)
+    func deleteChannel(id: String) -> Bool
 }
 
 class ChannelsListInteractor: ChannelsListInteractorProtocol {
@@ -27,6 +28,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     private var handler: (([ChannelNetworkModel]) -> Void)?
     private var channelsRequest: Cancellable?
+    private var deleteChannelRequest: Cancellable?
     private var cacheChannels: [ChannelNetworkModel] = []
     private var networkChannels: [ChannelNetworkModel] = []
     
@@ -37,7 +39,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         handler = { [weak self] channels in
             self?.presenter?.dataChannels = channels
             self?.presenter?.dataUploaded()
-            self?.cacheChannels = []
             self?.networkChannels = []
             self?.channelsRequest?.cancel()
         }
@@ -60,6 +61,24 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 self?.presenter?.addChannel(channel: convertedChannel)
                 self?.saveChannelsList(with: [convertedChannel])
             })
+    }
+    
+    func deleteChannel(id: String) -> Bool {
+        var result = true
+        deleteChannelRequest = chatService.deleteChannel(id: id)
+            .receive(on: DispatchQueue.main)
+            .subscribe(on: DispatchQueue.global())
+            .sink(receiveCompletion: { [weak self] completion in
+                switch completion {
+                case .failure(let error):
+                    self?.presenter?.interactorError()
+                    print(error.localizedDescription)
+                case .finished:
+                    self?.coreDataService.deleteObject(loggerText: "channel \(id) delete", channelID: id)
+                }
+            }, receiveValue: { _ in
+            })
+        return result
     }
     
     // MARK: - Private methods
@@ -126,6 +145,8 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                       channelID: deletedChannel)
                 }
                 
+                self.cacheChannels = []
+                
                 self.saveChannelsList(with: self.networkChannels)
                 self.handler?(self.networkChannels)
             })
@@ -135,7 +156,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         for channel in channels {
             let loggerText = "Save channel \(channel.name)"
             coreDataService.save(loggerText: loggerText) { context in
-                
                 let channelManagedObject = DBChannel(context: context)
                 channelManagedObject.id = channel.id
                 channelManagedObject.name = channel.name
