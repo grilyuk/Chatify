@@ -166,6 +166,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     }
     
     private func updateChannel(for channels: ChannelNetworkModel) {
-        
+        // TODO: 1 апдейтить модели кордаты если что то поменялось на моделях сервера
     }
 }

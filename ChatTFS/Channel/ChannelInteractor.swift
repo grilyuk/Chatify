@@ -148,15 +148,31 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                                               lastMessage: nil,
                                                               lastActivity: nil)
                 
-                let networkMessages = messagesData
+                var networkMessages = messagesData
                     .compactMap({ MessageNetworkModel(id: $0.id,
                                                       text: $0.text,
                                                       userID: $0.userID,
                                                       userName: $0.userName,
                                                       date: $0.date)
                     })
+                
+                let cacheMessagesIDs = self?.sentMessages.map { $0.id }
+                let networkMessagesIDs = networkMessages.map { $0.id }
+                
+                guard let cacheMessagesIDs else {
+                    return
+                }
+                
+                let newMessages = networkMessagesIDs.filter { !(cacheMessagesIDs.contains($0)) }
+                
+                var messagesToSave = networkMessages
+                
+                for newMessage in newMessages {
+                    messagesToSave = networkMessages.filter({ $0.id == newMessage })
+                }
+                
                 self?.saveMessagesForChannel(for: channelID,
-                                             messages: networkMessages)
+                                             messages: messagesToSave)
                 self?.dataHandler?(networkMessages, networkChannelModel)
                 self?.presenter?.dataUploaded()
             })
