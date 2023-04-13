@@ -27,7 +27,8 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     private var handler: (([ChannelNetworkModel]) -> Void)?
     private var channelsRequest: Cancellable?
-    private var sentChannels: [ChannelNetworkModel] = []
+    private var cacheChannels: [ChannelNetworkModel] = []
+    private var networkChannels: [ChannelNetworkModel] = []
     
     // MARK: - Public methods
     
@@ -36,9 +37,11 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         handler = { [weak self] channels in
             self?.presenter?.dataChannels = channels
             self?.presenter?.dataUploaded()
+            self?.cacheChannels = []
+            self?.networkChannels = []
             self?.channelsRequest?.cancel()
         }
-        
+
         loadFromCoreData()
         loadFromNetwork()
     }
@@ -79,9 +82,8 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                lastActivity: channelsDB.lastActivity)
                 }
             
-            sentChannels.append(contentsOf: channelsModel)
-            self.handler?(self.sentChannels)
-            self.sentChannels = []
+            cacheChannels.append(contentsOf: channelsModel)
+            self.handler?(channelsModel)
         } catch {
             print(error)
         }
@@ -96,25 +98,36 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             }, receiveValue: { [weak self] channels in
 
                 guard let self else { return }
-                var newChannels: [ChannelNetworkModel] = []
+                
                 channels.forEach { networkChannel in
                     
-                    newChannels.append(ChannelNetworkModel(id: networkChannel.id,
+                    if !self.cacheChannels.contains(where: { networkChannel.id == $0.id }) {
+                        self.saveChannelsList(with: [ChannelNetworkModel(id: networkChannel.id,
+                                                                         name: networkChannel.name,
+                                                                         logoURL: networkChannel.logoURL,
+                                                                         lastMessage: networkChannel.lastMessage,
+                                                                         lastActivity: networkChannel.lastActivity)])
+                    }
+                    
+                    self.networkChannels.append(ChannelNetworkModel(id: networkChannel.id,
                                                            name: networkChannel.name,
                                                            logoURL: networkChannel.logoURL,
                                                            lastMessage: networkChannel.lastMessage,
                                                            lastActivity: networkChannel.lastActivity))
                 }
                 
-                for sentChannel in sentChannels {
-                    for newChannel in newChannels where newChannel.id != sentChannel.id {
-                        sentChannels.removeAll(where: { newChannel.id != $0.id })
-                    }
+                let cachedIDs = self.cacheChannels.map { $0.id }
+                let networkIDs = self.networkChannels.map { $0.id }
+                
+                let deletedChannels = cachedIDs.filter { !networkIDs.contains($0) }
+                
+                for deletedChannel in deletedChannels {
+                    self.coreDataService.deleteObject(loggerText: "Delete channel \(deletedChannel)",
+                                                      channelID: deletedChannel)
                 }
-                self.coreDataService.deleteObject(loggerText: "Deleting object",
-                                                  channelID: "a0ff5a19-809c-48a8-a385-b87cdc50fa3d")
-                self.saveChannelsList(with: newChannels)
-                self.handler?(newChannels)
+                
+                self.saveChannelsList(with: self.networkChannels)
+                self.handler?(self.networkChannels)
             })
     }
     
@@ -131,5 +144,9 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 channelManagedObject.messages = NSOrderedSet()
             }
         }
+    }
+    
+    private func updateChannel(for channels: ChannelNetworkModel) {
+        
     }
 }

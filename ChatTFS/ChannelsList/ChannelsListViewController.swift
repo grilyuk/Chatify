@@ -230,8 +230,21 @@ extension ChannelsListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        // TODO: 1 10.04
-        return UISwipeActionsConfiguration()
+        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, completion) in
+            guard
+                let self,
+                var snapshot = self.dataSource?.snapshot()
+            else { return }
+            let identifiers = snapshot.itemIdentifiers
+            snapshot.deleteItems([identifiers[indexPath.row]])
+            self.dataSource?.apply(snapshot)
+            // Вызовите метод удаления элемента из вашей модели данных
+            // Затем вызовите метод `apply` для обновления таблицы
+            completion(true)
+        }
+        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
+        configuration.performsFirstActionWithFullSwipe = true
+        return configuration
     }
 }
 
