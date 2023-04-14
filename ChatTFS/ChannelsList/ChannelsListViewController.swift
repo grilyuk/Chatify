@@ -153,11 +153,14 @@ class ChannelsListViewController: UIViewController {
 
         let cancel = UIAlertAction(title: "Cancel", style: .cancel)
         let createChannel = UIAlertAction(title: "Create", style: .default) { [weak addChanelAlert, weak self] _ in
-            guard let textFieldIsEmpty = addChanelAlert?.textFields?.first?.text?.isEmpty
+            
+            guard let textFieldIsEmpty = addChanelAlert?.textFields?.first?.text?.isEmpty,
+                  let textCheck = addChanelAlert?.textFields?.first?.text?.trimmingCharacters(in: .whitespacesAndNewlines)
             else {
                 return
             }
-            if textFieldIsEmpty {
+            
+            if textFieldIsEmpty || textCheck == "" {
                 let errorAlert = UIAlertController(title: "Channel name empty!",
                                                    message: "Имя канала не может быть пустым. \nВведите имя канала.",
                                                    preferredStyle: .alert)

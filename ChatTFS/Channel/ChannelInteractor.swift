@@ -148,7 +148,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                                               lastMessage: nil,
                                                               lastActivity: nil)
                 
-                var networkMessages = messagesData
+                let networkMessages = messagesData
                     .compactMap({ MessageNetworkModel(id: $0.id,
                                                       text: $0.text,
                                                       userID: $0.userID,
