@@ -146,7 +146,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 
                 self.cacheChannels = []
                 
-                self.saveChannelsList(with: self.networkChannels)
                 self.handler?(self.networkChannels)
             })
     }

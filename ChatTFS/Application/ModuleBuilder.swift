@@ -12,7 +12,7 @@ protocol ModuleBuilderProtocol: AnyObject {
 
 class ModuleBuilder: ModuleBuilderProtocol {
     
-    // MARK: - Private
+    // MARK: - Private properties
     
     private lazy var router = Router(moduleBuilder: self)
     private lazy var themeService = ThemeService()
@@ -21,7 +21,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     private lazy var profilePublisher = dataManager.currentProfile
     private lazy var chatService = ChatService(host: "167.235.86.234", port: 8080)
     
-    // MARK: - Methods
+    // MARK: - Public Methods
     
     func buildChannelsList() -> UINavigationController {
         let interactor = ChannelsListInteractor(chatService: chatService, coreDataService: coreDataService)
@@ -70,7 +70,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
         tabBarController.tabBar.barTintColor = themeService.currentTheme.backgroundColor
         tabBarController.viewControllers = views
         tabBarController.tabBar.items?[0].image = UIImage(systemName: "bubble.left.and.bubble.right")
-        tabBarController.tabBar.items?[0].title = "Channel"
+        tabBarController.tabBar.items?[0].title = "Channels"
         tabBarController.tabBar.items?[1].image = UIImage(systemName: "gear")
         tabBarController.tabBar.items?[1].title = "Settings"
         tabBarController.tabBar.items?[2].image = UIImage(systemName: "person.crop.circle")

@@ -11,17 +11,17 @@ protocol RouterProtocol: RouterMain {
 
 class Router: RouterProtocol {
     
-    // MARK: - Public
-    
-    var moduleBuilder: ModuleBuilderProtocol?
-    
-    // MARK: - Init
+    // MARK: - Initialization
     
     init(moduleBuilder: ModuleBuilderProtocol) {
         self.moduleBuilder = moduleBuilder
     }
     
-    // MARK: - Methods
+    // MARK: - Public properties
+    
+    var moduleBuilder: ModuleBuilderProtocol?
+    
+    // MARK: - Public methods
     
     func showChannel(channel: String, navigationController: UINavigationController) {
         guard let channelViewController = moduleBuilder?.buildChannel(router: self, channel: channel) else { return }

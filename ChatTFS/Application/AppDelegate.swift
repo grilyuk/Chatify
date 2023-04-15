@@ -10,7 +10,7 @@ import UIKit
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-    // MARK: - Properties
+    // MARK: - Public properties
     
     lazy var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
 

@@ -99,7 +99,6 @@ class CoreDataService: CoreDataServiceProtocol {
             let channelContext = DBChannel.managedObjectContext
             guard let channelContext else { return }
             channelContext.delete(DBChannel)
-            logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
             do {
                 try channelContext.save()
                 logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)

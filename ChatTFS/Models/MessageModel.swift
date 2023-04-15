@@ -8,11 +8,3 @@ struct MessageModel: Hashable {
     let isSameUser: Bool
     let uuid = UUID()
 }
-
-struct MessageNetworkModel: Hashable {
-    let id: String
-    let text: String
-    let userID: String
-    let userName: String
-    let date: Date
-}

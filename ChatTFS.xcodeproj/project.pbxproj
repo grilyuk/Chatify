@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5E058E4029EACF9900D470D0 /* MessageNetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */; };
+		5E058E4229EACFA400D470D0 /* ChannelNetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */; };
 		5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E08ADC229A16B10004510A6 /* ProfileViewController.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
@@ -46,6 +48,8 @@
 /* Begin PBXFileReference section */
 		4BB014E7FA9EFDF47E2C004A /* Pods-ChatTFS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.release.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.release.xcconfig"; sourceTree = "<group>"; };
 		4CE4628B252E8DEB6B3EB225 /* Pods-ChatTFS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.debug.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.debug.xcconfig"; sourceTree = "<group>"; };
+		5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNetworkModel.swift; sourceTree = "<group>"; };
+		5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelNetworkModel.swift; sourceTree = "<group>"; };
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
@@ -113,6 +117,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		5E058E4329EACFE900D470D0 /* NetworkModels */ = {
+			isa = PBXGroup;
+			children = (
+				5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */,
+				5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */,
+			);
+			path = NetworkModels;
+			sourceTree = "<group>";
+		};
 		5E08ADC029A16ADA004510A6 /* Application */ = {
 			isa = PBXGroup;
 			children = (
@@ -126,9 +139,10 @@
 		5E42B9D429C24FE800F472D1 /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				5E42B9D529C24FF700F472D1 /* MessageModel.swift */,
 				5E42B9D729C2502900F472D1 /* ChannelModel.swift */,
+				5E42B9D529C24FF700F472D1 /* MessageModel.swift */,
 				5EB6218A29AB683B00029FB8 /* ProfileModel.swift */,
+				5E058E4329EACFE900D470D0 /* NetworkModels */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -413,8 +427,10 @@
 				5E74BCB429A8DCA3009236A1 /* ChooseSourceAlertController.swift in Sources */,
 				5E92E9F229B72B930038EED2 /* ChannelInteractor.swift in Sources */,
 				5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */,
+				5E058E4029EACF9900D470D0 /* MessageNetworkModel.swift in Sources */,
 				5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */,
 				5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */,
+				5E058E4229EACFA400D470D0 /* ChannelNetworkModel.swift in Sources */,
 				5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */,
 				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ChannelViewController.swift in Sources */,

@@ -6,6 +6,20 @@ protocol ConfigurableViewProtocol {
 }
 
 class ChannelListCell: UITableViewCell {
+    
+    // MARK: - Initializater
+    
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        setupUI()
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+    // MARK: - Public properties
+    
     static let identifier = "conListCell"
 
     // MARK: - UIConstants
@@ -23,11 +37,10 @@ class ChannelListCell: UITableViewCell {
         static let avatarToName: CGFloat = 10
         static let avatarToMessage: CGFloat = 10
         static let indicatorToContentTrailing: CGFloat = -10
-        static let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
-        static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.1823898468, green: 0.5700650811, blue: 0.6495155096, alpha: 1)
+        static let nameLabelToEdge: CGFloat = -65
     }
     
-    // MARK: - Private
+    // MARK: - Subviews
     
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
@@ -66,21 +79,13 @@ class ChannelListCell: UITableViewCell {
     }()
     
     private lazy var userAvatar: UIImageView = {
-        let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: UIConstants.avatarSize, height: UIConstants.avatarSize))
+        let imageView = UIImageView(frame: CGRect(x: 0, y: 0,
+                                                  width: UIConstants.avatarSize,
+                                                  height: UIConstants.avatarSize))
         imageView.layer.cornerRadius = UIConstants.avatarSize / 2
         imageView.clipsToBounds = true
         imageView.contentMode = .scaleAspectFill
         return imageView
-    }()
-    
-    private lazy var initialsLabel: UILabel = {
-        let label = UILabel()
-        let initialFontSizeCalc = UIConstants.avatarSize * 0.45
-        let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
-        guard let descriptor = descriptor else { return label }
-        label.font = UIFont(descriptor: descriptor, size: initialFontSizeCalc)
-        label.textColor = .white
-        return label
     }()
     
     private lazy var separatorLine: UIView = {
@@ -89,43 +94,76 @@ class ChannelListCell: UITableViewCell {
         return view
     }()
     
-    // MARK: - Initializater
-    
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        setupUI()
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     // MARK: - Methods
-    
-    private func setInitials(from name: String) {
-        let formatter = PersonNameComponentsFormatter()
-        let components = formatter.personNameComponents(from: name)
-        formatter.style = .abbreviated
-        guard let components = components else { return }
-        initialsLabel.text = formatter.string(from: components)
-    }
     
     /// PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
-        userAvatar.layer.sublayers?.forEach({ $0.removeFromSuperlayer() })
         userAvatar.image = nil
         nameLabel.text = nil
         lastMessageText.text = nil
         dateLabel.text = nil
-        initialsLabel.text = nil
         lastMessageText.font = .systemFont(ofSize: UIConstants.lastMessageFontSize)
     }
     
-    // MARK: - Setup UI
+    // MARK: - Private methods
+    
+    private func setDateLabel(date: Date) {
+        let nowDate = Date()
+        let formatterNow = DateFormatter()
+        formatterNow.dateFormat = "dd:MM:yyyy"
+        let actualDate = formatterNow.string(from: nowDate)
+        
+        if formatterNow.string(from: date) == actualDate {
+            let formatterToday = DateFormatter()
+            formatterToday.dateFormat = "HH:mm"
+            dateLabel.text = formatterToday.string(from: date)
+        } else if formatterNow.string(from: date) != actualDate {
+            let formatterNotToday = DateFormatter()
+            formatterNotToday.locale = Locale(identifier: "en_US_POSIX")
+            formatterNotToday.dateFormat = "dd, MMM"
+            dateLabel.text = formatterNotToday.string(from: date)
+        }
+    }
+    
+    private func setNameLabel(rowName: String) {
+        let trimmedNameLabel = rowName.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmedNameLabel == "" {
+            nameLabel.text = "No name channel"
+            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .light)
+        } else {
+            nameLabel.text = trimmedNameLabel
+            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .semibold)
+        }
+    }
+    
+    private func setLastMessage(message: String?) {
+        if message == nil {
+            dateLabel.text = nil
+            lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
+            lastMessageText.text = "No messages yet"
+        } else {
+            lastMessageText.text = message
+        }
+    }
+    
+    private func setOnlineIndicator(isOnline: Bool) {
+        if isOnline == false {
+            onlineIndicator.removeFromSuperview()
+        } else {
+            contentView.addSubview(onlineIndicator)
+            onlineIndicator.translatesAutoresizingMaskIntoConstraints = false
+            
+            NSLayoutConstraint.activate([
+                onlineIndicator.topAnchor.constraint(equalTo: userAvatar.topAnchor),
+                onlineIndicator.trailingAnchor.constraint(equalTo: userAvatar.trailingAnchor)
+            ])
+        }
+    }
     
     private func setupUI() {
-        contentView.addSubviews(userAvatar, nameLabel, lastMessageText, dateLabel, initialsLabel, chevronIndicator, separatorLine)
+        contentView.addSubviews(userAvatar, nameLabel, lastMessageText, dateLabel, chevronIndicator, separatorLine)
         
         userAvatar.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -133,7 +171,6 @@ class ChannelListCell: UITableViewCell {
         dateLabel.translatesAutoresizingMaskIntoConstraints = false
         chevronIndicator.translatesAutoresizingMaskIntoConstraints = false
         separatorLine.translatesAutoresizingMaskIntoConstraints = false
-        initialsLabel.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             userAvatar.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
@@ -143,7 +180,7 @@ class ChannelListCell: UITableViewCell {
             
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: UIConstants.nameTopToContentTop),
             nameLabel.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToName),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -65),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: UIConstants.nameLabelToEdge),
             
             lastMessageText.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: UIConstants.meesageBottomToContentBottom),
             lastMessageText.leadingAnchor.constraint(equalTo: userAvatar.trailingAnchor, constant: UIConstants.avatarToMessage),
@@ -158,64 +195,27 @@ class ChannelListCell: UITableViewCell {
             separatorLine.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             separatorLine.widthAnchor.constraint(equalToConstant: contentView.frame.width),
             separatorLine.heightAnchor.constraint(equalToConstant: 1),
-            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            
-            initialsLabel.centerXAnchor.constraint(equalTo: userAvatar.centerXAnchor),
-            initialsLabel.centerYAnchor.constraint(equalTo: userAvatar.centerYAnchor)
+            separatorLine.trailingAnchor.constraint(equalTo: contentView.trailingAnchor)
         ])
     }
 }
 
-// MARK: - ConverstionListCell + ConfigurableViewProtocol
+// MARK: - ChannelListCell + ConfigurableViewProtocol
 
 extension ChannelListCell: ConfigurableViewProtocol {
+    
     func configure(with model: ChannelModel) {
-        if model.message == nil {
-            dateLabel.text = nil
-            lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
-            lastMessageText.text = "No messages yet"
-        } else {
-            lastMessageText.text = model.message
-        }
+        setLastMessage(message: model.message)
         
-        if model.isOnline == false {
-            onlineIndicator.removeFromSuperview()
-        } else {
-            contentView.addSubview(onlineIndicator)
-            onlineIndicator.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                onlineIndicator.topAnchor.constraint(equalTo: userAvatar.topAnchor),
-                onlineIndicator.trailingAnchor.constraint(equalTo: userAvatar.trailingAnchor)
-            ])
-        }
+        setOnlineIndicator(isOnline: model.isOnline)
         
         userAvatar.image = model.channelImage
         
-        let trimmedNameLabel = model.name?.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        if trimmedNameLabel == "" {
-            nameLabel.text = "No name channel"
-            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .light)
-        } else {
-            nameLabel.text = model.name
-            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .semibold)
-        }
+        guard let name = model.name else { return }
+        setNameLabel(rowName: name)
         
         guard let date = model.date else { return }
-        let nowDate = Date()
-        let formatterNow = DateFormatter()
-        formatterNow.dateFormat = "dd:MM:yyyy"
-        let actualDate = formatterNow.string(from: nowDate)
-        if formatterNow.string(from: date) == actualDate {
-            let formatterToday = DateFormatter()
-            formatterToday.dateFormat = "HH:mm"
-            dateLabel.text = formatterToday.string(from: date)
-        } else if formatterNow.string(from: date) != actualDate {
-            let formatterNotToday = DateFormatter()
-            formatterNotToday.locale = Locale(identifier: "en_US_POSIX")
-            formatterNotToday.dateFormat = "dd, MMM"
-            dateLabel.text = formatterNotToday.string(from: date)
-        }
+        setDateLabel(date: date)
     }
     
     func configureTheme(theme: ThemeServiceProtocol) {
