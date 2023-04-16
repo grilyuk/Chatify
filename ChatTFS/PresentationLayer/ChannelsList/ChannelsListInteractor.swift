@@ -144,6 +144,12 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                       channelID: deletedChannel)
                 }
                 
+                for (networkElement, cacheElement) in zip(self.networkChannels, self.cacheChannels) {
+                    if networkElement.lastActivity != cacheElement.lastActivity || networkElement.lastMessage != cacheElement.lastMessage {
+                            updateChannel(for: networkElement)
+                        }
+                }
+                
                 self.cacheChannels = []
                 
                 self.handler?(self.networkChannels)
@@ -164,7 +170,15 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         }
     }
     
-    private func updateChannel(for channels: ChannelNetworkModel) {
-        // TODO: 1 апдейтить модели кордаты если что то поменялось на моделях сервера
+    private func updateChannel(for channel: ChannelNetworkModel) {
+        do {
+            let DBChannel = try coreDataService.fetchChannel(for: channel.id)
+            coreDataService.update(loggerText: "Update channel", channel: DBChannel) { _ in
+                DBChannel.lastActivity = channel.lastActivity
+                DBChannel.lastMessage = channel.lastMessage
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 }

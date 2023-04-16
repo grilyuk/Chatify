@@ -7,6 +7,7 @@ protocol CoreDataServiceProtocol: AnyObject {
     func fetchChannel(for channelID: String) throws -> DBChannel
     func fetchChannelMessages(for channelID: String) throws -> [DBMessage]
     func save(loggerText: String, block: @escaping (NSManagedObjectContext) throws -> Void )
+    func update(loggerText: String, channel: DBChannel, block: @escaping (NSManagedObjectContext) throws -> Void)
     func deleteObject(loggerText: String, channelID: String)
     func clearEntitiesData(entity: String)
 }
@@ -83,6 +84,24 @@ class CoreDataService: CoreDataServiceProtocol {
                 try block(backgroundContext)
                 if backgroundContext.hasChanges {
                     try backgroundContext.save()
+                    self.logger
+                        .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
+                }
+            } catch {
+                self.logger
+                    .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
+            }
+        }
+    }
+    
+    func update(loggerText: String, channel: DBChannel, block: @escaping (NSManagedObjectContext) throws -> Void) {
+        guard let context = channel.managedObjectContext else { return }
+        context.perform { [weak self] in
+            guard let self else { return }
+            do {
+                try block(context)
+                if context.hasChanges {
+                    try context.save()
                     self.logger
                         .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
                 }

@@ -7,7 +7,7 @@ enum Theme: String {
     var backgroundColor: UIColor {
         switch self {
         case .light:
-            return #colorLiteral(red: 1, green: 1, blue: 1, alpha: 1)
+            return #colorLiteral(red: 0.8874980807, green: 0.9828771949, blue: 1, alpha: 1)
         case .dark:
             return #colorLiteral(red: 0.1921568662, green: 0.007843137719, blue: 0.2137611315, alpha: 1)
         }

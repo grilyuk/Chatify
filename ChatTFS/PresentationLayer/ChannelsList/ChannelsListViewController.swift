@@ -8,7 +8,7 @@ protocol ChannelsListViewProtocol: AnyObject {
     var channels: [ChannelModel]? { get set }
 }
 
-class ChannelsListViewController: UIViewController {
+final class ChannelsListViewController: UIViewController {
     
     // MARK: - Initialization
     
@@ -29,14 +29,13 @@ class ChannelsListViewController: UIViewController {
         static let imageSize: CGSize = CGSize(width: 44, height: 44)
     }
     
-    // MARK: - Public
+    // MARK: - Public properties
     
     var presenter: ChannelsListPresenterProtocol?
     var channels: [ChannelModel]?
     weak var themeService: ThemeServiceProtocol?
-    var pullToRefresh = UIRefreshControl()
-
-    // MARK: - Private
+    
+    // MARK: - Private properties
     
     private var dataSource: UITableViewDiffableDataSource<Int, ChannelModel>?
     private lazy var placeholder = UIImage.placeholder?.scalePreservingAspectRatio(targetSize: UIConstants.imageSize)
@@ -48,6 +47,7 @@ class ChannelsListViewController: UIViewController {
         self?.presenter?.viewReady()
     }
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
+    private lazy var pullToRefresh = UIRefreshControl()
     
     // MARK: - Lifecycle
     
