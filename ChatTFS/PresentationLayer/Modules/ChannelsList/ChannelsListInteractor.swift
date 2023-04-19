@@ -53,11 +53,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             .receive(on: DispatchQueue.main)
             .sink(receiveCompletion: { _ in
             }, receiveValue: { [weak self] channel in
-                let convertedChannel = ChannelNetworkModel(id: channel.id,
-                                                           name: channel.name,
-                                                           logoURL: channel.logoURL,
-                                                           lastMessage: channel.lastMessage,
-                                                           lastActivity: channel.lastActivity)
+                let convertedChannel = ChannelNetworkModel(from: channel)
                 self?.presenter?.addChannel(channel: convertedChannel)
                 self?.saveChannelsList(with: [convertedChannel])
             })
@@ -144,6 +140,9 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                       channelID: deletedChannel)
                 }
                 
+                self.networkChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
+                self.cacheChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
+                
                 for (networkElement, cacheElement) in zip(self.networkChannels, self.cacheChannels) {
                     if networkElement.lastActivity != cacheElement.lastActivity || networkElement.lastMessage != cacheElement.lastMessage {
                             updateChannel(for: networkElement)
@@ -173,7 +172,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     private func updateChannel(for channel: ChannelNetworkModel) {
         do {
             let DBChannel = try coreDataService.fetchChannel(for: channel.id)
-            coreDataService.update(loggerText: "Update channel", channel: DBChannel) { _ in
+            coreDataService.update(loggerText: "Update channel", channel: DBChannel) {
                 DBChannel.lastActivity = channel.lastActivity
                 DBChannel.lastMessage = channel.lastMessage
             }

@@ -12,10 +12,16 @@ protocol ModuleBuilderProtocol: AnyObject {
 
 class ModuleBuilder: ModuleBuilderProtocol {
     
+    // MARK: - Initialization
+    
+    init(themeService: ThemeServiceProtocol) {
+        self.themeService = themeService
+    }
+    
     // MARK: - Private properties
     
+    private var themeService: ThemeServiceProtocol
     private lazy var router = Router(moduleBuilder: self)
-    private lazy var themeService = ThemeService()
     private lazy var dataManager = DataManager()
     private lazy var coreDataService = CoreDataService()
     private lazy var profilePublisher = dataManager.currentProfile

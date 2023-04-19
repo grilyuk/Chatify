@@ -8,14 +8,24 @@ protocol ChannelViewProtocol: AnyObject {
 
 class ChannelViewController: UIViewController {
     
+    // MARK: - Initialization
+    
+    init(themeService: ThemeServiceProtocol) {
+        self.themeService = themeService
+        self.dataSource = ChannelDataSource(tableView: tableView, themeService: themeService)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - UIConstants
     
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
         static let textFieldHeight: CGFloat = 36
         static let avatarSize: CGFloat = 50
-        static let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
-        static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.6705197704, green: 0.6906016156, blue: 0.8105463435, alpha: 1)
     }
     
     // MARK: - Public
@@ -23,19 +33,18 @@ class ChannelViewController: UIViewController {
     var presenter: ChannelPresenterProtocol?
     var messages: [MessageModel] = []
     var titlesSections: [String] = []
-    weak var themeService: ThemeServiceProtocol?
+    var themeService: ThemeServiceProtocol
     
     // MARK: - Private
     
-    private var dataSource: UITableViewDiffableDataSource<Date, MessageModel>?
+    private var dataSource: UITableViewDiffableDataSource<Date, MessageModel>
     
-    private lazy var tableView: UITableView = {
+    private var tableView: UITableView = {
         let table = UITableView()
         table.register(IncomingChannelViewCell.self, forCellReuseIdentifier: IncomingChannelViewCell.identifier)
         table.register(OutgoingChannelViewCell.self, forCellReuseIdentifier: OutgoingChannelViewCell.identifier)
         table.register(SameIncomingChannelViewCell.self, forCellReuseIdentifier: SameIncomingChannelViewCell.identifier)
         table.separatorStyle = .none
-        table.delegate = self
         table.allowsSelection = false
         table.scrollsToTop = true
         table.rowHeight = UITableView.automaticDimension
@@ -50,15 +59,15 @@ class ChannelViewController: UIViewController {
         view.layer.cornerRadius = UIConstants.textFieldHeight / 2
         view.layer.borderWidth = UIConstants.borderWidth
         view.layer.borderColor = UIColor.systemGray5.cgColor
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
+        view.backgroundColor = themeService.currentTheme.backgroundColor
         return view
     }()
     
     private lazy var textField: UITextField = {
         let field = UITextField()
         field.placeholder = "Type message"
-        field.tintColor = themeService?.currentTheme.incomingTextColor
-        field.backgroundColor = themeService?.currentTheme.backgroundColor
+        field.tintColor = themeService.currentTheme.incomingTextColor
+        field.backgroundColor = themeService.currentTheme.backgroundColor
         return field
     }()
     
@@ -79,7 +88,7 @@ class ChannelViewController: UIViewController {
         blurEffectView.alpha = 0.2
         blurEffectView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
         navBar.addSubview(blurEffectView)
-        navBar.backgroundColor = themeService?.currentTheme.backgroundColor
+        navBar.backgroundColor = themeService.currentTheme.backgroundColor
         return navBar
     }()
     
@@ -94,7 +103,7 @@ class ChannelViewController: UIViewController {
     private lazy var channelName: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13)
-        label.textColor = themeService?.currentTheme.textColor
+        label.textColor = themeService.currentTheme.textColor
         return label
     }()
     
@@ -108,29 +117,18 @@ class ChannelViewController: UIViewController {
     
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     
-    // MARK: - Initialization
-    
-    init(themeService: ThemeServiceProtocol) {
-        self.themeService = themeService
-        super.init(nibName: nil, bundle: nil)
-    }
-    
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.delegate = self
         presenter?.viewReady()
         setTableView()
-        setupDataSource()
         setGesture()
         activityIndicator.startAnimating()
         sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
         NotificationCenter.default.addObserver(self,
-                                               selector: #selector(showKeyboard),
+                                               selector: #selector(showKeyboard ),
                                                name: UIResponder.keyboardWillShowNotification,
                                                object: nil)
         NotificationCenter.default.addObserver(self,
@@ -142,8 +140,8 @@ class ChannelViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         
         super.viewWillAppear(animated)
-        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
+        tableView.backgroundColor = themeService.currentTheme.backgroundColor
+        view.backgroundColor = themeService.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
         tabBarController?.tabBar.isHidden = true
     }
@@ -155,40 +153,7 @@ class ChannelViewController: UIViewController {
     
     // MARK: - Methods
     
-    private func setupDataSource() {
-        dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
-            switch itemIdentifier.myMessage {
-            case true:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingChannelViewCell.identifier) as? OutgoingChannelViewCell,
-                      let themeService = self?.themeService
-                else {return UITableViewCell()}
-                cell.configureTheme(theme: themeService)
-                cell.configure(with: itemIdentifier)
-                return cell
-            case false:
-                switch itemIdentifier.isSameUser {
-                case true:
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SameIncomingChannelViewCell.identifier) as? SameIncomingChannelViewCell,
-                          let themeService = self?.themeService
-                    else {return UITableViewCell()}
-                    cell.configureTheme(theme: themeService)
-                    cell.configure(with: itemIdentifier)
-                    return cell
-                case false:
-                    guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier) as? IncomingChannelViewCell,
-                          let themeService = self?.themeService
-                    else {return UITableViewCell()}
-                    cell.configureTheme(theme: themeService)
-                    cell.configure(with: itemIdentifier)
-                    return cell
-                }
-                
-            }
-        })
-    }
-    
     private func setupSnapshot() {
-        guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         snapshot.deleteAllItems()
         let formatter = DateFormatter()
@@ -219,7 +184,6 @@ class ChannelViewController: UIViewController {
     }
     
     private func scrollToLastRow() {
-        
         if !messages.isEmpty {
             let lastSectionNumber = tableView.numberOfSections - 1
             let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
@@ -351,8 +315,8 @@ extension ChannelViewController: UITableViewDelegate {
         title.text = titlesSections[section]
         title.font = .systemFont(ofSize: 12)
         title.textAlignment = .center
-        title.textColor = themeService?.currentTheme.textColor
-        blurEffectView.contentView.backgroundColor = themeService?.currentTheme.backgroundColor
+        title.textColor = themeService.currentTheme.textColor
+        blurEffectView.contentView.backgroundColor = themeService.currentTheme.backgroundColor
         return blurEffectView
     }
 }
@@ -361,6 +325,7 @@ extension ChannelViewController: UITableViewDelegate {
 
 extension ChannelViewController: ChannelViewProtocol {
     func showChannel(channel: ChannelModel) {
+        
         setupSnapshot()
         channelName.text = channel.name
         channelLogo.image = channel.channelImage
@@ -368,7 +333,6 @@ extension ChannelViewController: ChannelViewProtocol {
     }
     
     func addMessage(message: MessageModel) {
-        guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         if snapshot.numberOfSections == 0 {
             snapshot.appendSections([message.date])
@@ -381,7 +345,7 @@ extension ChannelViewController: ChannelViewProtocol {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy"
             self.titlesSections.append(formatter.string(from: message.date))
-            self.dataSource?.apply(snapshot)
+            self.dataSource.apply(snapshot)
             let lastSectionNumber = self.tableView.numberOfSections - 1
             let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
             self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),

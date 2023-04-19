@@ -66,11 +66,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
             self?.sendMessageRequest?.cancel()
         }, receiveValue: { [weak self] message in
             self?.saveMessagesForChannel(for: channelID,
-                                         messages: [MessageNetworkModel(id: message.id,
-                                                                        text: messageText,
-                                                                        userID: userID,
-                                                                        userName: userName,
-                                                                        date: message.date)])
+                                         messages: [MessageNetworkModel(from: message)])
             self?.presenter?.uploadMessage(messageModel: message)
         })
     }
@@ -91,11 +87,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
                         let userName = messagesBD.userName,
                         let date = messagesBD.date
                     else {
-                        return MessageNetworkModel(id: "",
-                                                   text: "",
-                                                   userID: "",
-                                                   userName: "",
-                                                   date: Date())
+                        return MessageNetworkModel()
                     }
                     return MessageNetworkModel(id: id,
                                                text: text,

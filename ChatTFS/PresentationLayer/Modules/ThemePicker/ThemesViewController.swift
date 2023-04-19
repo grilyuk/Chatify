@@ -144,6 +144,7 @@ class ThemesViewController: UIViewController {
         navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
+        UIApplication.shared.windows[0].overrideUserInterfaceStyle = .light
         tabBarController?.tabBar.barTintColor = lightTheme.backgroundColor
         navigationController?.navigationBar.backgroundColor = lightTheme.backgroundColor
     }
@@ -161,6 +162,7 @@ class ThemesViewController: UIViewController {
         navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
         navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
         changeNavBar(appearance: navBarStyle)
+        UIApplication.shared.windows[0].overrideUserInterfaceStyle = .dark
         tabBarController?.tabBar.barTintColor = darkTheme.backgroundColor
         navigationController?.navigationBar.backgroundColor = darkTheme.backgroundColor
     }

@@ -5,7 +5,7 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-class ChannelListCell: UITableViewCell {
+final class ChannelListCell: UITableViewCell {
     
     // MARK: - Initializater
     
@@ -20,7 +20,7 @@ class ChannelListCell: UITableViewCell {
     
     // MARK: - Public properties
     
-    static let identifier = "conListCell"
+    static let identifier = String(describing: ChannelListCell.self)
 
     // MARK: - UIConstants
     
@@ -94,9 +94,8 @@ class ChannelListCell: UITableViewCell {
         return view
     }()
     
-    // MARK: - Methods
+    // MARK: - Public methods
     
-    /// PrepareForReuse
     override func prepareForReuse() {
         super.prepareForReuse()
         userAvatar.image = nil

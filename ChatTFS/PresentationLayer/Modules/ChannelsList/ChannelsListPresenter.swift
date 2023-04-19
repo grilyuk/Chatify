@@ -3,7 +3,7 @@ import TFSChatTransport
 
 protocol ChannelsListPresenterProtocol: AnyObject {
     
-    var router: RouterProtocol? {get set}
+    var router: RouterProtocol? { get set }
     var profile: ProfileModel? { get set }
     var dataChannels: [ChannelNetworkModel]? { get set }
     var handler: (([ChannelModel]) -> Void)? { get set }
@@ -42,7 +42,7 @@ class ChannelsListPresenter {
 
 extension ChannelsListPresenter: ChannelsListPresenterProtocol {
     
-    // MARK: - Methods
+    // MARK: - Public methods
     
     func viewReady() {
         interactor.loadData()
@@ -122,4 +122,7 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
     func interactorError() {
         view?.showAlert()
     }
+    
+    // MARK: - Private methods
+    
 }

@@ -7,12 +7,22 @@ protocol CoreDataServiceProtocol: AnyObject {
     func fetchChannel(for channelID: String) throws -> DBChannel
     func fetchChannelMessages(for channelID: String) throws -> [DBMessage]
     func save(loggerText: String, block: @escaping (NSManagedObjectContext) throws -> Void )
-    func update(loggerText: String, channel: DBChannel, block: @escaping (NSManagedObjectContext) throws -> Void)
+    func update(loggerText: String, channel: DBChannel, block: @escaping () throws -> Void)
     func deleteObject(loggerText: String, channelID: String)
     func clearEntitiesData(entity: String)
 }
 
 class CoreDataService: CoreDataServiceProtocol {
+    
+    // MARK: - Initialization
+    
+//    init(coreData: CoreDataProtocol) {
+//        self.coreData = coreData
+//    }
+    
+    // MARK: - Private properties
+    
+//    let coreData: CoreDataService
     
     var logger = Logger()
     
@@ -94,12 +104,12 @@ class CoreDataService: CoreDataServiceProtocol {
         }
     }
     
-    func update(loggerText: String, channel: DBChannel, block: @escaping (NSManagedObjectContext) throws -> Void) {
+    func update(loggerText: String, channel: DBChannel, block: @escaping () throws -> Void) {
         guard let context = channel.managedObjectContext else { return }
         context.perform { [weak self] in
             guard let self else { return }
             do {
-                try block(context)
+                try block()
                 if context.hasChanges {
                     try context.save()
                     self.logger
