@@ -22,7 +22,7 @@ class ChannelsListPresenter {
     // MARK: - Public
     
     weak var view: ChannelsListViewProtocol?
-    weak var dataManager: DataManagerProtocol?
+    weak var dataManager: FileManagerServiceProtocol?
     var router: RouterProtocol?
     let interactor: ChannelsListInteractorProtocol
     var profile: ProfileModel?
@@ -32,7 +32,7 @@ class ChannelsListPresenter {
     
     // MARK: - Initialization
     
-    init(interactor: ChannelsListInteractorProtocol, dataManager: DataManagerProtocol) {
+    init(interactor: ChannelsListInteractorProtocol, dataManager: FileManagerServiceProtocol) {
         self.interactor = interactor
         self.dataManager = dataManager
     }
@@ -60,7 +60,7 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
         DispatchQueue.global(qos: .background).async { [weak self] in
             self?.dataChannels?.forEach({ dataChannel in
                 
-                guard let dataManager = self?.dataManager as? DataManager else {
+                guard let dataManager = self?.dataManager as? FileManagerService else {
                     return
                 }
                 let channelLogo: UIImage = dataManager.getChannelImage(for: dataChannel) 

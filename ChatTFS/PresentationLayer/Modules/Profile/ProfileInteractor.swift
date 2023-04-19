@@ -10,14 +10,14 @@ class ProfileInteractor: ProfileInteractorProtocol {
     
     // MARK: - Initialization
     
-    init(dataManager: DataManagerProtocol) {
+    init(dataManager: FileManagerServiceProtocol) {
         self.dataManager = dataManager
     }
     
     // MARK: - Public
     
     weak var presenter: ProfilePresenterProtocol?
-    weak var dataManager: DataManagerProtocol?
+    weak var dataManager: FileManagerServiceProtocol?
     
     // MARK: - Private
     

@@ -14,16 +14,18 @@ class ModuleBuilder: ModuleBuilderProtocol {
     
     // MARK: - Initialization
     
-    init(themeService: ThemeServiceProtocol) {
-        self.themeService = themeService
+    init(serviceAssembly: ServiceAssemblyProtocol) {
+        self.serviceAssembly = serviceAssembly
     }
     
     // MARK: - Private properties
     
-    private var themeService: ThemeServiceProtocol
+    private var serviceAssembly: ServiceAssemblyProtocol
+    
+    private lazy var themeService: ThemeServiceProtocol = serviceAssembly.themeService
     private lazy var router = Router(moduleBuilder: self)
-    private lazy var dataManager = DataManager()
-    private lazy var coreDataService = CoreDataService()
+    private lazy var dataManager = FileManagerService()
+    private lazy var coreDataService = serviceAssembly.coreDataService
     private lazy var profilePublisher = dataManager.currentProfile
     private lazy var chatService = ChatService(host: "167.235.86.234", port: 8080)
     

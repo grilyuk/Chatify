@@ -1,7 +1,7 @@
 import UIKit
 import Combine
 
-protocol DataManagerProtocol: AnyObject {
+protocol FileManagerServiceProtocol: AnyObject {
     
     var currentProfile: CurrentValueSubject<ProfileModel, Never> { get set }
     var userId: String { get }
@@ -11,12 +11,12 @@ protocol DataManagerProtocol: AnyObject {
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
 }
 
-class DataManager: DataManagerProtocol {
+class FileManagerService: FileManagerServiceProtocol {
     
     static var defaultProfile = ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
     var currentProfile = CurrentValueSubject<ProfileModel, Never>(defaultProfile)
     var userId: String {
-        readUserID(fileName: DataManager.userIdFileName)
+        readUserID(fileName: FileManagerService.userIdFileName)
     }
     
     // MARK: - Private properties
@@ -34,7 +34,7 @@ class DataManager: DataManagerProtocol {
             Future { promise in
                 self.backgroundQueue.async {
                     do {
-                        promise(.success(try self.readData(fileName: DataManager.profileFileName)))
+                        promise(.success(try self.readData(fileName: FileManagerService.profileFileName)))
                     } catch {
                         promise(.failure(error))
                     }

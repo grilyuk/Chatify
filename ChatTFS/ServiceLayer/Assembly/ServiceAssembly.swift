@@ -2,14 +2,27 @@ import Foundation
 
 protocol ServiceAssemblyProtocol: AnyObject {
     var coreDataService: CoreDataServiceProtocol { get }
-//    var fileManagerService: FileManagerServiceProtocol { get set }
+    var themeService: ThemeServiceProtocol { get }
+//    var fileManagerService: FileManagerServiceProtocol { get }
 }
 
 final class ServiceAssembly: ServiceAssemblyProtocol {
     
-    init(coreDataService: CoreDataServiceProtocol) {
-        self.coreDataService = coreDataService
+    // MARK: - Initialization
+    
+    init(coreAssembly: CoreAssemblyProtocol) {
+        self.coreAssembly = coreAssembly
     }
     
-    var coreDataService: CoreDataServiceProtocol
+    // MARK: - Private properties
+    
+    private var coreAssembly: CoreAssemblyProtocol
+    
+    // MARK: - Public properties
+    
+    lazy var coreDataService: CoreDataServiceProtocol = CoreDataService(coreDataStack: coreAssembly.coreDataStack)
+    
+//    lazy var fileManagerService: FileManagerServiceProtocol = FileManagerService(
+    
+    lazy var themeService: ThemeServiceProtocol = ThemeService()
 }

@@ -27,14 +27,14 @@ class ChannelPresenter {
     
     // MARK: - Private properties
     
-    var dataManager: DataManagerProtocol
+    var dataManager: FileManagerServiceProtocol
     private var userDataRequest: Cancellable?
     private var userID: String
     private var userName: String?
     
     // MARK: - Initialization
     
-    init(router: RouterProtocol, interactor: ChannelInteractorProtocol, dataManager: DataManagerProtocol) {
+    init(router: RouterProtocol, interactor: ChannelInteractorProtocol, dataManager: FileManagerServiceProtocol) {
         self.router = router
         self.interactor = interactor
         self.dataManager = dataManager

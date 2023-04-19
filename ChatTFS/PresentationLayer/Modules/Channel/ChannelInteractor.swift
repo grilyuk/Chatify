@@ -21,12 +21,12 @@ class ChannelInteractor: ChannelInteractorProtocol {
     
     weak var chatService: ChatService?
     weak var presenter: ChannelPresenterProtocol?
-    weak var dataManager: DataManagerProtocol?
-    var coreDataService: CoreDataServiceProtocol
+    weak var dataManager: FileManagerServiceProtocol?
     var dataHandler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)?
     
     // MARK: - Private properties
     
+    private var coreDataService: CoreDataServiceProtocol
     private var channelID: String?
     private var dataMessagesRequest: Cancellable?
     private var dataChannelRequest: Cancellable?
@@ -45,8 +45,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
             self?.dataMessagesRequest?.cancel()
         }
         
-        guard
-            let channelID
+        guard let channelID
         else {
             return
         }
@@ -65,7 +64,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
         .sink(receiveCompletion: { [weak self] _ in
             self?.sendMessageRequest?.cancel()
         }, receiveValue: { [weak self] message in
-            self?.saveMessagesForChannel(for: channelID,
+            self?.coreDataService.saveMessagesForChannel(for: channelID,
                                          messages: [MessageNetworkModel(from: message)])
             self?.presenter?.uploadMessage(messageModel: message)
         })
@@ -74,45 +73,10 @@ class ChannelInteractor: ChannelInteractorProtocol {
     // MARK: - Private methods
     
     private func loadFromCoreData(channel: String) {
-        
-        do {
-            let messagesDB = try coreDataService.fetchChannelMessages(for: channel)
-            let channelDB = try coreDataService.fetchChannel(for: channel)
-            let messages: [MessageNetworkModel] = messagesDB
-                .compactMap { messagesBD in
-                    guard
-                        let id = messagesBD.id,
-                        let text = messagesBD.text,
-                        let userID = messagesBD.userID,
-                        let userName = messagesBD.userName,
-                        let date = messagesBD.date
-                    else {
-                        return MessageNetworkModel()
-                    }
-                    return MessageNetworkModel(id: id,
-                                               text: text,
-                                               userID: userID,
-                                               userName: userName,
-                                               date: date)
-                }
-            
-            guard
-                let id = channelDB.id,
-                let name = channelDB.name
-            else {
-                return
-            }
-            
-            let channelNetworkModel = ChannelNetworkModel(id: id,
-                                                          name: name,
-                                                          logoURL: nil,
-                                                          lastMessage: nil,
-                                                          lastActivity: nil)
-            sentMessages.append(contentsOf: messages)
-            dataHandler?(sentMessages, channelNetworkModel)
-        } catch {
-            print(error.localizedDescription)
-        }
+        let DBChannel = coreDataService.getDBChannel(channel: channel)
+        let DBMessages = coreDataService.getMessagesFromDBChannel(channel: channel)
+        sentMessages.append(contentsOf: DBMessages)
+        dataHandler?(sentMessages, DBChannel)
     }
     
     private func loadFromNetwork(channel: String) {
@@ -163,40 +127,10 @@ class ChannelInteractor: ChannelInteractorProtocol {
                     messagesToSave = networkMessages.filter({ $0.id == newMessage })
                 }
                 
-                self?.saveMessagesForChannel(for: channelID,
+                self?.coreDataService.saveMessagesForChannel(for: channelID,
                                              messages: messagesToSave)
                 self?.dataHandler?(networkMessages, networkChannelModel)
                 self?.presenter?.dataUploaded()
             })
-    }
-    
-    private func saveMessagesForChannel(for channelID: String, messages: [MessageNetworkModel]) {
-        let loggerText = "Messages saving from channel \(channelID)"
-        coreDataService.save(loggerText: loggerText) { context in
-            let fetchRequest = DBChannel.fetchRequest()
-            fetchRequest.predicate = NSPredicate(format: "id == %@", channelID)
-            let channelManagedObject = try context.fetch(fetchRequest).first
-            
-            guard
-                let channelManagedObject
-            else {
-                return
-            }
-            
-            for message in messages {
-                let messageManagedObject = DBMessage(context: context)
-                messageManagedObject.id = message.id
-                messageManagedObject.date = message.date
-                messageManagedObject.text = message.text
-                messageManagedObject.userID = message.userID
-                messageManagedObject.userName = message.userName
-                channelManagedObject.lastMessage = message.text
-                channelManagedObject.lastActivity = message.date
-                channelManagedObject.addToMessages(messageManagedObject)
-            }
-            
-            channelManagedObject.lastMessage = messages.last?.text
-            channelManagedObject.lastActivity = messages.last?.date
-        }
     }
 }

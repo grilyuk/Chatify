@@ -42,7 +42,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             self?.networkChannels = []
             self?.channelsRequest?.cancel()
         }
-
+        
         loadFromCoreData()
         loadFromNetwork()
     }
@@ -55,7 +55,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             }, receiveValue: { [weak self] channel in
                 let convertedChannel = ChannelNetworkModel(from: channel)
                 self?.presenter?.addChannel(channel: convertedChannel)
-                self?.saveChannelsList(with: [convertedChannel])
+                self?.coreDataService.saveChannelsList(with: [convertedChannel])
             })
     }
     
@@ -69,7 +69,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                     self?.presenter?.interactorError()
                     print(error.localizedDescription)
                 case .finished:
-                    self?.coreDataService.deleteObject(loggerText: "channel \(id) delete", channelID: id)
+                    self?.coreDataService.deleteChannel(channelID: id)
                 }
             }, receiveValue: { _ in
             })
@@ -79,28 +79,8 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     // MARK: - Private methods
     
     private func loadFromCoreData() {
-        do {
-            let dbChannels = try coreDataService.fetchChannelsList()
-            let channelsModel: [ChannelNetworkModel] = dbChannels
-                .compactMap { channelsDB in
-                    guard
-                        let id = channelsDB.id,
-                        let name = channelsDB.name
-                    else {
-                        return ChannelNetworkModel(id: "", name: "", logoURL: "", lastMessage: "", lastActivity: Date())
-                    }
-                    return ChannelNetworkModel(id: id,
-                                               name: name,
-                                               logoURL: nil,
-                                               lastMessage: channelsDB.lastMessage,
-                                               lastActivity: channelsDB.lastActivity)
-                }
-            
-            cacheChannels.append(contentsOf: channelsModel)
-            self.handler?(channelsModel)
-        } catch {
-            print(error)
-        }
+        cacheChannels.append(contentsOf: coreDataService.getChannelsFromDB())
+        self.handler?(cacheChannels)
     }
     
     private func loadFromNetwork() {
@@ -116,7 +96,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 channels.forEach { networkChannel in
                     
                     if !self.cacheChannels.contains(where: { networkChannel.id == $0.id }) {
-                        self.saveChannelsList(with: [ChannelNetworkModel(id: networkChannel.id,
+                        self.coreDataService.saveChannelsList(with: [ChannelNetworkModel(id: networkChannel.id,
                                                                          name: networkChannel.name,
                                                                          logoURL: networkChannel.logoURL,
                                                                          lastMessage: networkChannel.lastMessage,
@@ -136,8 +116,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 let deletedChannels = cachedIDs.filter { !networkIDs.contains($0) }
                 
                 for deletedChannel in deletedChannels {
-                    self.coreDataService.deleteObject(loggerText: "Delete channel \(deletedChannel)",
-                                                      channelID: deletedChannel)
+                    self.coreDataService.deleteChannel(channelID: deletedChannel)
                 }
                 
                 self.networkChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
@@ -145,7 +124,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 
                 for (networkElement, cacheElement) in zip(self.networkChannels, self.cacheChannels) {
                     if networkElement.lastActivity != cacheElement.lastActivity || networkElement.lastMessage != cacheElement.lastMessage {
-                            updateChannel(for: networkElement)
+                        coreDataService.updateChannel(for: networkElement)
                         }
                 }
                 
@@ -153,31 +132,5 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                 
                 self.handler?(self.networkChannels)
             })
-    }
-    
-    private func saveChannelsList(with channels: [ChannelNetworkModel]) {
-        for channel in channels {
-            let loggerText = "Save channel \(channel.name)"
-            coreDataService.save(loggerText: loggerText) { context in
-                let channelManagedObject = DBChannel(context: context)
-                channelManagedObject.id = channel.id
-                channelManagedObject.name = channel.name
-                channelManagedObject.lastActivity = channel.lastActivity
-                channelManagedObject.lastMessage = channel.lastMessage
-                channelManagedObject.messages = NSOrderedSet()
-            }
-        }
-    }
-    
-    private func updateChannel(for channel: ChannelNetworkModel) {
-        do {
-            let DBChannel = try coreDataService.fetchChannel(for: channel.id)
-            coreDataService.update(loggerText: "Update channel", channel: DBChannel) {
-                DBChannel.lastActivity = channel.lastActivity
-                DBChannel.lastMessage = channel.lastMessage
-            }
-        } catch {
-            print(error.localizedDescription)
-        }
     }
 }
