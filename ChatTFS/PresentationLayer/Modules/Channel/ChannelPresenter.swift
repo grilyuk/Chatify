@@ -10,7 +10,7 @@ protocol ChannelPresenterProtocol: AnyObject {
     
     func viewReady()
     func dataUploaded()
-    func uploadMessage(messageModel: Message)
+    func uploadMessage(messageModel: MessageNetworkModel)
     func createMessage(messageText: String?)
 }
 
@@ -129,13 +129,13 @@ extension ChannelPresenter: ChannelPresenterProtocol {
             else {
                 return
             }
-            interactor.createMessageData(messageText: messageText,
+            interactor.createMessage(messageText: messageText,
                                          userID: userID,
                                          userName: userName)
         }
     }
     
-    func uploadMessage(messageModel: Message) {
+    func uploadMessage(messageModel: MessageNetworkModel) {
         view?.addMessage(message: MessageModel(text: messageModel.text,
                                                    date: messageModel.date,
                                                    myMessage: true,

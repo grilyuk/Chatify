@@ -7,7 +7,7 @@ protocol ChannelsListInteractorProtocol: AnyObject {
     func deleteChannel(id: String)
 }
 
-class ChannelsListInteractor: ChannelsListInteractorProtocol {
+final class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     // MARK: - Initialization
     
@@ -16,17 +16,15 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         self.coreDataService = coreDataService
     }
     
-    // MARK: - Public
+    // MARK: - Public properties
     
     weak var presenter: ChannelsListPresenterProtocol?
-    var chatService: ChatServiceProtocol
-    var coreDataService: CoreDataServiceProtocol
     
-    // MARK: - Private
+    // MARK: - Private properties
     
+    private var chatService: ChatServiceProtocol
+    private var coreDataService: CoreDataServiceProtocol
     private var handler: (([ChannelNetworkModel]) -> Void)?
-    private var channelsRequest: Cancellable?
-    private var deleteChannelRequest: Cancellable?
     private var cacheChannels: [ChannelNetworkModel] = []
     private var networkChannels: [ChannelNetworkModel] = []
     
@@ -38,7 +36,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             self?.presenter?.dataChannels = channels
             self?.presenter?.dataUploaded()
             self?.networkChannels = []
-            self?.channelsRequest?.cancel()
         }
         
         loadFromCoreData()
@@ -48,7 +45,14 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     func createChannel(channelName: String) {
         let newChannel = chatService.createChannel(channelName: channelName)
         newChannel
-            .sink { _ in
+            .sink { [weak self] result in
+                switch result {
+                case .finished:
+                    break
+                case .failure(let error):
+                    self?.presenter?.interactorError()
+                    print(error.localizedDescription)
+                }
             } receiveValue: { [weak self] channel in
                 self?.presenter?.addChannel(channel: channel)
                 self?.coreDataService.saveChannelsList(with: [channel])
@@ -74,7 +78,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     }
     
     private func loadFromNetwork() {
-        
         chatService.loadChannels()
             .sink { [weak self] result in
                 switch result {

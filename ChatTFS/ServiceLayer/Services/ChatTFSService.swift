@@ -6,6 +6,8 @@ protocol ChatServiceProtocol {
     func loadChannels() -> AnyPublisher<[ChannelNetworkModel], Error>
     func createChannel(channelName: String) -> AnyPublisher<ChannelNetworkModel, Error>
     func deleteChannel(id: String) -> AnyPublisher<Void, Error>
+    func createMessageData(messageText: String, channelID: String, userID: String, userName: String) -> AnyPublisher<MessageNetworkModel, Error>
+    func loadMessagesFrom(channelID: String) -> AnyPublisher<[MessageNetworkModel], Error>
 }
 
 final class ChatTFSService: ChatServiceProtocol {
@@ -53,5 +55,31 @@ final class ChatTFSService: ChatServiceProtocol {
             .receive(on: mainQueue)
             .map({ _ in return })
             .eraseToAnyPublisher()
+    }
+    
+    func loadMessagesFrom(channelID: String) -> AnyPublisher<[MessageNetworkModel], Error> {
+        return chatTFS.chatServer.loadMessages(channelId: channelID)
+            .subscribe(on: backgroundQueue)
+            .receive(on: mainQueue)
+            .map({ messages in
+                let messageModels: [MessageNetworkModel] = messages
+                    .map { MessageNetworkModel(from: $0) }
+                
+                return messageModels
+            })
+            .eraseToAnyPublisher()
+    }
+    
+    func createMessageData(messageText: String, channelID: String, userID: String, userName: String) -> AnyPublisher<MessageNetworkModel, Error> {
+        return chatTFS.chatServer.sendMessage(text: messageText,
+                                                      channelId: channelID,
+                                                      userId: userID,
+                                                      userName: userName)
+        .subscribe(on: backgroundQueue)
+        .receive(on: mainQueue)
+        .map({ message in
+            return MessageNetworkModel(from: message)
+        })
+        .eraseToAnyPublisher()
     }
 }

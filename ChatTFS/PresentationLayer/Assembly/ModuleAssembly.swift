@@ -44,14 +44,14 @@ class ModuleBuilder: ModuleBuilderProtocol {
     }
 
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController {
-//        let interactor = ChannelInteractor(chatService: chatService,
-//                                           channelID: channel,
-//                                           coreDataService: coreDataService)
-//        let presenter = ChannelPresenter(router: router, interactor: interactor, dataManager: dataManager)
+        let interactor = ChannelInteractor(chatService: chatService,
+                                           channelID: channel,
+                                           coreDataService: coreDataService)
+        let presenter = ChannelPresenter(router: router, interactor: interactor, dataManager: dataManager)
         let view = ChannelViewController(themeService: themeService)
-//        view.presenter = presenter
-//        interactor.presenter = presenter
-//        presenter.view = view
+        view.presenter = presenter
+        interactor.presenter = presenter
+        presenter.view = view
         return view
     }
     
