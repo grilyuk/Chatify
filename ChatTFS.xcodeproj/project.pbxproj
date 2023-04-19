@@ -19,6 +19,8 @@
 		5E12623829F02B25009B5289 /* UserDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12623729F02B25009B5289 /* UserDataService.swift */; };
 		5E12623A29F02C8D009B5289 /* CombineUserDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12623929F02C8D009B5289 /* CombineUserDataService.swift */; };
 		5E12623C29F02FB3009B5289 /* UserDataProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12623B29F02FB3009B5289 /* UserDataProtocol.swift */; };
+		5E12623F29F07032009B5289 /* ChatTFS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12623E29F07031009B5289 /* ChatTFS.swift */; };
+		5E12624129F0720F009B5289 /* ChatTFSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624029F0720F009B5289 /* ChatTFSService.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */; };
@@ -68,6 +70,8 @@
 		5E12623729F02B25009B5289 /* UserDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDataService.swift; sourceTree = "<group>"; };
 		5E12623929F02C8D009B5289 /* CombineUserDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombineUserDataService.swift; sourceTree = "<group>"; };
 		5E12623B29F02FB3009B5289 /* UserDataProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserDataProtocol.swift; sourceTree = "<group>"; };
+		5E12623E29F07031009B5289 /* ChatTFS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTFS.swift; sourceTree = "<group>"; };
+		5E12624029F0720F009B5289 /* ChatTFSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTFSService.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SameIncomingChannelViewCell.swift; sourceTree = "<group>"; };
@@ -164,6 +168,7 @@
 			isa = PBXGroup;
 			children = (
 				5E12622E29EF3A9F009B5289 /* Assembly */,
+				5E12623D29F07018009B5289 /* Network */,
 				5E12622C29EF3A5E009B5289 /* CoreData */,
 				5E12622A29EF3A4D009B5289 /* File */,
 			);
@@ -248,8 +253,9 @@
 				5E12623B29F02FB3009B5289 /* UserDataProtocol.swift */,
 				5E12623929F02C8D009B5289 /* CombineUserDataService.swift */,
 				5E9F20C929C861140027EAFE /* FileManagerService.swift */,
-				5E2033B729E17D1E0014B1CC /* CoreDataService.swift */,
 				5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */,
+				5E2033B729E17D1E0014B1CC /* CoreDataService.swift */,
+				5E12624029F0720F009B5289 /* ChatTFSService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -260,6 +266,14 @@
 				5E12623329EF3B1B009B5289 /* ServiceAssembly.swift */,
 			);
 			path = Assembly;
+			sourceTree = "<group>";
+		};
+		5E12623D29F07018009B5289 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				5E12623E29F07031009B5289 /* ChatTFS.swift */,
+			);
+			path = Network;
 			sourceTree = "<group>";
 		};
 		5E42B9D429C24FE800F472D1 /* Models */ = {
@@ -519,6 +533,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5E12624129F0720F009B5289 /* ChatTFSService.swift in Sources */,
 				5EB624B029C0CAD7006D19B2 /* ThemeService.swift in Sources */,
 				5E92E9E629B4B4C60038EED2 /* ChannelsListCell.swift in Sources */,
 				5E9F20CA29C861140027EAFE /* FileManagerService.swift in Sources */,
@@ -556,6 +571,7 @@
 				5EB6218F29AB6FF100029FB8 /* ChannelsListPresenter.swift in Sources */,
 				5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */,
 				5E92E9E029B2A7570038EED2 /* Router.swift in Sources */,
+				5E12623F29F07032009B5289 /* ChatTFS.swift in Sources */,
 				5E92E9F629B72C6E0038EED2 /* IncomingConversationViewCell.swift in Sources */,
 				5E92E9E229B33C900038EED2 /* ModuleAssembly.swift in Sources */,
 				5E058E4A29ECBF5E00D470D0 /* ChannelsListDataSource.swift in Sources */,

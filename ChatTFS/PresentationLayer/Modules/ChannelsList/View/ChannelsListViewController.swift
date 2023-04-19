@@ -34,11 +34,11 @@ final class ChannelsListViewController: UIViewController {
     
     var presenter: ChannelsListPresenterProtocol?
     var channels: [ChannelModel] = []
-    weak var themeService: ThemeServiceProtocol?
     
     // MARK: - Private properties
     
     private var dataSource: ChannelsListDataSource
+    private var themeService: ThemeServiceProtocol
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -71,6 +71,18 @@ final class ChannelsListViewController: UIViewController {
         return alert
     }()
     
+    private lazy var createChannel: UIAlertAction = {
+        let alert = UIAlertAction(title: "Create", style: .default) { [weak addChanelAlert, weak self] _ in
+            
+            guard let textField = addChanelAlert?.textFields?.first
+            else {
+                return
+            }
+            self?.checkTextField(textField: textField)
+        }
+        return alert
+    }()
+    
     private lazy var emptyErrorAlert: UIAlertController = {
         let alert = UIAlertController(title: "Channel name empty!",
                                       message: "Имя канала не может быть пустым. \nВведите имя канала.",
@@ -91,6 +103,7 @@ final class ChannelsListViewController: UIViewController {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.addSubview(pullToRefresh)
+        addChanelAlert.addAction(createChannel)
         presenter?.viewReady()
         setupTableViewConstraints()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
@@ -99,8 +112,8 @@ final class ChannelsListViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        view.backgroundColor = themeService?.currentTheme.backgroundColor
-        tableView.backgroundColor = themeService?.currentTheme.backgroundColor
+        view.backgroundColor = themeService.currentTheme.backgroundColor
+        tableView.backgroundColor = themeService.currentTheme.backgroundColor
         dataSource.updateColorsCells()
         setupNavigationBar()
     }
@@ -114,26 +127,17 @@ final class ChannelsListViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         tabBarController?.tabBar.isHidden = false
         
-        guard let currentTheme = themeService?.currentTheme
-        else {
-            return
-        }
-        
-        switch currentTheme {
-        case .light: changeNavigationBar(theme: currentTheme)
-        case .dark: changeNavigationBar(theme: currentTheme)
+        switch themeService.currentTheme {
+        case .light: changeNavigationBar(theme: .light)
+        case .dark: changeNavigationBar(theme: .dark)
         }
     }
     
     private func changeNavigationBar(theme: Theme) {
-        guard let currentTheme = themeService?.currentTheme
-        else {
-            return
-        }
         let appearance = UINavigationBarAppearance()
-        appearance.backgroundColor = currentTheme.backgroundColor
-        appearance.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor]
-        appearance.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: currentTheme.textColor ]
+        appearance.backgroundColor = theme.backgroundColor
+        appearance.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: theme.textColor]
+        appearance.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: theme.textColor ]
         navigationController?.navigationItem.scrollEdgeAppearance = appearance
         navigationController?.navigationItem.standardAppearance = appearance
         navigationController?.navigationItem.compactAppearance = appearance
@@ -143,16 +147,6 @@ final class ChannelsListViewController: UIViewController {
     }
     
     private func showCreateChannelAC() {
-        let createChannel = UIAlertAction(title: "Create", style: .default) { [weak addChanelAlert, weak self] _ in
-            
-            guard let textField = addChanelAlert?.textFields?.first
-            else {
-                return
-            }
-            self?.checkTextField(textField: textField)
-        }
-        
-        addChanelAlert.addAction(createChannel)
         present(addChanelAlert, animated: true)
     }
     
@@ -234,9 +228,9 @@ extension ChannelsListViewController: UITableViewDelegate {
             else {
                 return
             }
-            
             var snapshot = dataSource.snapshot()
             let identifiers = snapshot.itemIdentifiers
+            self.presenter?.deleteChannel(id: identifiers[indexPath.row].channelID ?? "")
             snapshot.deleteItems([identifiers[indexPath.row]])
             self.dataSource.apply(snapshot)
         }

@@ -3,6 +3,7 @@ import Foundation
 protocol ServiceAssemblyProtocol: AnyObject {
     var coreDataService: CoreDataServiceProtocol { get }
     var themeService: ThemeServiceProtocol { get }
+    var chatService: ChatServiceProtocol { get }
 //    var fileManagerService: FileManagerServiceProtocol { get }
 }
 
@@ -25,4 +26,6 @@ final class ServiceAssembly: ServiceAssemblyProtocol {
 //    lazy var fileManagerService: FileManagerServiceProtocol = FileManagerService(
     
     lazy var themeService: ThemeServiceProtocol = ThemeService()
+    
+    lazy var chatService: ChatServiceProtocol = ChatTFSService(chatTFS: coreAssembly.chatTFS)
 }

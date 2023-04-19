@@ -27,7 +27,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     private lazy var dataManager = FileManagerService()
     private lazy var coreDataService = serviceAssembly.coreDataService
     private lazy var profilePublisher = dataManager.currentProfile
-    private lazy var chatService = ChatService(host: "167.235.86.234", port: 8080)
+    private lazy var chatService = serviceAssembly.chatService
     
     // MARK: - Public Methods
     
@@ -44,14 +44,14 @@ class ModuleBuilder: ModuleBuilderProtocol {
     }
 
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController {
-        let interactor = ChannelInteractor(chatService: chatService,
-                                           channelID: channel,
-                                           coreDataService: coreDataService)
-        let presenter = ChannelPresenter(router: router, interactor: interactor, dataManager: dataManager)
+//        let interactor = ChannelInteractor(chatService: chatService,
+//                                           channelID: channel,
+//                                           coreDataService: coreDataService)
+//        let presenter = ChannelPresenter(router: router, interactor: interactor, dataManager: dataManager)
         let view = ChannelViewController(themeService: themeService)
-        view.presenter = presenter
-        interactor.presenter = presenter
-        presenter.view = view
+//        view.presenter = presenter
+//        interactor.presenter = presenter
+//        presenter.view = view
         return view
     }
     

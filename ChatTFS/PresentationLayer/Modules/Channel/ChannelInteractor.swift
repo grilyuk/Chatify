@@ -21,7 +21,6 @@ class ChannelInteractor: ChannelInteractorProtocol {
     
     weak var chatService: ChatService?
     weak var presenter: ChannelPresenterProtocol?
-    weak var dataManager: FileManagerServiceProtocol?
     var dataHandler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)?
     
     // MARK: - Private properties

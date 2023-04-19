@@ -13,7 +13,7 @@ protocol ChannelsListPresenterProtocol: AnyObject {
     func didTappedChannel(to channel: String, navigationController: UINavigationController)
     func addChannel(channel: ChannelNetworkModel)
     func createChannel(name: String)
-    func deleteChannel(id: String) -> Bool
+    func deleteChannel(id: String)
     func interactorError()
 }
 
@@ -99,7 +99,7 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
         interactor.createChannel(channelName: name)
     }
     
-    func deleteChannel(id: String) -> Bool {
+    func deleteChannel(id: String) {
         interactor.deleteChannel(id: id)
     }
     

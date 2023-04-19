@@ -21,7 +21,7 @@ class CoreDataService: CoreDataServiceProtocol {
     
     // MARK: - Private properties
     
-    let coreDataStack: CoreDataStackProtocol
+    private let coreDataStack: CoreDataStackProtocol
     
     // MARK: - Public methods
     
@@ -44,7 +44,7 @@ class CoreDataService: CoreDataServiceProtocol {
                 }
             return channelsModel
         } catch {
-            print(error)
+            print(error.localizedDescription)
             return []
         }
     }
@@ -137,8 +137,7 @@ class CoreDataService: CoreDataServiceProtocol {
             fetchRequest.predicate = NSPredicate(format: "id == %@", channelID)
             let channelManagedObject = try context.fetch(fetchRequest).first
             
-            guard
-                let channelManagedObject
+            guard let channelManagedObject
             else {
                 return
             }

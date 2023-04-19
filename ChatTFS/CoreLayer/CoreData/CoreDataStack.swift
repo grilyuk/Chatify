@@ -15,9 +15,9 @@ final class CoreDataStack: CoreDataStackProtocol {
     
     private let dataModelName = "Chat"
     
-    // MARK: - Public properties
+    // MARK: - Private properties
     
-    lazy var persistentContainer: NSPersistentContainer = {
+    private lazy var persistentContainer: NSPersistentContainer = {
         
         let persistentContainer = NSPersistentContainer(name: dataModelName)
         
@@ -28,7 +28,7 @@ final class CoreDataStack: CoreDataStackProtocol {
         return persistentContainer
     }()
     
-    var viewContext: NSManagedObjectContext {
+    private var viewContext: NSManagedObjectContext {
         persistentContainer.viewContext
     }
     

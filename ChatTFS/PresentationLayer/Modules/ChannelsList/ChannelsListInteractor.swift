@@ -1,19 +1,17 @@
-import UIKit
-import CoreData
 import Combine
 import TFSChatTransport
 
 protocol ChannelsListInteractorProtocol: AnyObject {
     func loadData()
     func createChannel(channelName: String)
-    func deleteChannel(id: String) -> Bool
+    func deleteChannel(id: String)
 }
 
 class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     // MARK: - Initialization
     
-    init(chatService: ChatService, coreDataService: CoreDataServiceProtocol) {
+    init(chatService: ChatServiceProtocol, coreDataService: CoreDataServiceProtocol) {
         self.chatService = chatService
         self.coreDataService = coreDataService
     }
@@ -21,7 +19,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     // MARK: - Public
     
     weak var presenter: ChannelsListPresenterProtocol?
-    var chatService: ChatService
+    var chatService: ChatServiceProtocol
     var coreDataService: CoreDataServiceProtocol
     
     // MARK: - Private
@@ -48,89 +46,87 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     }
     
     func createChannel(channelName: String) {
-        channelsRequest = chatService.createChannel(name: channelName,
-                                                    logoUrl: "https://source.unsplash.com/random/600x600")
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { _ in
-            }, receiveValue: { [weak self] channel in
-                let convertedChannel = ChannelNetworkModel(from: channel)
-                self?.presenter?.addChannel(channel: convertedChannel)
-                self?.coreDataService.saveChannelsList(with: [convertedChannel])
-            })
+        let newChannel = chatService.createChannel(channelName: channelName)
+        newChannel
+            .sink { _ in
+            } receiveValue: { [weak self] channel in
+                self?.presenter?.addChannel(channel: channel)
+                self?.coreDataService.saveChannelsList(with: [channel])
+            }
+            .cancel()
     }
     
-    func deleteChannel(id: String) -> Bool {
-        deleteChannelRequest = chatService.deleteChannel(id: id)
-            .receive(on: DispatchQueue.main)
-            .subscribe(on: DispatchQueue.global())
-            .sink(receiveCompletion: { [weak self] completion in
-                switch completion {
-                case .failure(let error):
-                    self?.presenter?.interactorError()
-                    print(error.localizedDescription)
-                case .finished:
-                    self?.coreDataService.deleteChannel(channelID: id)
-                }
+    func deleteChannel(id: String) {
+        chatService.deleteChannel(id: id)
+            .sink(receiveCompletion: { _ in
+                self.coreDataService.deleteChannel(channelID: id)
             }, receiveValue: { _ in
             })
-        return true
+            .cancel()
     }
     
     // MARK: - Private methods
     
     private func loadFromCoreData() {
-        cacheChannels.append(contentsOf: coreDataService.getChannelsFromDB())
+        let DBChannels = coreDataService.getChannelsFromDB()
+        cacheChannels.append(contentsOf: DBChannels)
         self.handler?(cacheChannels)
     }
     
     private func loadFromNetwork() {
         
-        channelsRequest = chatService.loadChannels()
-            .receive(on: DispatchQueue.main)
-            .sink(receiveCompletion: { [weak self] _ in
-                self?.presenter?.interactorError()
-            }, receiveValue: { [weak self] channels in
+        chatService.loadChannels()
+            .sink { [weak self] result in
+                switch result {
+                case .finished:
+                    self?.handler?(self?.networkChannels ?? [])
+                case .failure(let error):
+                    self?.presenter?.interactorError()
+                    print(error.localizedDescription)
+                }
+            } receiveValue: { [weak self] actualChannels in
+                self?.compareChannelsModel(cacheChannels: self?.cacheChannels ?? [],
+                                           networkChannels: actualChannels)
+            }
+            .cancel()
+    }
+    
+    private func compareChannelsModel(cacheChannels: [ChannelNetworkModel], networkChannels: [ChannelNetworkModel]) {
+        networkChannels.forEach { networkChannel in
 
-                guard let self else { return }
-                
-                channels.forEach { networkChannel in
-                    
-                    if !self.cacheChannels.contains(where: { networkChannel.id == $0.id }) {
-                        self.coreDataService.saveChannelsList(with: [ChannelNetworkModel(id: networkChannel.id,
-                                                                         name: networkChannel.name,
-                                                                         logoURL: networkChannel.logoURL,
-                                                                         lastMessage: networkChannel.lastMessage,
-                                                                         lastActivity: networkChannel.lastActivity)])
-                    }
-                    
-                    self.networkChannels.append(ChannelNetworkModel(id: networkChannel.id,
-                                                           name: networkChannel.name,
-                                                           logoURL: networkChannel.logoURL,
-                                                           lastMessage: networkChannel.lastMessage,
-                                                           lastActivity: networkChannel.lastActivity))
+            if !cacheChannels.contains(where: { networkChannel.id == $0.id }) {
+                coreDataService.saveChannelsList(with: [ChannelNetworkModel(id: networkChannel.id,
+                                                                 name: networkChannel.name,
+                                                                 logoURL: networkChannel.logoURL,
+                                                                 lastMessage: networkChannel.lastMessage,
+                                                                 lastActivity: networkChannel.lastActivity)])
+            }
+
+            self.networkChannels.append(ChannelNetworkModel(id: networkChannel.id,
+                                                   name: networkChannel.name,
+                                                   logoURL: networkChannel.logoURL,
+                                                   lastMessage: networkChannel.lastMessage,
+                                                   lastActivity: networkChannel.lastActivity))
+        }
+        
+        let cachedIDs = cacheChannels.map { $0.id }
+        let networkIDs = networkChannels.map { $0.id }
+
+        let deletedChannels = cachedIDs.filter { !networkIDs.contains($0) }
+
+        for deletedChannel in deletedChannels {
+            coreDataService.deleteChannel(channelID: deletedChannel)
+        }
+
+        self.networkChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
+        self.cacheChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
+
+        for (networkElement, cacheElement) in zip(networkChannels, cacheChannels) {
+            if networkElement.lastActivity != cacheElement.lastActivity || networkElement.lastMessage != cacheElement.lastMessage {
+                coreDataService.updateChannel(for: networkElement)
                 }
-                
-                let cachedIDs = self.cacheChannels.map { $0.id }
-                let networkIDs = self.networkChannels.map { $0.id }
-                
-                let deletedChannels = cachedIDs.filter { !networkIDs.contains($0) }
-                
-                for deletedChannel in deletedChannels {
-                    self.coreDataService.deleteChannel(channelID: deletedChannel)
-                }
-                
-                self.networkChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
-                self.cacheChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
-                
-                for (networkElement, cacheElement) in zip(self.networkChannels, self.cacheChannels) {
-                    if networkElement.lastActivity != cacheElement.lastActivity || networkElement.lastMessage != cacheElement.lastMessage {
-                        coreDataService.updateChannel(for: networkElement)
-                        }
-                }
-                
-                self.cacheChannels = []
-                
-                self.handler?(self.networkChannels)
-            })
+        }
+
+        self.cacheChannels = []
     }
 }
