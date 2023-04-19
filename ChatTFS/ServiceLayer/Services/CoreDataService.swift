@@ -2,152 +2,161 @@ import Foundation
 import CoreData
 
 protocol CoreDataServiceProtocol: AnyObject {
-    
-    func fetchChannelsList() throws -> [DBChannel]
-    func fetchChannel(for channelID: String) throws -> DBChannel
-    func fetchChannelMessages(for channelID: String) throws -> [DBMessage]
-    func save(loggerText: String, block: @escaping (NSManagedObjectContext) throws -> Void )
-    func update(loggerText: String, channel: DBChannel, block: @escaping () throws -> Void)
-    func deleteObject(loggerText: String, channelID: String)
-    func clearEntitiesData(entity: String)
+    func getChannelsFromDB() -> [ChannelNetworkModel]
+    func getDBChannel(channel: String) -> ChannelNetworkModel
+    func getMessagesFromDBChannel(channel: String) -> [MessageNetworkModel]
+    func saveChannelsList(with channels: [ChannelNetworkModel])
+    func updateChannel(for channel: ChannelNetworkModel)
+    func deleteChannel(channelID: String)
+    func saveMessagesForChannel(for channelID: String, messages: [MessageNetworkModel])
 }
 
 class CoreDataService: CoreDataServiceProtocol {
     
     // MARK: - Initialization
     
-//    init(coreData: CoreDataProtocol) {
-//        self.coreData = coreData
-//    }
+    init(coreDataStack: CoreDataStackProtocol) {
+        self.coreDataStack = coreDataStack
+    }
     
     // MARK: - Private properties
     
-//    let coreData: CoreDataService
+    let coreDataStack: CoreDataStackProtocol
     
-    var logger = Logger()
+    // MARK: - Public methods
     
-    private lazy var persistentContainer: NSPersistentContainer = {
-        let persistentContainer = NSPersistentContainer(name: "Chat")
-        persistentContainer.loadPersistentStores { [weak self] _, error in
-            guard let error else { return }
-            self?.logger.displayLog(result: .failure, isMainThread: Thread.isMainThread,
-                                    activity: "PersistentContainer not loaded: error: \(error.localizedDescription)")
-        }
-        logger.displayLog(result: .success, isMainThread: Thread.isMainThread,
-                                activity: "PersistentContainer loaded")
-        return persistentContainer
-    }()
-    
-    private var viewContext: NSManagedObjectContext {
-        persistentContainer.viewContext
-    }
-    
-    func fetchChannelsList() throws -> [DBChannel] {
-        let fetchRequest = DBChannel.fetchRequest()
-        let loggerText = "DBChannels fetching"
+    func getChannelsFromDB() -> [ChannelNetworkModel] {
         do {
-            let request = try viewContext.fetch(fetchRequest)
-            logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
-            return request
+            let dbChannels = try coreDataStack.fetchChannelsList()
+            let channelsModel: [ChannelNetworkModel] = dbChannels
+                .compactMap { channelsDB in
+                    guard
+                        let id = channelsDB.id,
+                        let name = channelsDB.name
+                    else {
+                        return ChannelNetworkModel(id: "", name: "", logoURL: "", lastMessage: "", lastActivity: Date())
+                    }
+                    return ChannelNetworkModel(id: id,
+                                               name: name,
+                                               logoURL: nil,
+                                               lastMessage: channelsDB.lastMessage,
+                                               lastActivity: channelsDB.lastActivity)
+                }
+            return channelsModel
         } catch {
-            logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
-            return [DBChannel()]
-        }
-    }
-    
-    func fetchChannel(for channelID: String) throws -> DBChannel {
-        let fetchRequest = DBChannel.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", channelID as CVarArg)
-        let DBChannelObject = try viewContext.fetch(fetchRequest).first
-        guard
-            let DBChannelObject,
-            let id = DBChannelObject.id
-        else {
-            logger
-                .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: "DBChannel fetching")
-            return DBChannel()
-        }
-        logger
-            .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: "DBChannel \(id) fetching")
-        return DBChannelObject
-    }
-    
-    func fetchChannelMessages(for channelID: String) throws -> [DBMessage] {
-        let fetchRequest = DBChannel.fetchRequest()
-        fetchRequest.predicate = NSPredicate(format: "id == %@", channelID as CVarArg)
-        let DBChannel = try viewContext.fetch(fetchRequest).first
-        guard
-            let DBChannel,
-            let DBMessage = DBChannel.messages?.array as? [DBMessage]
-        else {
+            print(error)
             return []
         }
-        
-        return DBMessage
     }
     
-    func save(loggerText: String, block: @escaping (NSManagedObjectContext) throws -> Void) {
-        let backgroundContext = persistentContainer.newBackgroundContext()
-        backgroundContext.perform { [weak self] in
-            guard let self else { return }
-            do {
-                try block(backgroundContext)
-                if backgroundContext.hasChanges {
-                    try backgroundContext.save()
-                    self.logger
-                        .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
-                }
-            } catch {
-                self.logger
-                    .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
-            }
-        }
-    }
-    
-    func update(loggerText: String, channel: DBChannel, block: @escaping () throws -> Void) {
-        guard let context = channel.managedObjectContext else { return }
-        context.perform { [weak self] in
-            guard let self else { return }
-            do {
-                try block()
-                if context.hasChanges {
-                    try context.save()
-                    self.logger
-                        .displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
-                }
-            } catch {
-                self.logger
-                    .displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
-            }
-        }
-    }
-    
-    func deleteObject(loggerText: String, channelID: String) {
+    func getDBChannel(channel: String) -> ChannelNetworkModel {
         do {
-            let DBChannel = try fetchChannel(for: channelID)
+            let channelDB = try coreDataStack.fetchChannel(for: channel)
+            guard let id = channelDB.id,
+                  let name = channelDB.name
+            else {
+                return ChannelNetworkModel(id: "", name: "", logoURL: nil, lastMessage: nil, lastActivity: nil)
+            }
+            return ChannelNetworkModel(id: id,
+                                       name: name,
+                                       logoURL: channelDB.logoURL,
+                                       lastMessage: channelDB.lastMessage,
+                                       lastActivity: channelDB.lastActivity)
+        } catch {
+            return ChannelNetworkModel(id: "", name: "", logoURL: nil, lastMessage: nil, lastActivity: nil)
+        }
+    }
+    
+    func saveChannelsList(with channels: [ChannelNetworkModel]) {
+        for channel in channels {
+            coreDataStack.save { context in
+                let channelManagedObject = DBChannel(context: context)
+                channelManagedObject.id = channel.id
+                channelManagedObject.name = channel.name
+                channelManagedObject.lastActivity = channel.lastActivity
+                channelManagedObject.lastMessage = channel.lastMessage
+                channelManagedObject.messages = NSOrderedSet()
+            }
+        }
+    }
+    
+    func updateChannel(for channel: ChannelNetworkModel) {
+        do {
+            let DBChannel = try coreDataStack.fetchChannel(for: channel.id)
+            coreDataStack.update(channel: DBChannel) {
+                DBChannel.lastActivity = channel.lastActivity
+                DBChannel.lastMessage = channel.lastMessage
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    func deleteChannel(channelID: String) {
+        do {
+            let DBChannel = try coreDataStack.fetchChannel(for: channelID)
             let channelContext = DBChannel.managedObjectContext
             guard let channelContext else { return }
             channelContext.delete(DBChannel)
-            do {
-                try channelContext.save()
-                logger.displayLog(result: .success, isMainThread: Thread.isMainThread, activity: loggerText)
-            } catch {
-                logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
-            }
+            try channelContext.save()
         } catch {
-            logger.displayLog(result: .failure, isMainThread: Thread.isMainThread, activity: loggerText)
+            print(error.localizedDescription)
+        }
+    }
+
+    func getMessagesFromDBChannel(channel: String) -> [MessageNetworkModel] {
+        do {
+            let messagesDB = try coreDataStack.fetchChannelMessages(for: channel)
+            let messages: [MessageNetworkModel] = messagesDB
+                .compactMap { messagesBD in
+                    guard
+                        let id = messagesBD.id,
+                        let text = messagesBD.text,
+                        let userID = messagesBD.userID,
+                        let userName = messagesBD.userName,
+                        let date = messagesBD.date
+                    else {
+                        return MessageNetworkModel()
+                    }
+                    return MessageNetworkModel(id: id,
+                                               text: text,
+                                               userID: userID,
+                                               userName: userName,
+                                               date: date)
+                }
+            return messages
+        } catch {
+            print(error.localizedDescription)
+            return []
         }
     }
     
-    func clearEntitiesData(entity: String) {
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: entity)
-        let deleteRequest = NSBatchDeleteRequest(fetchRequest: fetchRequest)
-
-        do {
-            try viewContext.execute(deleteRequest)
-            try viewContext.save()
-        } catch {
-            print(error)
+    func saveMessagesForChannel(for channelID: String, messages: [MessageNetworkModel]) {
+        coreDataStack.save { context in
+            let fetchRequest = DBChannel.fetchRequest()
+            fetchRequest.predicate = NSPredicate(format: "id == %@", channelID)
+            let channelManagedObject = try context.fetch(fetchRequest).first
+            
+            guard
+                let channelManagedObject
+            else {
+                return
+            }
+            
+            for message in messages {
+                let messageManagedObject = DBMessage(context: context)
+                messageManagedObject.id = message.id
+                messageManagedObject.date = message.date
+                messageManagedObject.text = message.text
+                messageManagedObject.userID = message.userID
+                messageManagedObject.userName = message.userName
+                channelManagedObject.lastMessage = message.text
+                channelManagedObject.lastActivity = message.date
+                channelManagedObject.addToMessages(messageManagedObject)
+            }
+            
+            channelManagedObject.lastMessage = messages.last?.text
+            channelManagedObject.lastActivity = messages.last?.date
         }
     }
 }
