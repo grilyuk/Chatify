@@ -75,15 +75,14 @@ class ChannelInteractor: ChannelInteractorProtocol {
                 guard let self else { return }
                 switch result {
                 case .finished:
-                    self.coreDataService.saveMessagesForChannel(for: self.channelID,
-                                                                messages: self.networkMessages)
-                    self.handler?(self.networkMessages, self.DBChannel)
+                    break
                 case .failure(let error):
                     print(error.localizedDescription)
                 }
             } receiveValue: { [weak self] messages in
                 guard let self else { return }
                 self.compareMessages(cacheMessages: self.cacheMessages, networkMessages: messages)
+                self.handler?(messages, self.DBChannel)
             }
             .cancel()
     }
@@ -96,7 +95,8 @@ class ChannelInteractor: ChannelInteractorProtocol {
         let newMessages = networkMessagesIDs.filter { !(cacheMessagesIDs.contains($0)) }
 
         for newMessage in newMessages {
-            self.networkMessages.append(contentsOf: networkMessages.filter({ $0.id == newMessage }))
+            self.coreDataService.saveMessagesForChannel(for: self.channelID,
+                                                        messages: networkMessages.filter({ $0.id == newMessage }))
         }
     }
 }
