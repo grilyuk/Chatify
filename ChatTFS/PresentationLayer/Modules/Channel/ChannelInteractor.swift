@@ -39,6 +39,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
             self?.presenter?.channelData = channelData
             self?.presenter?.messagesData = messagesData
             self?.presenter?.dataUploaded()
+            self?.networkMessages = []
         }
         
         loadFromCoreData(channel: channelID)
@@ -46,17 +47,15 @@ class ChannelInteractor: ChannelInteractorProtocol {
     }
     
     func createMessage(messageText: String, userID: String, userName: String) {
-        let newMessage = chatService.createMessageData(messageText: messageText,
+        chatService.createMessageData(messageText: messageText,
                                       channelID: channelID,
                                       userID: userID,
                                       userName: userName)
-        newMessage
         .sink(receiveCompletion: { _ in
         }, receiveValue: { [weak self] message in
             guard let self else { return }
             self.coreDataService.saveMessagesForChannel(for: self.channelID,
                                                         messages: [message])
-            
             self.presenter?.uploadMessage(messageModel: message)
         })
         .cancel()
@@ -97,7 +96,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
         let newMessages = networkMessagesIDs.filter { !(cacheMessagesIDs.contains($0)) }
 
         for newMessage in newMessages {
-            self.networkMessages = networkMessages.filter({ $0.id == newMessage })
+            self.networkMessages.append(contentsOf: networkMessages.filter({ $0.id == newMessage }))
         }
     }
 }

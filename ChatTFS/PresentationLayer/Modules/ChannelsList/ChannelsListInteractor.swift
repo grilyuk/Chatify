@@ -73,7 +73,7 @@ final class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     private func loadFromCoreData() {
         let DBChannels = coreDataService.getChannelsFromDB()
-        cacheChannels.append(contentsOf: DBChannels)
+        cacheChannels = DBChannels
         self.handler?(cacheChannels)
     }
     
