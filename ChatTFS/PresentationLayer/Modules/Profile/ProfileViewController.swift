@@ -31,8 +31,6 @@ class ProfileViewController: UIViewController {
         static let imageProfileToAddPhoto: CGFloat = 24
         static let addPhotoToNameLabel: CGFloat = 24
         static let nameLabelToInfoText: CGFloat = 10
-        static let imageProfileTopColor: UIColor = #colorLiteral(red: 0.9541506171, green: 0.5699337721, blue: 0.6460854411, alpha: 1)
-        static let imageProfileBottomColor: UIColor = #colorLiteral(red: 0.1823898468, green: 0.5700650811, blue: 0.6495155096, alpha: 1)
     }
     
     // MARK: - Public
@@ -48,7 +46,6 @@ class ProfileViewController: UIViewController {
         case error
         case profile(ProfileModel)
         case profileUploaded(ProfileModel)
-
     }
     
     private var state: State = .loading {
@@ -140,29 +137,9 @@ class ProfileViewController: UIViewController {
     
     private lazy var userAvatar: UIImageView = {
         let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 150, height: 150))
-        let gradient = CAGradientLayer()
-        gradient.colors = [UIConstants.imageProfileTopColor.cgColor,
-                           UIConstants.imageProfileBottomColor.cgColor]
-        gradient.frame = imageView.bounds
-        imageView.layer.addSublayer(gradient)
         imageView.layer.cornerRadius = 50
         imageView.clipsToBounds = true
         return imageView
-    }()
-    
-    private lazy var initials: UILabel = {
-        let label = UILabel()
-        let initialFontSizeCalc = 150 * 0.45
-        let descriptor = UIFont.systemFont(ofSize: initialFontSizeCalc, weight: .semibold).fontDescriptor.withDesign(.rounded)
-        guard let descriptor = descriptor else { return label }
-        label.font = UIFont(descriptor: descriptor, size: initialFontSizeCalc)
-        label.textColor = .white
-        let formatter = PersonNameComponentsFormatter()
-        let components = formatter.personNameComponents(from: nameLabel.text ?? "")
-        formatter.style = .abbreviated
-        guard let components = components else { return label }
-        label.text = formatter.string(from: components)
-        return label
     }()
     
     // MARK: - Lifecycle

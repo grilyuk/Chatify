@@ -10,7 +10,9 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, MessageModel> {
         super.init(tableView: tableView) { tableView, _, itemIdentifier in
             
             switch itemIdentifier.myMessage {
+                
             case true:
+                
                 guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingChannelViewCell.identifier) as? OutgoingChannelViewCell
                 else {
                     return UITableViewCell()
@@ -18,9 +20,13 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, MessageModel> {
                 cell.configureTheme(theme: themeService)
                 cell.configure(with: itemIdentifier)
                 return cell
+                
             case false:
+                
                 switch itemIdentifier.isSameUser {
+                    
                 case true:
+                    
                     guard let cell = tableView.dequeueReusableCell(withIdentifier: SameIncomingChannelViewCell.identifier) as? SameIncomingChannelViewCell
                     else {
                         return UITableViewCell()
@@ -28,7 +34,9 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, MessageModel> {
                     cell.configureTheme(theme: themeService)
                     cell.configure(with: itemIdentifier)
                     return cell
+                    
                 case false:
+                    
                     guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier) as? IncomingChannelViewCell
                     else {
                         return UITableViewCell()

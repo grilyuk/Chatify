@@ -13,6 +13,8 @@ protocol ChannelInteractorProtocol: AnyObject {
 
 class ChannelInteractor: ChannelInteractorProtocol {
     
+    // MARK: - Initialization
+    
     init(chatService: ChatServiceProtocol,
          channelID: String,
          coreDataService: CoreDataServiceProtocol,

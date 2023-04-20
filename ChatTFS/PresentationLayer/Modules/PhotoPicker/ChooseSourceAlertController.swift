@@ -14,7 +14,7 @@ class ChooseSourceAlertController: UIAlertController {
         addActions()
     }
 
-    // MARK: - Methods
+    // MARK: - Private methods
     
     private func addActions() {
         addAction(UIAlertAction(title: "Сделать фото", style: .default) { [weak self] _ in

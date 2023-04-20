@@ -8,7 +8,7 @@ protocol ChannelsListInteractorProtocol: AnyObject {
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
 }
 
-final class ChannelsListInteractor: ChannelsListInteractorProtocol {
+class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     // MARK: - Initialization
     

@@ -15,7 +15,7 @@ class PhotoPickerController: UIImagePickerController, UIImagePickerControllerDel
         self.allowsEditing = true
     }
 
-    // MARK: - Methods
+    // MARK: - Private methods
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {

@@ -13,8 +13,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // MARK: - Public properties
     
     lazy var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
-    lazy var coreAssembly = CoreAssembly()
-    lazy var serviceAssembly = ServiceAssembly(coreAssembly: coreAssembly)
+    
+    // MARK: - Private properties
+    
+    private lazy var coreAssembly = CoreAssembly()
+    private lazy var serviceAssembly = ServiceAssembly(coreAssembly: coreAssembly)
 
     // MARK: - Lifecycle
     

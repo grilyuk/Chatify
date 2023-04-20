@@ -15,7 +15,7 @@ protocol ChannelPresenterProtocol: AnyObject {
 
 class ChannelPresenter {
     
-    // MARK: - Public
+    // MARK: - Public properties
     
     weak var view: ChannelViewProtocol?
     let router: RouterProtocol?

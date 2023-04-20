@@ -8,7 +8,7 @@ protocol ChannelsListViewProtocol: AnyObject {
     func addChannel(channel: ChannelModel)
 }
 
-final class ChannelsListViewController: UIViewController {
+class ChannelsListViewController: UIViewController {
     
     // MARK: - Initialization
     

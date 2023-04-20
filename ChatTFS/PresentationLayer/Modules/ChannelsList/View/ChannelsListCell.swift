@@ -5,7 +5,7 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-final class ChannelListCell: UITableViewCell {
+class ChannelListCell: UITableViewCell {
     
     // MARK: - Initializater
     
@@ -112,7 +112,6 @@ final class ChannelListCell: UITableViewCell {
         let formatterNow = DateFormatter()
         formatterNow.dateFormat = "dd:MM:yyyy"
         let actualDate = formatterNow.string(from: nowDate)
-        
         if formatterNow.string(from: date) == actualDate {
             let formatterToday = DateFormatter()
             formatterToday.dateFormat = "HH:mm"
@@ -210,10 +209,16 @@ extension ChannelListCell: ConfigurableViewProtocol {
         
         userAvatar.image = model.channelImage
         
-        guard let name = model.name else { return }
+        guard let name = model.name
+        else {
+            return
+        }
         setNameLabel(rowName: name)
         
-        guard let date = model.date else { return }
+        guard let date = model.date
+        else {
+            return
+        }
         setDateLabel(date: date)
     }
     

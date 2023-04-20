@@ -3,7 +3,6 @@ import TFSChatTransport
 
 protocol ChannelsListPresenterProtocol: AnyObject {
     var router: RouterProtocol? { get set }
-    var profile: ProfileModel? { get set }
     var dataChannels: [ChannelNetworkModel]? { get set }
     var handler: (([ChannelModel]) -> Void)? { get set }
     
@@ -16,29 +15,25 @@ protocol ChannelsListPresenterProtocol: AnyObject {
     func interactorError()
 }
 
-class ChannelsListPresenter {
+class ChannelsListPresenter: ChannelsListPresenterProtocol {
     
-    // MARK: - Public
+    // MARK: - Public properties
     
     weak var view: ChannelsListViewProtocol?
-    weak var dataManager: FileManagerServiceProtocol?
     var router: RouterProtocol?
-    let interactor: ChannelsListInteractorProtocol
-    var profile: ProfileModel?
     var dataChannels: [ChannelNetworkModel]?
     var handler: (([ChannelModel]) -> Void)?
     var channels: [ChannelModel] = []
+    
+    // MARK: - Private properties
+    
+    private var interactor: ChannelsListInteractorProtocol
     
     // MARK: - Initialization
     
     init(interactor: ChannelsListInteractorProtocol) {
         self.interactor = interactor
     }
-}
-
-// MARK: - ChannelsListPresenter + ChannelsListPresenterProtocol
-
-extension ChannelsListPresenter: ChannelsListPresenterProtocol {
     
     // MARK: - Public methods
     
@@ -56,12 +51,13 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
         }
         
         DispatchQueue.global(qos: .background).async { [weak self] in
+            
             guard let self
             else {
                 return
             }
+            
             self.dataChannels?.forEach({ dataChannel in
-                
                 let channelLogo: UIImage = self.interactor.getChannelImage(for: dataChannel)
                 
                 if dataChannel.lastMessage == nil {
@@ -125,7 +121,5 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
     func interactorError() {
         view?.showAlert()
     }
-    
-    // MARK: - Private methods
     
 }
