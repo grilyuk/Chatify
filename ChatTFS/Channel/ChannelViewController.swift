@@ -1,12 +1,12 @@
 import UIKit
 
-protocol ConversationViewProtocol: AnyObject {
-    func showConversation(channel: ChannelModel)
-    func addMessage(message: MessageCellModel)
-    var messages: [MessageCellModel] { get set }
+protocol ChannelViewProtocol: AnyObject {
+    func showChannel(channel: ChannelModel)
+    func addMessage(message: MessageModel)
+    var messages: [MessageModel] { get set }
 }
 
-class ConversationViewController: UIViewController {
+class ChannelViewController: UIViewController {
     
     // MARK: - UIConstants
     
@@ -20,21 +20,22 @@ class ConversationViewController: UIViewController {
     
     // MARK: - Public
     
-    var presenter: ConversationPresenterProtocol?
-    var messages: [MessageCellModel] = []
+    var presenter: ChannelPresenterProtocol?
+    var messages: [MessageModel] = []
     var titlesSections: [String] = []
     weak var themeService: ThemeServiceProtocol?
     
     // MARK: - Private
     
-    private var dataSource: UITableViewDiffableDataSource<Date, MessageCellModel>?
+    private var dataSource: UITableViewDiffableDataSource<Date, MessageModel>?
     
     private lazy var tableView: UITableView = {
         let table = UITableView()
-        table.register(IncomingConversationViewCell.self, forCellReuseIdentifier: IncomingConversationViewCell.identifier)
-        table.register(OutgoingConversationViewCell.self, forCellReuseIdentifier: OutgoingConversationViewCell.identifier)
-        table.delegate = self
+        table.register(IncomingChannelViewCell.self, forCellReuseIdentifier: IncomingChannelViewCell.identifier)
+        table.register(OutgoingChannelViewCell.self, forCellReuseIdentifier: OutgoingChannelViewCell.identifier)
+        table.register(SameIncomingChannelViewCell.self, forCellReuseIdentifier: SameIncomingChannelViewCell.identifier)
         table.separatorStyle = .none
+        table.delegate = self
         table.allowsSelection = false
         table.scrollsToTop = true
         table.rowHeight = UITableView.automaticDimension
@@ -49,6 +50,7 @@ class ConversationViewController: UIViewController {
         view.layer.cornerRadius = UIConstants.textFieldHeight / 2
         view.layer.borderWidth = UIConstants.borderWidth
         view.layer.borderColor = UIColor.systemGray5.cgColor
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
         return view
     }()
     
@@ -56,6 +58,7 @@ class ConversationViewController: UIViewController {
         let field = UITextField()
         field.placeholder = "Type message"
         field.tintColor = themeService?.currentTheme.incomingTextColor
+        field.backgroundColor = themeService?.currentTheme.backgroundColor
         return field
     }()
     
@@ -80,7 +83,7 @@ class ConversationViewController: UIViewController {
         return navBar
     }()
     
-    private lazy var conversationLogo: UIImageView = {
+    private lazy var channelLogo: UIImageView = {
         let view = UIImageView(frame: CGRect(origin: .zero, size: .init(width: UIConstants.avatarSize, height: UIConstants.avatarSize)))
         view.layer.cornerRadius = UIConstants.avatarSize / 2
         view.clipsToBounds = true
@@ -88,7 +91,7 @@ class ConversationViewController: UIViewController {
         return view
     }()
     
-    private lazy var conversationName: UILabel = {
+    private lazy var channelName: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 13)
         label.textColor = themeService?.currentTheme.textColor
@@ -102,6 +105,8 @@ class ConversationViewController: UIViewController {
         button.addTarget(self, action: #selector(popToRoot), for: .touchUpInside)
         return button
     }()
+    
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     
     // MARK: - Initialization
     
@@ -119,9 +124,10 @@ class ConversationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        setupDataSource()
         setTableView()
+        setupDataSource()
         setGesture()
+        activityIndicator.startAnimating()
         sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(showKeyboard),
@@ -134,6 +140,7 @@ class ConversationViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
+        
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService?.currentTheme.backgroundColor
         view.backgroundColor = themeService?.currentTheme.backgroundColor
@@ -152,19 +159,30 @@ class ConversationViewController: UIViewController {
         dataSource = UITableViewDiffableDataSource(tableView: tableView, cellProvider: { [weak self] tableView, _, itemIdentifier in
             switch itemIdentifier.myMessage {
             case true:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingConversationViewCell.identifier) as? OutgoingConversationViewCell,
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingChannelViewCell.identifier) as? OutgoingChannelViewCell,
                       let themeService = self?.themeService
                 else {return UITableViewCell()}
                 cell.configureTheme(theme: themeService)
                 cell.configure(with: itemIdentifier)
                 return cell
             case false:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingConversationViewCell.identifier) as? IncomingConversationViewCell,
-                      let themeService = self?.themeService
-                else {return UITableViewCell()}
-                cell.configureTheme(theme: themeService)
-                cell.configure(with: itemIdentifier)
-                return cell
+                switch itemIdentifier.isSameUser {
+                case true:
+                    guard let cell = tableView.dequeueReusableCell(withIdentifier: SameIncomingChannelViewCell.identifier) as? SameIncomingChannelViewCell,
+                          let themeService = self?.themeService
+                    else {return UITableViewCell()}
+                    cell.configureTheme(theme: themeService)
+                    cell.configure(with: itemIdentifier)
+                    return cell
+                case false:
+                    guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier) as? IncomingChannelViewCell,
+                          let themeService = self?.themeService
+                    else {return UITableViewCell()}
+                    cell.configureTheme(theme: themeService)
+                    cell.configure(with: itemIdentifier)
+                    return cell
+                }
+                
             }
         })
     }
@@ -201,6 +219,7 @@ class ConversationViewController: UIViewController {
     }
     
     private func scrollToLastRow() {
+        
         if !messages.isEmpty {
             let lastSectionNumber = tableView.numberOfSections - 1
             let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
@@ -227,6 +246,7 @@ class ConversationViewController: UIViewController {
         let height = viewYMax - safeAreaYMax
         let offset = keyboardHeight - height
         additionalSafeAreaInsets.bottom = offset
+        view.layoutIfNeeded()
         scrollToLastRow()
     }
     
@@ -250,11 +270,12 @@ class ConversationViewController: UIViewController {
     private func setTableView() {
         view.addSubview(tableView)
         view.addSubview(textFieldView)
+        view.addSubview(activityIndicator)
         textFieldView.addSubview(textField)
         textFieldView.addSubview(sendButton)
         view.addSubview(customNavBar)
-        customNavBar.addSubview(conversationLogo)
-        customNavBar.addSubview(conversationName)
+        customNavBar.addSubview(channelLogo)
+        customNavBar.addSubview(channelName)
         customNavBar.addSubview(backButton)
         
         textFieldView.translatesAutoresizingMaskIntoConstraints = false
@@ -262,9 +283,10 @@ class ConversationViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         customNavBar.translatesAutoresizingMaskIntoConstraints = false
-        conversationLogo.translatesAutoresizingMaskIntoConstraints = false
-        conversationName.translatesAutoresizingMaskIntoConstraints = false
+        channelLogo.translatesAutoresizingMaskIntoConstraints = false
+        channelName.translatesAutoresizingMaskIntoConstraints = false
         backButton.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             tableView.bottomAnchor.constraint(equalTo: textFieldView.topAnchor),
@@ -292,23 +314,27 @@ class ConversationViewController: UIViewController {
             customNavBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             customNavBar.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.16),
             
-            conversationLogo.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
-            conversationLogo.bottomAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: -30),
-            conversationLogo.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
-            conversationLogo.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
+            channelLogo.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
+            channelLogo.bottomAnchor.constraint(equalTo: customNavBar.bottomAnchor, constant: -30),
+            channelLogo.heightAnchor.constraint(equalToConstant: UIConstants.avatarSize),
+            channelLogo.widthAnchor.constraint(equalToConstant: UIConstants.avatarSize),
             
-            conversationName.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
-            conversationName.topAnchor.constraint(equalTo: conversationLogo.bottomAnchor, constant: 5),
+            channelName.centerXAnchor.constraint(equalTo: customNavBar.centerXAnchor),
+            channelName.topAnchor.constraint(equalTo: channelLogo.bottomAnchor, constant: 5),
             
             backButton.centerYAnchor.constraint(equalTo: customNavBar.centerYAnchor, constant: 10),
-            backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18)
+            backButton.leadingAnchor.constraint(equalTo: customNavBar.leadingAnchor, constant: 18),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
 }
 
-// MARK: - ConversationViewController + UITableViewDelegate
+// MARK: - ChannelViewController + UITableViewDelegate
 
-extension ConversationViewController: UITableViewDelegate {
+extension ChannelViewController: UITableViewDelegate {
+    
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let title = UILabel()
         let blur = UIBlurEffect(style: .regular)
@@ -331,16 +357,17 @@ extension ConversationViewController: UITableViewDelegate {
     }
 }
 
-// MARK: - ConversationViewController + ConversationViewProtocol
+// MARK: - ChannelViewController + ChannelViewProtocol
 
-extension ConversationViewController: ConversationViewProtocol {
-    func showConversation(channel: ChannelModel) {
+extension ChannelViewController: ChannelViewProtocol {
+    func showChannel(channel: ChannelModel) {
         setupSnapshot()
-        conversationName.text = channel.channelName
-        conversationLogo.image = channel.channelImage
+        channelName.text = channel.name
+        channelLogo.image = channel.channelImage
+        activityIndicator.stopAnimating()
     }
     
-    func addMessage(message: MessageCellModel) {
+    func addMessage(message: MessageModel) {
         guard let dataSource = dataSource else { return }
         var snapshot = dataSource.snapshot()
         if snapshot.numberOfSections == 0 {

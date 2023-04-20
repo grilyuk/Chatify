@@ -2,10 +2,13 @@ import UIKit
 import Combine
 
 protocol DataManagerProtocol: AnyObject {
+    
     var currentProfile: CurrentValueSubject<ProfileModel, Never> { get set }
     var userId: String { get }
+    
     func readProfilePublisher() -> AnyPublisher<Data, Error>
     func writeProfilePublisher(profile: ProfileModel) -> AnyPublisher<ProfileModel, Error>
+    func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
 }
 
 class DataManager: DataManagerProtocol {
@@ -56,6 +59,48 @@ class DataManager: DataManagerProtocol {
         .eraseToAnyPublisher()
     }
     
+    // MARK: - Public methods
+    
+    func getChannelImage(for channel: ChannelNetworkModel) -> UIImage {
+        
+        let placeholder = UIImage.channelPlaceholder
+        
+        if checkPath(fileName: channel.id) {
+            do {
+                let path = try fileManager.url(for: .documentDirectory,
+                                                in: .userDomainMask,
+                                                appropriateFor: nil,
+                                                create: false)
+                    .appendingPathComponent(channel.id)
+                let imageData = try Data(contentsOf: path)
+                
+                return UIImage(data: imageData) ?? placeholder
+            } catch {
+                print(error.localizedDescription)
+                
+                return placeholder
+            }
+        } else {
+            
+            guard
+                let stringURL = channel.logoURL,
+                let url = URL(string: stringURL)
+            else {
+                
+                return placeholder
+            }
+            
+            do {
+                let imageData = try Data(contentsOf: url)
+                saveImageData(for: channel.id, data: imageData)
+                return UIImage(data: imageData) ?? placeholder
+            } catch {
+                print(error)
+                return placeholder
+            }
+        }
+    }
+    
     // MARK: - Private methods
     
     private func readUserID(fileName: String) -> String {
@@ -70,7 +115,8 @@ class DataManager: DataManagerProtocol {
                 print(CustomError(description: "Error decoding userID"))
             }
         } else {
-            let userId = UUID().uuidString
+            guard let deviceId = UIDevice.current.identifierForVendor else { return "" }
+            let userId = deviceId.uuidString
             do {
                 let userIdData = try JSONEncoder().encode(userId)
                 try userIdData.write(to: fileURL)
@@ -109,5 +155,23 @@ class DataManager: DataManagerProtocol {
             return ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
         }
         return profileData
+    }
+    
+    private func saveImageData(for id: String, data: Data) {
+        guard
+            let fileURL = try? fileManager.url(for: .documentDirectory,
+                                                 in: .userDomainMask,
+                                                 appropriateFor: nil,
+                                                 create: false)
+            .appendingPathComponent(id)
+        else {
+            return
+        }
+        
+        do {
+            try data.write(to: fileURL)
+        } catch {
+            print(error)
+        }
     }
 }

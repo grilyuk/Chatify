@@ -5,7 +5,7 @@ protocol ConfigurableViewProtocol {
     func configure(with model: ConfigurationModel)
 }
 
-class ConversationListCell: UITableViewCell {
+class ChannelListCell: UITableViewCell {
     static let identifier = "conListCell"
 
     // MARK: - UIConstants
@@ -168,8 +168,8 @@ class ConversationListCell: UITableViewCell {
 
 // MARK: - ConverstionListCell + ConfigurableViewProtocol
 
-extension ConversationListCell: ConfigurableViewProtocol {
-    func configure(with model: ConversationListModel) {
+extension ChannelListCell: ConfigurableViewProtocol {
+    func configure(with model: ChannelModel) {
         if model.message == nil {
             dateLabel.text = nil
             lastMessageText.font = .italicSystemFont(ofSize: UIConstants.lastMessageFontSize)
@@ -191,7 +191,15 @@ extension ConversationListCell: ConfigurableViewProtocol {
         
         userAvatar.image = model.channelImage
         
-        nameLabel.text = model.name
+        let trimmedNameLabel = model.name?.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        if trimmedNameLabel == "" {
+            nameLabel.text = "No name channel"
+            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .light)
+        } else {
+            nameLabel.text = model.name
+            nameLabel.font = .systemFont(ofSize: UIConstants.nameLabelFontSize, weight: .semibold)
+        }
         
         guard let date = model.date else { return }
         let nowDate = Date()

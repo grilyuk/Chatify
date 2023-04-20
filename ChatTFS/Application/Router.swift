@@ -2,32 +2,29 @@ import UIKit
 import TFSChatTransport
 
 protocol RouterMain: AnyObject {
-    var navigationController: UINavigationController? {get set}
     var moduleBuilder: ModuleBuilderProtocol? {get set}
 }
 
 protocol RouterProtocol: RouterMain {
-    func showConversation(conversation: String, navigationController: UINavigationController)
+    func showChannel(channel: String, navigationController: UINavigationController)
 }
 
 class Router: RouterProtocol {
     
     // MARK: - Public
     
-    weak var navigationController: UINavigationController?
     var moduleBuilder: ModuleBuilderProtocol?
     
     // MARK: - Init
     
-    init(navigationController: UINavigationController, moduleBuilder: ModuleBuilderProtocol) {
-        self.navigationController = navigationController
+    init(moduleBuilder: ModuleBuilderProtocol) {
         self.moduleBuilder = moduleBuilder
     }
     
     // MARK: - Methods
     
-    func showConversation(conversation: String, navigationController: UINavigationController) {
-        guard let conversationViewController = moduleBuilder?.buildConversation(router: self, conversation: conversation) else { return }
-        navigationController.pushViewController(conversationViewController, animated: true)
+    func showChannel(channel: String, navigationController: UINavigationController) {
+        guard let channelViewController = moduleBuilder?.buildChannel(router: self, channel: channel) else { return }
+        navigationController.pushViewController(channelViewController, animated: true)
     }
 }
