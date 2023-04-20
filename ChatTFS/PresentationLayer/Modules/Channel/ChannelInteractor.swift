@@ -4,23 +4,33 @@ import TFSChatTransport
 
 protocol ChannelInteractorProtocol: AnyObject {
     var handler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)? { get set }
+    var userName: String { get set }
+    var userID: String { get set }
     func loadData()
     func createMessage(messageText: String, userID: String, userName: String)
+    func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
 }
 
 class ChannelInteractor: ChannelInteractorProtocol {
     
-    init(chatService: ChatServiceProtocol, channelID: String, coreDataService: CoreDataServiceProtocol) {
+    init(chatService: ChatServiceProtocol,
+         channelID: String,
+         coreDataService: CoreDataServiceProtocol,
+         dataManager: FileManagerServiceProtocol) {
+        
         self.chatService = chatService
         self.channelID = channelID
         self.coreDataService = coreDataService
         self.DBChannel = coreDataService.getDBChannel(channel: channelID)
+        self.dataManager = dataManager
     }
     
     // MARK: - Public properties
     
     weak var presenter: ChannelPresenterProtocol?
     var handler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)?
+    var userName = ""
+    var userID = ""
     
     // MARK: - Private properties
     
@@ -28,6 +38,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
     private let coreDataService: CoreDataServiceProtocol
     private let DBChannel: ChannelNetworkModel
     private var channelID: String
+    private let dataManager: FileManagerServiceProtocol
     private var cacheMessages: [MessageNetworkModel] = []
     private var networkMessages: [MessageNetworkModel] = []
     
@@ -42,8 +53,21 @@ class ChannelInteractor: ChannelInteractorProtocol {
             self?.networkMessages = []
         }
         
-        loadFromCoreData(channel: channelID)
-        loadFromNetwork(channel: channelID)
+        dataManager.readProfilePublisher()
+            .subscribe(on: DispatchQueue.global())
+            .receive(on: DispatchQueue.main)
+            .decode(type: ProfileModel.self, decoder: JSONDecoder())
+            .catch({_ in
+                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))
+            })
+            .sink(receiveValue: { [weak self] profile in
+                self?.userName = profile.fullName ?? ""
+                self?.userID = self?.dataManager.userId ?? ""
+            })
+            .cancel()
+                    
+            loadFromCoreData(channel: channelID)
+            loadFromNetwork(channel: channelID)
     }
     
     func createMessage(messageText: String, userID: String, userName: String) {
@@ -59,6 +83,10 @@ class ChannelInteractor: ChannelInteractorProtocol {
             self.presenter?.uploadMessage(messageModel: message)
         })
         .cancel()
+    }
+    
+    func getChannelImage(for channel: ChannelNetworkModel) -> UIImage {
+        dataManager.getChannelImage(for: channel)
     }
     
     // MARK: - Private methods
@@ -90,9 +118,9 @@ class ChannelInteractor: ChannelInteractorProtocol {
         
         let cacheMessagesIDs = cacheMessages.map { $0.id }
         let networkMessagesIDs = networkMessages.map { $0.id }
-
+        
         let newMessages = networkMessagesIDs.filter { !(cacheMessagesIDs.contains($0)) }
-
+        
         for newMessage in newMessages {
             self.coreDataService.saveMessagesForChannel(for: self.channelID,
                                                         messages: networkMessages.filter({ $0.id == newMessage }))

@@ -40,7 +40,8 @@ final class ChatTFSService: ChatServiceProtocol {
     }
     
     func createChannel(channelName: String) -> AnyPublisher<ChannelNetworkModel, Error> {
-        return chatTFS.chatServer.createChannel(name: channelName)
+        return chatTFS.chatServer.createChannel(name: channelName,
+                                                logoUrl: "https://source.unsplash.com/random/300x300")
             .subscribe(on: backgroundQueue)
             .receive(on: mainQueue)
             .map({ channel in

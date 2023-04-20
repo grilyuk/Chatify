@@ -131,40 +131,37 @@ class ThemesViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
     }
     
-    @objc
-    private func tappedDayButton(_ sender: UIButton) {
-        let lightTheme = Theme.light
-        themeHandler?(lightTheme)
+    private func changeTheme(to theme: Theme, _ sender: UIButton) {
+        themeHandler?(theme)
         sender.isSelected = true
         sender.imageView?.tintColor = .systemBlue
+        let navBarStyle = UINavigationBarAppearance()
+        navBarStyle.backgroundColor = theme.backgroundColor
+        navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: theme.textColor ]
+        navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: theme.textColor ]
+        changeNavBar(appearance: navBarStyle)
+        switch theme {
+        case .light:
+            UIApplication.shared.windows[0].overrideUserInterfaceStyle = .light
+        case .dark:
+            UIApplication.shared.windows[0].overrideUserInterfaceStyle = .dark
+        }
+        tabBarController?.tabBar.barTintColor = theme.backgroundColor
+        navigationController?.navigationBar.backgroundColor = theme.backgroundColor
+    }
+    
+    @objc
+    private func tappedDayButton(_ sender: UIButton) {
+        changeTheme(to: .light, sender)
         nightTickButton.isSelected = false
         nightTickButton.imageView?.tintColor = .gray
-        let navBarStyle = UINavigationBarAppearance()
-        navBarStyle.backgroundColor = lightTheme.backgroundColor
-        navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
-        navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: lightTheme.textColor ]
-        changeNavBar(appearance: navBarStyle)
-        UIApplication.shared.windows[0].overrideUserInterfaceStyle = .light
-        tabBarController?.tabBar.barTintColor = lightTheme.backgroundColor
-        navigationController?.navigationBar.backgroundColor = lightTheme.backgroundColor
     }
     
     @objc
     private func tappedNightButton(_ sender: UIButton) {
-        let darkTheme = Theme.dark
-        themeHandler?(darkTheme)
-        sender.isSelected = true
-        sender.imageView?.tintColor = .systemBlue
+        changeTheme(to: .dark, sender)
         dayTickButton.isSelected = false
         dayTickButton.imageView?.tintColor = .gray
-        let navBarStyle = UINavigationBarAppearance()
-        navBarStyle.backgroundColor = darkTheme.backgroundColor
-        navBarStyle.titleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
-        navBarStyle.largeTitleTextAttributes = [ NSAttributedString.Key.foregroundColor: darkTheme.textColor ]
-        changeNavBar(appearance: navBarStyle)
-        UIApplication.shared.windows[0].overrideUserInterfaceStyle = .dark
-        tabBarController?.tabBar.barTintColor = darkTheme.backgroundColor
-        navigationController?.navigationBar.backgroundColor = darkTheme.backgroundColor
     }
     
     private func changeNavBar(appearance: UINavigationBarAppearance) {

@@ -40,24 +40,4 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, MessageModel> {
             }
         }
     }
-    
-    public func reload(messages: [MessageModel]) {
-        var snapshot = snapshot()
-        snapshot.deleteAllItems()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy"
-        
-        let groupedMessages = Dictionary(grouping: messages, by: { Calendar.current.startOfDay(for: $0.date) })
-        let sortedDates = groupedMessages.keys.sorted()
-        
-        for date in sortedDates {
-            var messages = groupedMessages[date] ?? []
-//            titlesSections.append(formatter.string(from: date))
-            messages.sort { $0.date < $1.date }
-            snapshot.appendSections([date])
-            snapshot.appendItems(messages)
-        }
-        apply(snapshot)
-    }
-    
 }

@@ -2,7 +2,6 @@ import UIKit
 import Combine
 
 protocol FileManagerServiceProtocol: AnyObject {
-    
     var currentProfile: CurrentValueSubject<ProfileModel, Never> { get set }
     var userId: String { get }
     
@@ -136,7 +135,7 @@ final class FileManagerService: FileManagerServiceProtocol {
     private func checkPath(fileName: String) -> Bool {
         let filePath = fileManagerStack.documentDirectory
             .appendingPathComponent(fileName).path
-        return FileManager.default.fileExists(atPath: filePath) ? true : false
+        return fileManagerStack.fileManager.fileExists(atPath: filePath) ? true : false
     }
     
     private func readData(fileName: String) throws -> Data {

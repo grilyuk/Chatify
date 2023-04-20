@@ -37,7 +37,7 @@ class ChannelViewController: UIViewController {
     
     // MARK: - Private
     
-    private var dataSource: UITableViewDiffableDataSource<Date, MessageModel>
+    private var dataSource: ChannelDataSource
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -325,7 +325,6 @@ extension ChannelViewController: UITableViewDelegate {
 
 extension ChannelViewController: ChannelViewProtocol {
     func showChannel(channel: ChannelModel) {
-        
         setupSnapshot()
         channelName.text = channel.name
         channelLogo.image = channel.channelImage

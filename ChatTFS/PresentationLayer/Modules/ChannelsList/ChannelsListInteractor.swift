@@ -5,15 +5,17 @@ protocol ChannelsListInteractorProtocol: AnyObject {
     func loadData()
     func createChannel(channelName: String)
     func deleteChannel(id: String)
+    func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
 }
 
 final class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     // MARK: - Initialization
     
-    init(chatService: ChatServiceProtocol, coreDataService: CoreDataServiceProtocol) {
+    init(chatService: ChatServiceProtocol, coreDataService: CoreDataServiceProtocol, dataManager: FileManagerServiceProtocol) {
         self.chatService = chatService
         self.coreDataService = coreDataService
+        self.dataManager = dataManager
     }
     
     // MARK: - Public properties
@@ -24,6 +26,7 @@ final class ChannelsListInteractor: ChannelsListInteractorProtocol {
     
     private var chatService: ChatServiceProtocol
     private var coreDataService: CoreDataServiceProtocol
+    private var dataManager: FileManagerServiceProtocol
     private var handler: (([ChannelNetworkModel]) -> Void)?
     private var cacheChannels: [ChannelNetworkModel] = []
     private var networkChannels: [ChannelNetworkModel] = []
@@ -67,6 +70,10 @@ final class ChannelsListInteractor: ChannelsListInteractorProtocol {
             }, receiveValue: { _ in
             })
             .cancel()
+    }
+    
+    func getChannelImage(for channel: ChannelNetworkModel) -> UIImage {
+        dataManager.getChannelImage(for: channel)
     }
     
     // MARK: - Private methods

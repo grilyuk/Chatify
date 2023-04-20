@@ -32,9 +32,8 @@ class ChannelsListPresenter {
     
     // MARK: - Initialization
     
-    init(interactor: ChannelsListInteractorProtocol, dataManager: FileManagerServiceProtocol) {
+    init(interactor: ChannelsListInteractorProtocol) {
         self.interactor = interactor
-        self.dataManager = dataManager
     }
 }
 
@@ -58,12 +57,13 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
         }
         
         DispatchQueue.global(qos: .background).async { [weak self] in
-            self?.dataChannels?.forEach({ dataChannel in
+            guard let self
+            else {
+                return
+            }
+            self.dataChannels?.forEach({ dataChannel in
                 
-                guard let dataManager = self?.dataManager as? FileManagerService else {
-                    return
-                }
-                let channelLogo: UIImage = dataManager.getChannelImage(for: dataChannel) 
+                let channelLogo: UIImage = self.interactor.getChannelImage(for: dataChannel)
                 
                 if dataChannel.lastMessage == nil {
                     channels.append(ChannelModel(channelImage: channelLogo,
@@ -105,8 +105,12 @@ extension ChannelsListPresenter: ChannelsListPresenterProtocol {
     
     func addChannel(channel: ChannelNetworkModel) {
         DispatchQueue.global().async { [weak self] in
-            let channelImage = self?.dataManager?.getChannelImage(for: channel)
-            let channelModel = ChannelModel(channelImage: channelImage ?? UIImage(),
+            guard let self
+            else {
+                return
+            }
+            let channelImage = self.interactor.getChannelImage(for: channel)
+            let channelModel = ChannelModel(channelImage: channelImage,
                                             name: channel.name,
                                             message: channel.lastMessage,
                                             date: channel.lastActivity,

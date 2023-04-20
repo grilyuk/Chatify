@@ -22,10 +22,7 @@ final class ServiceAssembly: ServiceAssemblyProtocol {
     // MARK: - Public properties
     
     lazy var coreDataService: CoreDataServiceProtocol = CoreDataService(coreDataStack: coreAssembly.coreDataStack)
-    
-    lazy var fileManagerService: FileManagerServiceProtocol = FileManagerService(fileManagerStack: coreAssembly.fileManagerStack)
-    
     lazy var themeService: ThemeServiceProtocol = ThemeService()
-    
     lazy var chatService: ChatServiceProtocol = ChatTFSService(chatTFS: coreAssembly.chatTFS)
+    lazy var fileManagerService: FileManagerServiceProtocol = FileManagerService(fileManagerStack: coreAssembly.fileManagerStack)
 }

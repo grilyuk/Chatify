@@ -32,8 +32,10 @@ class ModuleBuilder: ModuleBuilderProtocol {
     // MARK: - Public Methods
     
     func buildChannelsList() -> UINavigationController {
-        let interactor = ChannelsListInteractor(chatService: chatService, coreDataService: coreDataService)
-        let presenter = ChannelsListPresenter(interactor: interactor, dataManager: dataManager)
+        let interactor = ChannelsListInteractor(chatService: chatService,
+                                                coreDataService: coreDataService,
+                                                dataManager: dataManager)
+        let presenter = ChannelsListPresenter(interactor: interactor)
         let view = ChannelsListViewController(themeService: themeService)
         view.presenter = presenter
         interactor.presenter = presenter
@@ -46,8 +48,9 @@ class ModuleBuilder: ModuleBuilderProtocol {
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController {
         let interactor = ChannelInteractor(chatService: chatService,
                                            channelID: channel,
-                                           coreDataService: coreDataService)
-        let presenter = ChannelPresenter(router: router, interactor: interactor, dataManager: dataManager)
+                                           coreDataService: coreDataService,
+                                           dataManager: dataManager)
+        let presenter = ChannelPresenter(router: router, interactor: interactor)
         let view = ChannelViewController(themeService: themeService)
         view.presenter = presenter
         interactor.presenter = presenter

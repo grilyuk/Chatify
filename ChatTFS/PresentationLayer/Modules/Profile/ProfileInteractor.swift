@@ -17,13 +17,11 @@ class ProfileInteractor: ProfileInteractorProtocol {
     // MARK: - Public
     
     weak var presenter: ProfilePresenterProtocol?
-    weak var dataManager: FileManagerServiceProtocol?
     
     // MARK: - Private
     
     private var handler: ((ProfileModel) -> Void)?
-    private var dataRequest: Cancellable?
-//    private let profileDataService: ProfileDataServiceProtocol
+    private var dataManager: FileManagerServiceProtocol
 
     // MARK: - Methods
     
@@ -32,23 +30,23 @@ class ProfileInteractor: ProfileInteractorProtocol {
         handler = { [weak self] profile in
             self?.presenter?.profile = profile
             self?.presenter?.dataUploaded()
-            self?.dataRequest?.cancel()
         }
         
-        dataRequest = dataManager?.readProfilePublisher()
+        dataManager.readProfilePublisher()
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
             .catch({_ in
                 Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
-            .sink(receiveValue: { [weak self] profile in
-                self?.dataManager?.currentProfile.send(profile)
-                self?.handler?(profile)
-            })
+                .sink(receiveValue: { [weak self] profile in
+                    self?.dataManager.currentProfile.send(profile)
+                    self?.handler?(profile)
+                })
+                    .cancel()
     }
     
     func updateData(profile: ProfileModel) {
-        dataRequest = dataManager?.writeProfilePublisher(profile: profile)
+        dataManager.writeProfilePublisher(profile: profile)
             .subscribe(on: DispatchQueue.global())
             .receive(on: DispatchQueue.main)
             .encode(encoder: JSONEncoder())
@@ -64,11 +62,12 @@ class ProfileInteractor: ProfileInteractorProtocol {
             }, receiveValue: { [weak self] result in
                 switch result {
                 case true:
-                    self?.dataManager?.currentProfile.send(profile)
+                    self?.dataManager.currentProfile.send(profile)
                     self?.presenter?.dataUploaded()
                 case false:
                     break
                 }
             })
+            .cancel()
     }
 }

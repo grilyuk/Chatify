@@ -3,7 +3,6 @@ import TFSChatTransport
 import Combine
 
 protocol ChannelPresenterProtocol: AnyObject {
-    
     var handler: ((ChannelModel, [MessageModel]) -> Void)? { get set }
     var messagesData: [MessageNetworkModel]? { get set }
     var channelData: ChannelNetworkModel? { get set }
@@ -26,19 +25,15 @@ class ChannelPresenter {
     var handler: ((ChannelModel, [MessageModel]) -> Void)?
     
     // MARK: - Private properties
-    
-    var dataManager: FileManagerServiceProtocol
-    private var userDataRequest: Cancellable?
-    private var userID: String
+
+    private var userID: String?
     private var userName: String?
     
     // MARK: - Initialization
     
-    init(router: RouterProtocol, interactor: ChannelInteractorProtocol, dataManager: FileManagerServiceProtocol) {
+    init(router: RouterProtocol, interactor: ChannelInteractorProtocol) {
         self.router = router
         self.interactor = interactor
-        self.dataManager = dataManager
-        self.userID = dataManager.userId
     }
 }
 
@@ -49,22 +44,13 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     // MARK: - Methods
 
     func viewReady() {
-
-        userDataRequest = dataManager.readProfilePublisher()
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
-            .decode(type: ProfileModel.self, decoder: JSONDecoder())
-            .catch({_ in
-                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))
-            })
-            .sink(receiveValue: { [weak self] profile in
-                self?.userName = profile.fullName
-            })
-                    
         interactor.loadData()
     }
     
     func dataUploaded() {
+        
+        self.userName = interactor.userName
+        self.userID = interactor.userID
         
         handler = { [weak self] channel, messages in
             self?.view?.messages = messages
@@ -105,7 +91,7 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                 return
             }
             
-            let channelImage: UIImage = self?.dataManager.getChannelImage(for: channelData) ?? UIImage()
+            let channelImage: UIImage = self?.interactor.getChannelImage(for: channelData) ?? UIImage()
             
             let channel = ChannelModel(channelImage: channelImage,
                                        name: channelData.name,
@@ -125,7 +111,8 @@ extension ChannelPresenter: ChannelPresenterProtocol {
         if messageText != nil && messageText != "" {
             guard
                 let userName,
-                let messageText
+                let messageText,
+                let userID
             else {
                 return
             }
