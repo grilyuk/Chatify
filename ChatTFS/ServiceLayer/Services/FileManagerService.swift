@@ -13,6 +13,12 @@ protocol FileManagerServiceProtocol: AnyObject {
 
 class FileManagerService: FileManagerServiceProtocol {
     
+    // MARK: - Initialization
+    
+    init(fileManagerStack: FileManagerStackProtocol) {
+        self.fileManagerStack = fileManagerStack
+    }
+
     static var defaultProfile = ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
     var currentProfile = CurrentValueSubject<ProfileModel, Never>(defaultProfile)
     var userId: String {
@@ -21,7 +27,7 @@ class FileManagerService: FileManagerServiceProtocol {
     
     // MARK: - Private properties
     
-    private let fileManager = FileManager.default
+    private let fileManagerStack: FileManagerStackProtocol
     static let profileFileName = "profileData.json"
     static let userIdFileName = "userId.json"
     
@@ -67,10 +73,7 @@ class FileManagerService: FileManagerServiceProtocol {
         
         if checkPath(fileName: channel.id) {
             do {
-                let path = try fileManager.url(for: .documentDirectory,
-                                                in: .userDomainMask,
-                                                appropriateFor: nil,
-                                                create: false)
+                let path = fileManagerStack.documentDirectory
                     .appendingPathComponent(channel.id)
                 let imageData = try Data(contentsOf: path)
                 
@@ -104,8 +107,8 @@ class FileManagerService: FileManagerServiceProtocol {
     // MARK: - Private methods
     
     private func readUserID(fileName: String) -> String {
-        guard let fileURL = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-            .appendingPathComponent(fileName) else { return "" }
+        let fileURL = fileManagerStack.documentDirectory
+            .appendingPathComponent(fileName)
         if checkPath(fileName: fileName) {
             do {
                 let jsonData = try Data(contentsOf: fileURL)
@@ -129,18 +132,15 @@ class FileManagerService: FileManagerServiceProtocol {
     }
     
     private func checkPath(fileName: String) -> Bool {
-        guard let filePath = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
+        let filePath = fileManagerStack.documentDirectory
             .appendingPathComponent(fileName).path
-        else {
-            return false
-        }
         return FileManager.default.fileExists(atPath: filePath) ? true : false
     }
     
     private func readData(fileName: String) throws -> Data {
-        guard let fileURL = try? fileManager.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false)
-            .appendingPathComponent(fileName),
-              checkPath(fileName: fileName) == true,
+        let fileURL = fileManagerStack.documentDirectory
+            .appendingPathComponent(fileName)
+        guard checkPath(fileName: fileName) == true,
               let jsonData = try? Data(contentsOf: fileURL)
         else {
             throw CustomError(description: "readData failed")
@@ -158,15 +158,8 @@ class FileManagerService: FileManagerServiceProtocol {
     }
     
     private func saveImageData(for id: String, data: Data) {
-        guard
-            let fileURL = try? fileManager.url(for: .documentDirectory,
-                                                 in: .userDomainMask,
-                                                 appropriateFor: nil,
-                                                 create: false)
+        let fileURL = fileManagerStack.documentDirectory
             .appendingPathComponent(id)
-        else {
-            return
-        }
         
         do {
             try data.write(to: fileURL)

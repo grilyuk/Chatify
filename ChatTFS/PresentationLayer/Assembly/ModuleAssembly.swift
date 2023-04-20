@@ -24,7 +24,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     
     private lazy var themeService: ThemeServiceProtocol = serviceAssembly.themeService
     private lazy var router = Router(moduleBuilder: self)
-    private lazy var dataManager = FileManagerService()
+    private lazy var dataManager = serviceAssembly.fileManagerService
     private lazy var coreDataService = serviceAssembly.coreDataService
     private lazy var profilePublisher = dataManager.currentProfile
     private lazy var chatService = serviceAssembly.chatService

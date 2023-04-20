@@ -3,9 +3,9 @@ import Combine
 import TFSChatTransport
 
 protocol ChannelInteractorProtocol: AnyObject {
+    var handler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)? { get set }
     func loadData()
     func createMessage(messageText: String, userID: String, userName: String)
-    var handler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)? { get set }
 }
 
 class ChannelInteractor: ChannelInteractorProtocol {
@@ -71,8 +71,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
     
     private func loadFromNetwork(channel: String) {
         chatService.loadMessagesFrom(channelID: channel)
-            .sink { [weak self] result in
-                guard let self else { return }
+            .sink { result in
                 switch result {
                 case .finished:
                     break

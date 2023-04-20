@@ -4,7 +4,7 @@ protocol ServiceAssemblyProtocol: AnyObject {
     var coreDataService: CoreDataServiceProtocol { get }
     var themeService: ThemeServiceProtocol { get }
     var chatService: ChatServiceProtocol { get }
-//    var fileManagerService: FileManagerServiceProtocol { get }
+    var fileManagerService: FileManagerServiceProtocol { get }
 }
 
 final class ServiceAssembly: ServiceAssemblyProtocol {
@@ -23,7 +23,7 @@ final class ServiceAssembly: ServiceAssemblyProtocol {
     
     lazy var coreDataService: CoreDataServiceProtocol = CoreDataService(coreDataStack: coreAssembly.coreDataStack)
     
-//    lazy var fileManagerService: FileManagerServiceProtocol = FileManagerService(
+    lazy var fileManagerService: FileManagerServiceProtocol = FileManagerService(fileManagerStack: coreAssembly.fileManagerStack)
     
     lazy var themeService: ThemeServiceProtocol = ThemeService()
     
