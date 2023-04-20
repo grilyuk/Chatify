@@ -2,7 +2,6 @@ import UIKit
 import TFSChatTransport
 
 protocol ChannelsListPresenterProtocol: AnyObject {
-    
     var router: RouterProtocol? { get set }
     var profile: ProfileModel? { get set }
     var dataChannels: [ChannelNetworkModel]? { get set }

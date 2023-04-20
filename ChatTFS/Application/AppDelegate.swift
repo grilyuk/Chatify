@@ -20,7 +20,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        let moduleBuilder = ModuleBuilder(serviceAssembly: serviceAssembly)
+        let moduleBuilder = ModuleAssembly(serviceAssembly: serviceAssembly)
         let tabBarController = moduleBuilder.buildTabBarController()
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()

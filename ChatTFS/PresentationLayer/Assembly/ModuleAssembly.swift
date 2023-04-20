@@ -2,7 +2,7 @@ import Foundation
 import UIKit
 import TFSChatTransport
 
-protocol ModuleBuilderProtocol: AnyObject {
+protocol ModuleAssemblyProtocol: AnyObject {
     func buildChannelsList() -> UINavigationController
     func buildProfile() -> UINavigationController
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController
@@ -10,7 +10,7 @@ protocol ModuleBuilderProtocol: AnyObject {
     func buildTabBarController() -> UITabBarController
 }
 
-class ModuleBuilder: ModuleBuilderProtocol {
+class ModuleAssembly: ModuleAssemblyProtocol {
     
     // MARK: - Initialization
     
