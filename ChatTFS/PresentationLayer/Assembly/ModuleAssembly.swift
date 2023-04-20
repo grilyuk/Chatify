@@ -22,7 +22,7 @@ class ModuleBuilder: ModuleBuilderProtocol {
     
     private var serviceAssembly: ServiceAssemblyProtocol
     
-    private lazy var themeService: ThemeServiceProtocol = serviceAssembly.themeService
+    private lazy var themeService = serviceAssembly.themeService
     private lazy var router = Router(moduleBuilder: self)
     private lazy var dataManager = serviceAssembly.fileManagerService
     private lazy var coreDataService = serviceAssembly.coreDataService

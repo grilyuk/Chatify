@@ -23,6 +23,7 @@ class ProfileInteractor: ProfileInteractorProtocol {
     
     private var handler: ((ProfileModel) -> Void)?
     private var dataRequest: Cancellable?
+//    private let profileDataService: ProfileDataServiceProtocol
 
     // MARK: - Methods
     

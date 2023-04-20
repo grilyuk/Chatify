@@ -11,7 +11,7 @@ protocol FileManagerServiceProtocol: AnyObject {
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
 }
 
-class FileManagerService: FileManagerServiceProtocol {
+final class FileManagerService: FileManagerServiceProtocol {
     
     // MARK: - Initialization
     
@@ -19,6 +19,8 @@ class FileManagerService: FileManagerServiceProtocol {
         self.fileManagerStack = fileManagerStack
     }
 
+    // MARK: - Public properties
+    
     static var defaultProfile = ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
     var currentProfile = CurrentValueSubject<ProfileModel, Never>(defaultProfile)
     var userId: String {
@@ -160,7 +162,6 @@ class FileManagerService: FileManagerServiceProtocol {
     private func saveImageData(for id: String, data: Data) {
         let fileURL = fileManagerStack.documentDirectory
             .appendingPathComponent(id)
-        
         do {
             try data.write(to: fileURL)
         } catch {
