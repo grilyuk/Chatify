@@ -5,6 +5,7 @@ class ChooseSourceAlertController: UIAlertController {
     // MARK: - Properties
     
     weak var profileVC: ProfileViewProtocol?
+    weak var router: RouterProtocol?
     var photoPickerController: PhotoPickerController?
 
     // MARK: - Lifecycle
@@ -41,6 +42,14 @@ class ChooseSourceAlertController: UIAlertController {
             profileVC.present(photoPickerController, animated: true) {
                 photoPickerController.profileVC = self?.profileVC
             }
+        })
+        
+        addAction(UIAlertAction(title: "Загрузить", style: .default) { [weak self] _ in
+            guard let profileVC = self?.profileVC as? ProfileViewProtocol
+            else {
+                return
+            }
+            profileVC.showNetworkImages()
         })
 
         addAction(UIAlertAction(title: "Отмена", style: .cancel))

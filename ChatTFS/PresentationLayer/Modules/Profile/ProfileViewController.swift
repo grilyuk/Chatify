@@ -4,6 +4,7 @@ import Combine
 protocol ProfileViewProtocol: AnyObject {
     var profilePhoto: UIImageView { get set }
     func showProfile()
+    func showNetworkImages()
 }
 
 class ProfileViewController: UIViewController {
@@ -71,7 +72,6 @@ class ProfileViewController: UIViewController {
     
     private var profilePublisher: CurrentValueSubject<ProfileModel, Never>
     private var profileRequest: Cancellable?
-    private lazy var chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
     private lazy var placeholderImage = UIImage(systemName: "person.fill")?
         .scalePreservingAspectRatio(targetSize: CGSize(width: 100, height: 100)).withTintColor(.gray)
     private lazy var okAction = UIAlertAction(title: "OK", style: .default)
@@ -296,8 +296,10 @@ class ProfileViewController: UIViewController {
     @objc
     private func addPhotoTapped() {
         editableMode()
+        let chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         tabBarController?.present(chooseSourceAlert, animated: true) {
-            self.chooseSourceAlert.profileVC = self
+            chooseSourceAlert.profileVC = self
+            chooseSourceAlert.router = self.presenter?.router
         }
     }
     
@@ -351,6 +353,7 @@ class ProfileViewController: UIViewController {
 // MARK: - ProfileViewController + ProfileViewProtocol
 
 extension ProfileViewController: ProfileViewProtocol {
+    
     func showProfile() {
         profileRequest = profilePublisher
             .map({ [weak self] profile in
@@ -363,5 +366,9 @@ extension ProfileViewController: ProfileViewProtocol {
                 }
             })
             .assign(to: \.state, on: self)
+    }
+    
+    func showNetworkImages() {
+        presenter?.showNetworkImages(navigationController: self.navigationController ?? UINavigationController())
     }
 }

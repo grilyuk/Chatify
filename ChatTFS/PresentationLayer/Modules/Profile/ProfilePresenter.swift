@@ -4,7 +4,9 @@ protocol ProfilePresenterProtocol: AnyObject {
     func viewReady()
     func dataUploaded()
     func updateProfile(profile: ProfileModel)
+    func showNetworkImages(navigationController: UINavigationController)
     var profile: ProfileModel? { get set }
+    var router: RouterProtocol { get }
 }
 
 class ProfilePresenter {
@@ -12,12 +14,14 @@ class ProfilePresenter {
     // MARK: - Properties
     
     weak var view: ProfileViewProtocol?
+    let router: RouterProtocol
     let interactor: ProfileInteractorProtocol
     var profile: ProfileModel?
 
     // MARK: - Initialization
     
-    init(interactor: ProfileInteractorProtocol) {
+    init(interactor: ProfileInteractorProtocol, router: RouterProtocol) {
+        self.router = router
         self.interactor = interactor
     }
 }
@@ -35,5 +39,9 @@ extension ProfilePresenter: ProfilePresenterProtocol {
     
     func updateProfile(profile: ProfileModel) {
         interactor.updateData(profile: profile)
+    }
+    
+    func showNetworkImages(navigationController: UINavigationController) {
+        router.showNetworkImages(navigationController: navigationController)
     }
 }

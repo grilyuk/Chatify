@@ -8,6 +8,7 @@ protocol ModuleAssemblyProtocol: AnyObject {
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController
     func buildThemePicker() -> UINavigationController
     func buildTabBarController() -> UITabBarController
+    func buildNetworkImages(router: RouterProtocol) -> NetworkImagesViewController
 }
 
 class ModuleAssembly: ModuleAssemblyProtocol {
@@ -22,8 +23,8 @@ class ModuleAssembly: ModuleAssemblyProtocol {
     
     private var serviceAssembly: ServiceAssemblyProtocol
     
-    private lazy var themeService = serviceAssembly.themeService
     private lazy var router = Router(moduleBuilder: self)
+    private lazy var themeService = serviceAssembly.themeService
     private lazy var dataManager = serviceAssembly.fileManagerService
     private lazy var coreDataService = serviceAssembly.coreDataService
     private lazy var profilePublisher = dataManager.currentProfile
@@ -60,7 +61,7 @@ class ModuleAssembly: ModuleAssemblyProtocol {
     
     func buildProfile() -> UINavigationController {
         let interactor = ProfileInteractor(dataManager: dataManager)
-        let presenter = ProfilePresenter(interactor: interactor)
+        let presenter = ProfilePresenter(interactor: interactor, router: router)
         let view = ProfileViewController(themeService: themeService, profilePublisher: profilePublisher)
         view.presenter = presenter
         interactor.presenter = presenter
@@ -87,5 +88,15 @@ class ModuleAssembly: ModuleAssemblyProtocol {
         tabBarController.tabBar.items?[2].image = UIImage(systemName: "person.crop.circle")
         tabBarController.tabBar.items?[2].title = "Profile"
         return tabBarController
+    }
+    
+    func buildNetworkImages(router: RouterProtocol) -> NetworkImagesViewController {
+        let interactor = NetworkImagesInteractor()
+        let presenter = NetworkImagesPresenter(interactor: interactor)
+        let view = NetworkImagesViewController()
+        view.presenter = presenter
+        interactor.presenter = presenter
+        presenter.view = view
+        return view
     }
 }
