@@ -7,7 +7,7 @@ protocol RouterMain: AnyObject {
 
 protocol RouterProtocol: RouterMain {
     func showChannel(channel: String, navigationController: UINavigationController)
-    func showNetworkImages(navigationController: UINavigationController)
+    func showNetworkImages(navigationController: UINavigationController, profileVC: ProfileViewProtocol)
 }
 
 class Router: RouterProtocol {
@@ -29,8 +29,8 @@ class Router: RouterProtocol {
         navigationController.pushViewController(channelViewController, animated: true)
     }
     
-    func showNetworkImages(navigationController: UINavigationController) {
-        guard let networkImages = moduleBuilder?.buildNetworkImages(router: self) else { return }
+    func showNetworkImages(navigationController: UINavigationController, profileVC: ProfileViewProtocol) {
+        guard let networkImages = moduleBuilder?.buildNetworkImages(router: self, profileVC: profileVC) else { return }
         navigationController.present(networkImages, animated: true)
     }
 }

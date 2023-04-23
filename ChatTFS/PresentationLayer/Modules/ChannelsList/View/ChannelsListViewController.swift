@@ -6,6 +6,7 @@ protocol ChannelsListViewProtocol: AnyObject {
     func showChannelsList()
     func showAlert()
     func addChannel(channel: ChannelModel)
+    func updateChannel(channel: ChannelModel)
 }
 
 class ChannelsListViewController: UIViewController {
@@ -261,11 +262,18 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
     func addChannel(channel: ChannelModel) {
         channels.append(channel)
         dataSource.reload(channels: channels)
-        
-        guard let indexOfNewChannel = dataSource.snapshot().indexOfItem(channel)
+    }
+    
+    func updateChannel(channel: ChannelModel) {
+        guard var existChannel = channels.first(where: { $0.channelID == channel.channelID })
         else {
             return
         }
-        tableView.scrollToRow(at: IndexPath(item: indexOfNewChannel, section: 0), at: .bottom, animated: true)
+        let index = dataSource.snapshot().indexOfItem(existChannel)
+        print(index)
+        existChannel.message = channel.message
+        var snapshot = dataSource.snapshot()
+        snapshot.reloadItems([existChannel])
+//        dataSource.updateCell(with: existChannel)
     }
 }

@@ -1,4 +1,4 @@
-import Foundation
+import UIKit
 
 protocol NetworkImagesPresenterProtocol: AnyObject {
     func viewReady()
@@ -16,6 +16,7 @@ class NetworkImagesPresenter: NetworkImagesPresenterProtocol {
     // MARK: - Public properties
     
     weak var view: NetworkImagesViewProtocol?
+    var uploadedImages: [NetworkImageModel] = []
     
     // MARK: - Private properties
     
@@ -28,6 +29,8 @@ class NetworkImagesPresenter: NetworkImagesPresenterProtocol {
     }
     
     func dataUploaded() {
-        view?.showNetworkImages()
+        uploadedImages = [NetworkImageModel(image: UIImage(systemName: "gear") ?? UIImage(), isAvailable: true),
+                          NetworkImageModel(image: UIImage(systemName: "heart") ?? UIImage(), isAvailable: false)]
+        view?.showNetworkImages(images: uploadedImages)
     }
 }

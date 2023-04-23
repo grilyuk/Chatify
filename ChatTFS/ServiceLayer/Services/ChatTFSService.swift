@@ -4,10 +4,12 @@ import Combine
 
 protocol ChatServiceProtocol {
     func loadChannels() -> AnyPublisher<[ChannelNetworkModel], Error>
+    func loadChannel(id: String) -> AnyPublisher<ChannelNetworkModel, Error>
     func createChannel(channelName: String) -> AnyPublisher<ChannelNetworkModel, Error>
     func deleteChannel(id: String) -> AnyPublisher<Void, Error>
     func createMessageData(messageText: String, channelID: String, userID: String, userName: String) -> AnyPublisher<MessageNetworkModel, Error>
     func loadMessagesFrom(channelID: String) -> AnyPublisher<[MessageNetworkModel], Error>
+    func listenResponses() -> AnyPublisher<ChatEvent, Error>
 }
 
 final class ChatTFSService: ChatServiceProtocol {
@@ -21,10 +23,29 @@ final class ChatTFSService: ChatServiceProtocol {
     // MARK: - Private properties
     
     private let chatTFS: ChatTFS
+    private var eventsSubscribe: Cancellable?
     private let mainQueue = DispatchQueue.main
     private let backgroundQueue = DispatchQueue.global(qos: .utility)
     
     // MARK: - Public methods
+    
+    func listenResponses() -> AnyPublisher<ChatEvent, Error> {
+        chatTFS.chatSSE.subscribeOnEvents()
+    }
+    
+    func loadChannel(id: String) -> AnyPublisher<ChannelNetworkModel, Error> {
+        chatTFS.chatServer.loadChannel(id: id)
+            .subscribe(on: backgroundQueue)
+            .receive(on: mainQueue)
+            .map { channel in
+                return ChannelNetworkModel(id: channel.id,
+                                           name: channel.name,
+                                           logoURL: channel.logoURL,
+                                           lastMessage: channel.lastMessage,
+                                           lastActivity: channel.lastActivity)
+            }
+            .eraseToAnyPublisher()
+    }
     
     func loadChannels() -> AnyPublisher<[ChannelNetworkModel], Error> {
         return chatTFS.chatServer.loadChannels()

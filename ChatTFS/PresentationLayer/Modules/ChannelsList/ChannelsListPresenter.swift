@@ -13,6 +13,7 @@ protocol ChannelsListPresenterProtocol: AnyObject {
     func createChannel(name: String)
     func deleteChannel(id: String)
     func interactorError()
+    func updateChannel(channel: ChannelNetworkModel)
 }
 
 class ChannelsListPresenter: ChannelsListPresenterProtocol {
@@ -60,23 +61,13 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
             self.dataChannels?.forEach({ dataChannel in
                 let channelLogo: UIImage = self.interactor.getChannelImage(for: dataChannel)
                 
-                if dataChannel.lastMessage == nil {
-                    channels.append(ChannelModel(channelImage: channelLogo,
-                                                 name: dataChannel.name,
-                                                 message: dataChannel.lastMessage,
-                                                 date: dataChannel.lastActivity,
-                                                 isOnline: false,
-                                                 hasUnreadMessages: false,
-                                                 channelID: dataChannel.id))
-                } else {
-                    channels.append(ChannelModel(channelImage: channelLogo,
-                                                 name: dataChannel.name,
-                                                 message: dataChannel.lastMessage,
-                                                 date: dataChannel.lastActivity,
-                                                 isOnline: false,
-                                                 hasUnreadMessages: false,
-                                                 channelID: dataChannel.id))
-                }
+                channels.append(ChannelModel(channelImage: channelLogo,
+                                             name: dataChannel.name,
+                                             message: dataChannel.lastMessage,
+                                             date: dataChannel.lastActivity,
+                                             isOnline: false,
+                                             hasUnreadMessages: false,
+                                             channelID: dataChannel.id))
             })
             
             DispatchQueue.main.async { [weak self] in
@@ -122,4 +113,14 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
         view?.showAlert()
     }
     
+    func updateChannel(channel: ChannelNetworkModel) {
+        let channelImage = self.interactor.getChannelImage(for: channel)
+        view?.updateChannel(channel: ChannelModel(channelImage: channelImage,
+                                                  name: channel.name,
+                                                  message: channel.lastMessage,
+                                                  date: channel.lastActivity,
+                                                  isOnline: false,
+                                                  hasUnreadMessages: true,
+                                                  channelID: channel.id))
+    }
 }

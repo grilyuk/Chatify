@@ -8,7 +8,7 @@ protocol ModuleAssemblyProtocol: AnyObject {
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController
     func buildThemePicker() -> UINavigationController
     func buildTabBarController() -> UITabBarController
-    func buildNetworkImages(router: RouterProtocol) -> NetworkImagesViewController
+    func buildNetworkImages(router: RouterProtocol, profileVC: ProfileViewProtocol) -> UINavigationController
 }
 
 class ModuleAssembly: ModuleAssemblyProtocol {
@@ -90,13 +90,15 @@ class ModuleAssembly: ModuleAssemblyProtocol {
         return tabBarController
     }
     
-    func buildNetworkImages(router: RouterProtocol) -> NetworkImagesViewController {
+    func buildNetworkImages(router: RouterProtocol, profileVC: ProfileViewProtocol) -> UINavigationController {
         let interactor = NetworkImagesInteractor()
         let presenter = NetworkImagesPresenter(interactor: interactor)
         let view = NetworkImagesViewController()
         view.presenter = presenter
+        view.profileVC = profileVC
         interactor.presenter = presenter
         presenter.view = view
-        return view
+        let navigationController = UINavigationController(rootViewController: view)
+        return navigationController
     }
 }

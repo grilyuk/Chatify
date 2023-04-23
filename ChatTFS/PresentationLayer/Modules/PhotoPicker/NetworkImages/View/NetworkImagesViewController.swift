@@ -1,7 +1,7 @@
 import UIKit
 
 protocol NetworkImagesViewProtocol: AnyObject {
-    func showNetworkImages()
+    func showNetworkImages(images: [NetworkImageModel])
 }
 
 class NetworkImagesViewController: UIViewController {
@@ -20,6 +20,7 @@ class NetworkImagesViewController: UIViewController {
     // MARK: - Public properties
     
     var presenter: NetworkImagesPresenterProtocol?
+    weak var profileVC: ProfileViewProtocol?
     
     // MARK: - Private properties
     
@@ -41,14 +42,27 @@ class NetworkImagesViewController: UIViewController {
         presenter?.viewReady()
         imagesCollectionView.delegate = self
         imagesCollectionView.dataSource = dataSource
-        view.addSubview(imagesCollectionView)
         imagesCollectionView.register(NetworkImagesCell.self, forCellWithReuseIdentifier: NetworkImagesCell.identifier)
+        setupNavigationBar()
         setupUI()
     }
     
     // MARK: - Private properties
     
+    private func setupNavigationBar() {
+        let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(close))
+        navigationItem.leftBarButtonItem = cancelButton
+        navigationItem.title = "Choose image"
+    }
+    
+    @objc
+    private func close() {
+        dismiss(animated: true)
+    }
+    
     private func setupUI() {
+        view.addSubview(imagesCollectionView)
+        
         imagesCollectionView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
@@ -62,7 +76,14 @@ class NetworkImagesViewController: UIViewController {
 
 extension NetworkImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print(indexPath)
+        let items = dataSource.snapshot().itemIdentifiers
+        guard let profileVC = profileVC as? ProfileViewController,
+              items[indexPath.row].isAvailable
+        else {
+            return
+        }
+        profileVC.profilePhoto.image = items[indexPath.row].image
+        dismiss(animated: true)
     }
 }
 
@@ -76,12 +97,7 @@ extension NetworkImagesViewController: UICollectionViewDelegateFlowLayout {
 // MARK: - NetworkImagesViewController + NetworkImagesViewProtocol
 
 extension NetworkImagesViewController: NetworkImagesViewProtocol {
-    func showNetworkImages() {
-        let array: [NetworkImageModel] = [NetworkImageModel(),
-                                          NetworkImageModel(),
-                                          NetworkImageModel(),
-                                          NetworkImageModel(),
-                                          NetworkImageModel()]
-        dataSource.reload(images: array)
+    func showNetworkImages(images: [NetworkImageModel]) {
+        dataSource.reload(images: images)
     }
 }

@@ -3,6 +3,7 @@ import TFSChatTransport
 
 protocol ChatProtocol: AnyObject {
     var chatServer: ChatService { get }
+    var chatSSE: SSEService { get }
 }
 
 final class ChatTFS: ChatProtocol {
@@ -15,4 +16,5 @@ final class ChatTFS: ChatProtocol {
     // MARK: - Public properties
     
     lazy var chatServer = ChatService(host: chatHost, port: chatPort)
+    lazy var chatSSE = SSEService(host: chatHost, port: chatPort)
 }

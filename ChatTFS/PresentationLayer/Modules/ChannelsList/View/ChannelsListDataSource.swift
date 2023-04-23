@@ -5,9 +5,9 @@ class ChannelsListDataSource: UITableViewDiffableDataSource<Int, ChannelModel> {
     // MARK: - Initialization
     
     init(tableView: UITableView, themeService: ThemeServiceProtocol) {
-        super.init(tableView: tableView) {tableView, _, itemIdentifier in
+        super.init(tableView: tableView) {tableView, indexPath, itemIdentifier in
             
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier) as? ChannelListCell
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
             else {
                 return ChannelListCell()
             }
@@ -17,8 +17,11 @@ class ChannelsListDataSource: UITableViewDiffableDataSource<Int, ChannelModel> {
             
             return cell
         }
+        
+        self.defaultRowAnimation = .fade
+        
     }
-
+    
     // MARK: - Public methods
     
     func reload(channels: [ChannelModel], animated: Bool = true) {
@@ -35,5 +38,14 @@ class ChannelsListDataSource: UITableViewDiffableDataSource<Int, ChannelModel> {
             snapshot.reloadItems([item])
         }
         apply(snapshot, animatingDifferences: animated)
+    }
+    
+    func updateCell(with channel: ChannelModel) {
+        var snapshot = self.snapshot()
+        guard let item = snapshot.itemIdentifiers.first(where: { $0.channelID == channel.channelID }) else {
+            return
+        }
+        snapshot.reloadItems([item])
+        apply(snapshot, animatingDifferences: true)
     }
 }

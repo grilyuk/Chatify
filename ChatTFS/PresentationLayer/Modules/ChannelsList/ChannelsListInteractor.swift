@@ -1,5 +1,5 @@
 import Combine
-import TFSChatTransport
+import UIKit
 
 protocol ChannelsListInteractorProtocol: AnyObject {
     func loadData()
@@ -30,6 +30,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     private var handler: (([ChannelNetworkModel]) -> Void)?
     private var cacheChannels: [ChannelNetworkModel] = []
     private var networkChannels: [ChannelNetworkModel] = []
+    private var eventsSubscribe: Cancellable?
     
     // MARK: - Public methods
     
@@ -40,9 +41,35 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             self?.presenter?.dataUploaded()
             self?.networkChannels = []
         }
-        
+
         loadFromCoreData()
         loadFromNetwork()
+        
+        eventsSubscribe = chatService.listenResponses()
+            .sink { _ in
+            } receiveValue: { [weak self] event in
+                let id = event.resourceID
+                switch event.eventType {
+                case .add:
+                    self?.chatService.loadChannel(id: id)
+                        .sink(receiveCompletion: { _ in
+                        }, receiveValue: { [weak self] newChannel in
+                            self?.presenter?.addChannel(channel: newChannel)
+                            self?.coreDataService.saveChannelsList(with: [newChannel])
+                        })
+                        .cancel()
+                case .update:
+                    self?.chatService.loadChannel(id: id)
+                        .sink(receiveCompletion: { _ in
+                        }, receiveValue: { [weak self] channel in
+                            self?.presenter?.updateChannel(channel: channel)
+                            self?.coreDataService.updateChannel(for: channel)
+                        })
+                        .cancel()
+                case .delete:
+                    self?.coreDataService.deleteChannel(channelID: id)
+                }
+            }
     }
     
     func createChannel(channelName: String) {

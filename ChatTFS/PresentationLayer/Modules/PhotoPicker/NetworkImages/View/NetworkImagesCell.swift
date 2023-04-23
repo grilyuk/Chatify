@@ -25,7 +25,7 @@ class NetworkImagesCell: UICollectionViewCell {
     
     private lazy var imageAvatar: UIImageView = {
         let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "photo.circle")?.withTintColor(.systemGray6, renderingMode: .alwaysOriginal)
+//        imageView.image = UIImage(systemName: "photo.circle")?.withTintColor(.systemGray6, renderingMode: .alwaysOriginal)
         return imageView
     }()
     
@@ -44,4 +44,9 @@ class NetworkImagesCell: UICollectionViewCell {
         ])
     }
     
+    // MARK: - Public methods
+    
+    func configure(with model: NetworkImageModel) {
+        imageAvatar.image = model.image
+    }
 }
