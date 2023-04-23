@@ -1,19 +1,24 @@
 import UIKit
 
-class ChannelsListDataSource: UITableViewDiffableDataSource<Int, ChannelModel> {
+class ChannelsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
     
     // MARK: - Initialization
     
-    init(tableView: UITableView, themeService: ThemeServiceProtocol) {
-        super.init(tableView: tableView) {tableView, indexPath, itemIdentifier in
-            
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
+    init(tableView: UITableView, themeService: ThemeServiceProtocol, cellModels: [ChannelModel]) {
+        
+        self.cellModels = cellModels
+        
+        super.init(tableView: tableView) { tableView, indexPath, idCell in
+
+            guard let model = cellModels.first(where: { $0.uuid == idCell }),
+                let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
             else {
                 return ChannelListCell()
             }
             
             cell.configureTheme(theme: themeService)
-            cell.configure(with: itemIdentifier)
+
+            cell.configure(with: model)
             
             return cell
         }
@@ -22,14 +27,25 @@ class ChannelsListDataSource: UITableViewDiffableDataSource<Int, ChannelModel> {
         
     }
     
+    // MARK: - Public properties
+    
+    var cellModels: [ChannelModel]
+    
     // MARK: - Public methods
     
     func reload(channels: [ChannelModel], animated: Bool = true) {
         var snapshot = snapshot()
         snapshot.deleteAllItems()
         snapshot.appendSections([0])
-        snapshot.appendItems(channels, toSection: 0)
+        let ids = channels.map { $0.uuid }
+        snapshot.appendItems(ids, toSection: 0)
         apply(snapshot, animatingDifferences: animated)
+    }
+    
+    func addChannel(channel: ChannelModel) {
+        var snapshot = snapshot()
+        snapshot.appendItems([channel.uuid], toSection: 0)
+        apply(snapshot)
     }
     
     func updateColorsCells(animated: Bool = false) {
@@ -42,7 +58,8 @@ class ChannelsListDataSource: UITableViewDiffableDataSource<Int, ChannelModel> {
     
     func updateCell(with channel: ChannelModel) {
         var snapshot = self.snapshot()
-        guard let item = snapshot.itemIdentifiers.first(where: { $0.channelID == channel.channelID }) else {
+        guard let item = snapshot.itemIdentifiers.first(where: { $0 == channel.uuid })
+        else {
             return
         }
         snapshot.reloadItems([item])

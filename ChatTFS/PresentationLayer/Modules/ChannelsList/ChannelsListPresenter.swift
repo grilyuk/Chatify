@@ -117,6 +117,7 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
         }
         actualChannel.date = channel.lastActivity
         actualChannel.message = channel.lastMessage
+        view?.channels.append(actualChannel)
         view?.updateChannel(channel: actualChannel)
     }
 }

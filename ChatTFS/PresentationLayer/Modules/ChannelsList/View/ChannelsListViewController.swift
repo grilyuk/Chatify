@@ -15,7 +15,6 @@ class ChannelsListViewController: UIViewController {
     
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
-        self.dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -38,7 +37,9 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - Private properties
     
-    private var dataSource: ChannelsListDataSource
+    private lazy var dataSource = ChannelsListDataSource(tableView: tableView,
+                                                         themeService: themeService,
+                                                         cellModels: channels)
     private var themeService: ThemeServiceProtocol
     
     private var tableView: UITableView = {
@@ -115,7 +116,7 @@ class ChannelsListViewController: UIViewController {
         super.viewWillAppear(animated)
         view.backgroundColor = themeService.currentTheme.backgroundColor
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
-        dataSource.updateColorsCells()
+//        dataSource.updateColorsCells()
         setupNavigationBar()
     }
     
@@ -212,8 +213,9 @@ extension ChannelsListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let idCell = dataSource.snapshot().itemIdentifiers[indexPath.row]
         guard let navigationController = navigationController,
-              let channelID = dataSource.snapshot().itemIdentifiers[indexPath.item].channelID
+              let channelID = channels.first(where: { $0.uuid == idCell })?.channelID
         else {
             return
         }
@@ -222,16 +224,17 @@ extension ChannelsListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        var snapshot = dataSource.snapshot()
+        let identifiers = snapshot.itemIdentifiers
 
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, _) in
             
-            guard let self
+            guard let self,
+                  let idChannel = channels.first(where: { $0.uuid == identifiers[indexPath.item] })?.channelID
             else {
                 return
             }
-            var snapshot = dataSource.snapshot()
-            let identifiers = snapshot.itemIdentifiers
-            self.presenter?.deleteChannel(id: identifiers[indexPath.row].channelID ?? "")
+            self.presenter?.deleteChannel(id: idChannel)
             snapshot.deleteItems([identifiers[indexPath.row]])
             self.dataSource.apply(snapshot)
         }
@@ -247,9 +250,14 @@ extension ChannelsListViewController: UITableViewDelegate {
 extension ChannelsListViewController: ChannelsListViewProtocol {
     
     func showChannelsList() {
+        dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService, cellModels: channels)
         dataSource.reload(channels: channels)
         pullToRefresh.endRefreshing()
         activityIndicator.stopAnimating()
+    }
+    
+    func updateDataCell(channels: [ChannelModel]) {
+        
     }
     
     func showAlert() {
@@ -260,18 +268,22 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
     }
     
     func addChannel(channel: ChannelModel) {
-        channels.append(channel)
-        dataSource.reload(channels: channels)
+        dataSource.cellModels.append(channel)
+//        dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService, cellModels: channels)
+//        dataSource.reload(channels: channels)
+        dataSource.addChannel(channel: channel)
     }
     
     func updateChannel(channel: ChannelModel) {
-        guard var existChannel = channels.first(where: { $0.channelID == channel.channelID })
+        guard var existChannel = channels.first(where: { $0.uuid == channel.uuid })
         else {
             return
         }
         existChannel = channel
+        let idCell = channel.uuid
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems([existChannel])
+        snapshot.reloadItems([idCell])
+        print(idCell, existChannel.uuid, channel.uuid)
         dataSource.apply(snapshot)
     }
 }

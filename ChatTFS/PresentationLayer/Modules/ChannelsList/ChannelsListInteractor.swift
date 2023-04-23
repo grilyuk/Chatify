@@ -39,7 +39,6 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         handler = { [weak self] channels in
             self?.presenter?.dataChannels = channels
             self?.presenter?.dataUploaded()
-            self?.networkChannels = []
         }
 
         loadFromCoreData()
@@ -83,9 +82,9 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                     self?.presenter?.interactorError()
                     print(error.localizedDescription)
                 }
-            } receiveValue: { [weak self] channel in
-                self?.presenter?.addChannel(channel: channel)
-                self?.coreDataService.saveChannelsList(with: [channel])
+            } receiveValue: { [weak self] _ in
+//                self?.presenter?.addChannel(channel: channel)
+//                self?.coreDataService.saveChannelsList(with: [channel])
             }
             .cancel()
     }
@@ -139,14 +138,10 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                                  lastActivity: networkChannel.lastActivity)])
             }
 
-            self.networkChannels.append(ChannelNetworkModel(id: networkChannel.id,
-                                                   name: networkChannel.name,
-                                                   logoURL: networkChannel.logoURL,
-                                                   lastMessage: networkChannel.lastMessage,
-                                                   lastActivity: networkChannel.lastActivity))
         }
         
         let cachedIDs = cacheChannels.map { $0.id }
+        
         let networkIDs = networkChannels.map { $0.id }
 
         let deletedChannels = cachedIDs.filter { !networkIDs.contains($0) }
@@ -155,6 +150,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             coreDataService.deleteChannel(channelID: deletedChannel)
         }
 
+        self.networkChannels = networkChannels
         self.networkChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
         self.cacheChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
 
