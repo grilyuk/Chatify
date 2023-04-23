@@ -11,6 +11,8 @@ protocol ChannelsListViewProtocol: AnyObject {
 
 class ChannelsListViewController: UIViewController {
     
+    typealias DataSource = UITableViewDiffableDataSource<Int, UUID>
+    
     // MARK: - Initialization
     
     init(themeService: ThemeServiceProtocol) {
@@ -37,9 +39,16 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - Private properties
     
-    private lazy var dataSource = ChannelsListDataSource(tableView: tableView,
-                                                         themeService: themeService,
-                                                         cellModels: channels)
+    private lazy var dataSource = DataSource(tableView: tableView) { tableView, indexPath, itemIdentifier in
+        guard let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
+              let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
+        else {
+            return ChannelListCell()
+        }
+        cell.configureTheme(theme: self.themeService)
+        cell.configure(with: model)
+        return cell
+    }
     private var themeService: ThemeServiceProtocol
     
     private var tableView: UITableView = {
@@ -250,8 +259,11 @@ extension ChannelsListViewController: UITableViewDelegate {
 extension ChannelsListViewController: ChannelsListViewProtocol {
     
     func showChannelsList() {
-        dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService, cellModels: channels)
-        dataSource.reload(channels: channels)
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteAllItems()
+        snapshot.appendSections([0])
+        snapshot.appendItems(channels.map({ $0.uuid }))
+        dataSource.apply(snapshot)
         pullToRefresh.endRefreshing()
         activityIndicator.stopAnimating()
     }
@@ -268,10 +280,7 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
     }
     
     func addChannel(channel: ChannelModel) {
-        dataSource.cellModels.append(channel)
-//        dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService, cellModels: channels)
-//        dataSource.reload(channels: channels)
-        dataSource.addChannel(channel: channel)
+
     }
     
     func updateChannel(channel: ChannelModel) {
@@ -279,11 +288,12 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
         else {
             return
         }
-        existChannel = channel
+        if let index = channels.firstIndex(where: { $0.uuid == channel.uuid }) {
+            channels[index] = channel
+        }
         let idCell = channel.uuid
         var snapshot = dataSource.snapshot()
         snapshot.reloadItems([idCell])
-        print(idCell, existChannel.uuid, channel.uuid)
         dataSource.apply(snapshot)
     }
 }
