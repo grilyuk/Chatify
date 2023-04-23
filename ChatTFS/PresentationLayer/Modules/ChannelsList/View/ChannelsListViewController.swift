@@ -269,11 +269,9 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
         else {
             return
         }
-        let index = dataSource.snapshot().indexOfItem(existChannel)
-        print(index)
-        existChannel.message = channel.message
+        existChannel = channel
         var snapshot = dataSource.snapshot()
         snapshot.reloadItems([existChannel])
-//        dataSource.updateCell(with: existChannel)
+        dataSource.apply(snapshot)
     }
 }

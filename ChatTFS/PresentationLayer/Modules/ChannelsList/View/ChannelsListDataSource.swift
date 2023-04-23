@@ -17,7 +17,7 @@ class ChannelsListDataSource: UITableViewDiffableDataSource<Int, ChannelModel> {
             
             return cell
         }
-        
+
         self.defaultRowAnimation = .fade
         
     }

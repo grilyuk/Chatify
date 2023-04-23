@@ -44,8 +44,6 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
     
     func dataUploaded() {
         
-        var channels: [ChannelModel] = []
-        
         handler = { [weak self] sortedChannels in
             self?.view?.channels = sortedChannels
             self?.view?.showChannelsList()
@@ -58,21 +56,20 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
                 return
             }
             
-            self.dataChannels?.forEach({ dataChannel in
-                let channelLogo: UIImage = self.interactor.getChannelImage(for: dataChannel)
-                
-                channels.append(ChannelModel(channelImage: channelLogo,
-                                             name: dataChannel.name,
-                                             message: dataChannel.lastMessage,
-                                             date: dataChannel.lastActivity,
-                                             isOnline: false,
-                                             hasUnreadMessages: false,
-                                             channelID: dataChannel.id))
-            })
+            self.channels = self.dataChannels?.map({ channel in
+                let channelLogo: UIImage = self.interactor.getChannelImage(for: channel)
+                return ChannelModel(channelImage: channelLogo,
+                                    name: channel.name,
+                                    message: channel.lastMessage,
+                                    date: channel.lastActivity,
+                                    isOnline: false,
+                                    hasUnreadMessages: false,
+                                    channelID: channel.id)
+            }) ?? []
             
             DispatchQueue.main.async { [weak self] in
-                channels.sort { $0.date ?? Date(timeIntervalSince1970: 0) > $1.date ?? Date(timeIntervalSince1970: 0) }
-                self?.handler?(channels)
+                self?.channels.sort { $0.date ?? Date(timeIntervalSince1970: 0) > $1.date ?? Date(timeIntervalSince1970: 0) }
+                self?.handler?(self?.channels ?? [])
             }
         }
     }
@@ -114,13 +111,12 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
     }
     
     func updateChannel(channel: ChannelNetworkModel) {
-        let channelImage = self.interactor.getChannelImage(for: channel)
-        view?.updateChannel(channel: ChannelModel(channelImage: channelImage,
-                                                  name: channel.name,
-                                                  message: channel.lastMessage,
-                                                  date: channel.lastActivity,
-                                                  isOnline: false,
-                                                  hasUnreadMessages: true,
-                                                  channelID: channel.id))
+        guard var actualChannel = channels.first(where: { $0.channelID == channel.id })
+        else {
+            return
+        }
+        actualChannel.date = channel.lastActivity
+        actualChannel.message = channel.lastMessage
+        view?.updateChannel(channel: actualChannel)
     }
 }
