@@ -40,4 +40,10 @@ extension UITableViewDiffableDataSource<Int, UUID> {
         snapshot.appendItems([channel.uuid])
         apply(snapshot)
     }
+    
+    func deleteChannel(channel: ChannelModel) {
+        var snapshot = snapshot()
+        snapshot.deleteItems([channel.uuid])
+        apply(snapshot)
+    }
 }

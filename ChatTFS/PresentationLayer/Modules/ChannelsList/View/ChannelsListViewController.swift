@@ -286,9 +286,7 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
         else {
             return
         }
-        var snapshot = dataSource.snapshot()
-        snapshot.deleteItems([channel.uuid])
-        dataSource.apply(snapshot)
+        dataSource.deleteChannel(channel: channel)
         channels.remove(at: index)
     }
 }
