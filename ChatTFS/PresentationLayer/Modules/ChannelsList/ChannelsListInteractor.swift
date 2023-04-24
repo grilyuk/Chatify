@@ -66,14 +66,14 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                         })
                         .cancel()
                 case .delete:
+                    self?.presenter?.deleteFromView(channelID: id)
                     self?.coreDataService.deleteChannel(channelID: id)
                 }
             }
     }
     
     func createChannel(channelName: String) {
-        let newChannel = chatService.createChannel(channelName: channelName)
-        newChannel
+        chatService.createChannel(channelName: channelName)
             .sink { [weak self] result in
                 switch result {
                 case .finished:
@@ -82,9 +82,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                     self?.presenter?.interactorError()
                     print(error.localizedDescription)
                 }
-            } receiveValue: { [weak self] _ in
-//                self?.presenter?.addChannel(channel: channel)
-//                self?.coreDataService.saveChannelsList(with: [channel])
+            } receiveValue: { _ in
             }
             .cancel()
     }

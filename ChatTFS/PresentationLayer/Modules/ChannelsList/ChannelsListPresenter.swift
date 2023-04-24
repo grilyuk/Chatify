@@ -12,6 +12,7 @@ protocol ChannelsListPresenterProtocol: AnyObject {
     func addChannel(channel: ChannelNetworkModel)
     func createChannel(name: String)
     func deleteChannel(id: String)
+    func deleteFromView(channelID: String)
     func interactorError()
     func updateChannel(channel: ChannelNetworkModel)
 }
@@ -86,6 +87,14 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
         interactor.deleteChannel(id: id)
     }
     
+    func deleteFromView(channelID: String) {
+        guard let actualChannel = channels.first(where: { $0.channelID == channelID })
+        else {
+            return
+        }
+        view?.deleteChannel(channel: actualChannel)
+    }
+    
     func addChannel(channel: ChannelNetworkModel) {
         DispatchQueue.global().async { [weak self] in
             guard let self
@@ -101,6 +110,7 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
                                             hasUnreadMessages: true,
                                             channelID: channel.id)
             DispatchQueue.main.async { [weak self] in
+                self?.channels.append(channelModel)
                 self?.view?.addChannel(channel: channelModel)
             }
         }
@@ -117,7 +127,6 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
         }
         actualChannel.date = channel.lastActivity
         actualChannel.message = channel.lastMessage
-        view?.channels.append(actualChannel)
         view?.updateChannel(channel: actualChannel)
     }
 }

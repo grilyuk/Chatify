@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		5E058E4029EACF9900D470D0 /* MessageNetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */; };
 		5E058E4229EACFA400D470D0 /* ChannelNetworkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */; };
-		5E058E4A29ECBF5E00D470D0 /* ChannelsListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E058E4929ECBF5E00D470D0 /* ChannelsListDataSource.swift */; };
 		5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E08ADC229A16B10004510A6 /* ProfileViewController.swift */; };
 		5E12622529EF148B009B5289 /* CoreDataStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12622429EF148B009B5289 /* CoreDataStack.swift */; };
 		5E12622729EF14B7009B5289 /* FileManagerStack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12622629EF14B7009B5289 /* FileManagerStack.swift */; };
@@ -24,6 +23,7 @@
 		5E12624F29F46129009B5289 /* NetworkImagesPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624E29F46129009B5289 /* NetworkImagesPresenter.swift */; };
 		5E12625129F46134009B5289 /* NetworkImagesInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625029F46134009B5289 /* NetworkImagesInteractor.swift */; };
 		5E12625329F4716C009B5289 /* NetworkImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625229F4716C009B5289 /* NetworkImageModel.swift */; };
+		5E12625729F60E4C009B5289 /* ChannelsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */; };
@@ -63,7 +63,6 @@
 		4CE4628B252E8DEB6B3EB225 /* Pods-ChatTFS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ChatTFS.debug.xcconfig"; path = "Target Support Files/Pods-ChatTFS/Pods-ChatTFS.debug.xcconfig"; sourceTree = "<group>"; };
 		5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNetworkModel.swift; sourceTree = "<group>"; };
 		5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelNetworkModel.swift; sourceTree = "<group>"; };
-		5E058E4929ECBF5E00D470D0 /* ChannelsListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsListDataSource.swift; sourceTree = "<group>"; };
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		5E12622429EF148B009B5289 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		5E12622629EF14B7009B5289 /* FileManagerStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerStack.swift; sourceTree = "<group>"; };
@@ -78,6 +77,7 @@
 		5E12624E29F46129009B5289 /* NetworkImagesPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesPresenter.swift; sourceTree = "<group>"; };
 		5E12625029F46134009B5289 /* NetworkImagesInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesInteractor.swift; sourceTree = "<group>"; };
 		5E12625229F4716C009B5289 /* NetworkImageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageModel.swift; sourceTree = "<group>"; };
+		5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsDataSource.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SameIncomingChannelViewCell.swift; sourceTree = "<group>"; };
@@ -206,7 +206,7 @@
 			children = (
 				5E92E9E529B4B4C60038EED2 /* ChannelsListCell.swift */,
 				5EDC6596299ECEAD009B6586 /* ChannelsListViewController.swift */,
-				5E058E4929ECBF5E00D470D0 /* ChannelsListDataSource.swift */,
+				5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -594,6 +594,7 @@
 				5E12622929EF214B009B5289 /* ChannelDataSource.swift in Sources */,
 				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ChannelViewController.swift in Sources */,
+				5E12625729F60E4C009B5289 /* ChannelsDataSource.swift in Sources */,
 				5E12625329F4716C009B5289 /* NetworkImageModel.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ChannelsListPresenter.swift in Sources */,
 				5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */,
@@ -602,7 +603,6 @@
 				5E92E9F629B72C6E0038EED2 /* IncomingConversationViewCell.swift in Sources */,
 				5E92E9E229B33C900038EED2 /* ModuleAssembly.swift in Sources */,
 				5E12624D29F34DE4009B5289 /* NetworkImagesDataSource.swift in Sources */,
-				5E058E4A29ECBF5E00D470D0 /* ChannelsListDataSource.swift in Sources */,
 				5E12623629EF3B29009B5289 /* CoreAssembly.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

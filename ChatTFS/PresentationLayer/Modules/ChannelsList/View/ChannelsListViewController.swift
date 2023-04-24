@@ -7,6 +7,7 @@ protocol ChannelsListViewProtocol: AnyObject {
     func showAlert()
     func addChannel(channel: ChannelModel)
     func updateChannel(channel: ChannelModel)
+    func deleteChannel(channel: ChannelModel)
 }
 
 class ChannelsListViewController: UIViewController {
@@ -125,7 +126,7 @@ class ChannelsListViewController: UIViewController {
         super.viewWillAppear(animated)
         view.backgroundColor = themeService.currentTheme.backgroundColor
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
-//        dataSource.updateColorsCells()
+        dataSource.updateColorCells(channels: channels)
         setupNavigationBar()
     }
     
@@ -259,17 +260,9 @@ extension ChannelsListViewController: UITableViewDelegate {
 extension ChannelsListViewController: ChannelsListViewProtocol {
     
     func showChannelsList() {
-        var snapshot = dataSource.snapshot()
-        snapshot.deleteAllItems()
-        snapshot.appendSections([0])
-        snapshot.appendItems(channels.map({ $0.uuid }))
-        dataSource.apply(snapshot)
+        dataSource.applySnapshot(channels: channels)
         pullToRefresh.endRefreshing()
         activityIndicator.stopAnimating()
-    }
-    
-    func updateDataCell(channels: [ChannelModel]) {
-        
     }
     
     func showAlert() {
@@ -280,20 +273,22 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
     }
     
     func addChannel(channel: ChannelModel) {
-
+        channels.append(channel)
+        dataSource.addChannel(channel: channel)
     }
     
     func updateChannel(channel: ChannelModel) {
-        guard var existChannel = channels.first(where: { $0.uuid == channel.uuid })
+        dataSource.updateCell(channel: channel, view: self)
+    }
+    
+    func deleteChannel(channel: ChannelModel) {
+        guard let index = channels.firstIndex(of: channel)
         else {
             return
         }
-        if let index = channels.firstIndex(where: { $0.uuid == channel.uuid }) {
-            channels[index] = channel
-        }
-        let idCell = channel.uuid
         var snapshot = dataSource.snapshot()
-        snapshot.reloadItems([idCell])
+        snapshot.deleteItems([channel.uuid])
         dataSource.apply(snapshot)
+        channels.remove(at: index)
     }
 }
