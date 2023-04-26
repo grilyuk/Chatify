@@ -5,6 +5,7 @@ protocol ServiceAssemblyProtocol: AnyObject {
     var themeService: ThemeServiceProtocol { get }
     var chatService: ChatServiceProtocol { get }
     var fileManagerService: FileManagerServiceProtocol { get }
+    var imageLoaderService: ImageLoaderServiceProtocol { get }
 }
 
 final class ServiceAssembly: ServiceAssemblyProtocol {
@@ -25,4 +26,7 @@ final class ServiceAssembly: ServiceAssemblyProtocol {
     lazy var themeService: ThemeServiceProtocol = ThemeService()
     lazy var chatService: ChatServiceProtocol = ChatTFSService(chatTFS: coreAssembly.chatTFS)
     lazy var fileManagerService: FileManagerServiceProtocol = FileManagerService(fileManagerStack: coreAssembly.fileManagerStack)
+    
+    private lazy var networkService: NetworkServiceProtocol = NetworkService()
+    lazy var imageLoaderService: ImageLoaderServiceProtocol = ImageLoaderService(networkService: networkService)
 }

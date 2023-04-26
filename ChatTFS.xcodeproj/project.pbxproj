@@ -19,11 +19,13 @@
 		5E12624129F0720F009B5289 /* ChatTFSService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624029F0720F009B5289 /* ChatTFSService.swift */; };
 		5E12624729F3356A009B5289 /* NetworkImagesViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624629F3356A009B5289 /* NetworkImagesViewController.swift */; };
 		5E12624A29F33FBD009B5289 /* NetworkImagesCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624929F33FBD009B5289 /* NetworkImagesCell.swift */; };
-		5E12624D29F34DE4009B5289 /* NetworkImagesDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624C29F34DE4009B5289 /* NetworkImagesDataSource.swift */; };
 		5E12624F29F46129009B5289 /* NetworkImagesPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624E29F46129009B5289 /* NetworkImagesPresenter.swift */; };
 		5E12625129F46134009B5289 /* NetworkImagesInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625029F46134009B5289 /* NetworkImagesInteractor.swift */; };
 		5E12625329F4716C009B5289 /* NetworkImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625229F4716C009B5289 /* NetworkImageModel.swift */; };
 		5E12625729F60E4C009B5289 /* ChannelsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */; };
+		5E12625B29F857D8009B5289 /* ImageLoaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625A29F857D8009B5289 /* ImageLoaderService.swift */; };
+		5E12625F29F86EF4009B5289 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625E29F86EF4009B5289 /* NetworkService.swift */; };
+		5E12626129F92686009B5289 /* ImageLinkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12626029F92686009B5289 /* ImageLinkModel.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */; };
@@ -73,11 +75,13 @@
 		5E12624029F0720F009B5289 /* ChatTFSService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTFSService.swift; sourceTree = "<group>"; };
 		5E12624629F3356A009B5289 /* NetworkImagesViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesViewController.swift; sourceTree = "<group>"; };
 		5E12624929F33FBD009B5289 /* NetworkImagesCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesCell.swift; sourceTree = "<group>"; };
-		5E12624C29F34DE4009B5289 /* NetworkImagesDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesDataSource.swift; sourceTree = "<group>"; };
 		5E12624E29F46129009B5289 /* NetworkImagesPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesPresenter.swift; sourceTree = "<group>"; };
 		5E12625029F46134009B5289 /* NetworkImagesInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesInteractor.swift; sourceTree = "<group>"; };
 		5E12625229F4716C009B5289 /* NetworkImageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageModel.swift; sourceTree = "<group>"; };
 		5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsDataSource.swift; sourceTree = "<group>"; };
+		5E12625A29F857D8009B5289 /* ImageLoaderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoaderService.swift; sourceTree = "<group>"; };
+		5E12625E29F86EF4009B5289 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
+		5E12626029F92686009B5289 /* ImageLinkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLinkModel.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SameIncomingChannelViewCell.swift; sourceTree = "<group>"; };
@@ -148,6 +152,7 @@
 			children = (
 				5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */,
 				5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */,
+				5E12626029F92686009B5289 /* ImageLinkModel.swift */,
 			);
 			path = NetworkModels;
 			sourceTree = "<group>";
@@ -260,6 +265,8 @@
 				5E2033B729E17D1E0014B1CC /* CoreDataService.swift */,
 				5E12624029F0720F009B5289 /* ChatTFSService.swift */,
 				5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */,
+				5E12625A29F857D8009B5289 /* ImageLoaderService.swift */,
+				5E12625E29F86EF4009B5289 /* NetworkService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -295,7 +302,6 @@
 			children = (
 				5E12624929F33FBD009B5289 /* NetworkImagesCell.swift */,
 				5E12624629F3356A009B5289 /* NetworkImagesViewController.swift */,
-				5E12624C29F34DE4009B5289 /* NetworkImagesDataSource.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -568,8 +574,10 @@
 				5ECA720429D3858E0049E635 /* ErrorExtension.swift in Sources */,
 				5E12624F29F46129009B5289 /* NetworkImagesPresenter.swift in Sources */,
 				5E97BF3729BE33B3003BBA1B /* UIViewExtension.swift in Sources */,
+				5E12625F29F86EF4009B5289 /* NetworkService.swift in Sources */,
 				5EC4498B29C3BF8A00D6C51C /* UIImageExtension.swift in Sources */,
 				5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */,
+				5E12625B29F857D8009B5289 /* ImageLoaderService.swift in Sources */,
 				5E12623429EF3B1B009B5289 /* ServiceAssembly.swift in Sources */,
 				5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */,
 				5EB6218D29AB6FE800029FB8 /* ChannelsListInteractor.swift in Sources */,
@@ -589,6 +597,7 @@
 				5E058E4029EACF9900D470D0 /* MessageNetworkModel.swift in Sources */,
 				5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */,
 				5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */,
+				5E12626129F92686009B5289 /* ImageLinkModel.swift in Sources */,
 				5E058E4229EACFA400D470D0 /* ChannelNetworkModel.swift in Sources */,
 				5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */,
 				5E12622929EF214B009B5289 /* ChannelDataSource.swift in Sources */,
@@ -602,7 +611,6 @@
 				5E12623F29F07032009B5289 /* ChatTFS.swift in Sources */,
 				5E92E9F629B72C6E0038EED2 /* IncomingConversationViewCell.swift in Sources */,
 				5E92E9E229B33C900038EED2 /* ModuleAssembly.swift in Sources */,
-				5E12624D29F34DE4009B5289 /* NetworkImagesDataSource.swift in Sources */,
 				5E12623629EF3B29009B5289 /* CoreAssembly.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

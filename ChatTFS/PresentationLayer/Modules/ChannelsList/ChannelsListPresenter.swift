@@ -4,7 +4,6 @@ import TFSChatTransport
 protocol ChannelsListPresenterProtocol: AnyObject {
     var router: RouterProtocol? { get set }
     var dataChannels: [ChannelNetworkModel]? { get set }
-    var handler: (([ChannelModel]) -> Void)? { get set }
     
     func viewReady()
     func dataUploaded()

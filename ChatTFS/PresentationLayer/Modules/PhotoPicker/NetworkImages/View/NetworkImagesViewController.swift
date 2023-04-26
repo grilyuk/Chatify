@@ -1,15 +1,19 @@
 import UIKit
 
 protocol NetworkImagesViewProtocol: AnyObject {
-    func showNetworkImages(images: [NetworkImageModel])
+    var images: [NetworkImageModel] { get set }
+    func showNetworkImages()
+    func updateImageInCell(uuid: UUID)
 }
 
 class NetworkImagesViewController: UIViewController {
     
+    typealias DataSource = UICollectionViewDiffableDataSource<Int, UUID>
+    
     // MARK: - Initialization
     
-    init() {
-        self.dataSource = NetworkImagesDataSource(collectionView: imagesCollectionView)
+    init(themeService: ThemeServiceProtocol) {
+        self.themeService = themeService
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -19,14 +23,24 @@ class NetworkImagesViewController: UIViewController {
     
     // MARK: - Public properties
     
+    var images: [NetworkImageModel] = []
     var presenter: NetworkImagesPresenterProtocol?
     weak var profileVC: ProfileViewProtocol?
+    weak var themeService: ThemeServiceProtocol?
     
     // MARK: - Private properties
     
-    private let dataSource: NetworkImagesDataSource
+    private lazy var dataSource = DataSource(collectionView: collectionView) { [weak self] collectionView, indexPath, uuid in
+        guard let model = self?.images.first(where: { $0.uuid == uuid }),
+              let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NetworkImagesCell.identifier, for: indexPath) as? NetworkImagesCell
+        else {
+            return NetworkImagesCell()
+        }
+        cell.configure(with: model)
+        return cell
+    }
     
-    private var imagesCollectionView = {
+    private var collectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
         layout.minimumInteritemSpacing = 0
@@ -34,15 +48,19 @@ class NetworkImagesViewController: UIViewController {
         let collection = UICollectionView(frame: CGRect(x: 0, y: 0, width: 0, height: 0), collectionViewLayout: layout)
         return collection
     }()
+    
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
 
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         presenter?.viewReady()
-        imagesCollectionView.delegate = self
-        imagesCollectionView.dataSource = dataSource
-        imagesCollectionView.register(NetworkImagesCell.self, forCellWithReuseIdentifier: NetworkImagesCell.identifier)
+        collectionView.delegate = self
+        collectionView.dataSource = dataSource
+        collectionView.register(NetworkImagesCell.self, forCellWithReuseIdentifier: NetworkImagesCell.identifier)
+        collectionView.backgroundColor = themeService?.currentTheme.backgroundColor
+        activityIndicator.startAnimating()
         setupNavigationBar()
         setupUI()
     }
@@ -53,37 +71,62 @@ class NetworkImagesViewController: UIViewController {
         let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(close))
         navigationItem.leftBarButtonItem = cancelButton
         navigationItem.title = "Choose image"
+        navigationController?.navigationBar.backgroundColor = themeService?.currentTheme.backgroundColor
     }
     
     @objc
     private func close() {
-        dismiss(animated: true)
+        self.dismiss(animated: true) { [weak self] in
+            self?.images.removeAll()
+            self?.presenter?.uploadedImages.removeAll()
+        }
     }
     
     private func setupUI() {
-        view.addSubview(imagesCollectionView)
+        view.addSubviews(collectionView, activityIndicator)
         
-        imagesCollectionView.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
+        
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            imagesCollectionView.topAnchor.constraint(equalTo: view.topAnchor),
-            imagesCollectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            imagesCollectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            imagesCollectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor),
+            collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 5),
+            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -5),
+            
+            activityIndicator.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            activityIndicator.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
 }
 
 extension NetworkImagesViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let items = dataSource.snapshot().itemIdentifiers
-        guard let profileVC = profileVC as? ProfileViewController,
-              items[indexPath.row].isAvailable
+        let item = dataSource.snapshot().itemIdentifiers[indexPath.row]
+        guard let index = images.firstIndex(where: { $0.uuid == item }),
+              images[index].isAvailable
         else {
             return
         }
-        profileVC.profilePhoto.image = items[indexPath.row].image
-        dismiss(animated: true)
+        profileVC?.profilePhoto.image = images[index].image
+        dismiss(animated: true) { [weak self] in
+            self?.images.removeAll()
+            self?.presenter?.uploadedImages.removeAll()
+        }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        DispatchQueue.global().async { [weak self] in
+            guard let index = self?.dataSource.itemIdentifier(for: indexPath),
+                  let model = self?.images.first(where: { $0.uuid == index }),
+                  !model.isAvailable
+            else {
+                return
+            }
+            self?.presenter?.loadImage(for: index, url: model.link)
+        }
     }
 }
 
@@ -97,7 +140,19 @@ extension NetworkImagesViewController: UICollectionViewDelegateFlowLayout {
 // MARK: - NetworkImagesViewController + NetworkImagesViewProtocol
 
 extension NetworkImagesViewController: NetworkImagesViewProtocol {
-    func showNetworkImages(images: [NetworkImageModel]) {
-        dataSource.reload(images: images)
+    
+    func showNetworkImages() {
+        activityIndicator.stopAnimating()
+        var snapshot = dataSource.snapshot()
+        snapshot.deleteAllItems()
+        snapshot.appendSections([0])
+        snapshot.appendItems(images.map({ $0.uuid }))
+        dataSource.apply(snapshot)
+    }
+    
+    func updateImageInCell(uuid: UUID) {
+        var snapshot = dataSource.snapshot()
+        snapshot.reloadItems([uuid])
+        dataSource.apply(snapshot)
     }
 }

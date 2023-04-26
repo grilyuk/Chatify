@@ -29,6 +29,7 @@ class ModuleAssembly: ModuleAssemblyProtocol {
     private lazy var coreDataService = serviceAssembly.coreDataService
     private lazy var profilePublisher = dataManager.currentProfile
     private lazy var chatService = serviceAssembly.chatService
+    private lazy var imageLoaderService = serviceAssembly.imageLoaderService
     
     // MARK: - Public Methods
     
@@ -91,9 +92,9 @@ class ModuleAssembly: ModuleAssemblyProtocol {
     }
     
     func buildNetworkImages(router: RouterProtocol, profileVC: ProfileViewProtocol) -> UINavigationController {
-        let interactor = NetworkImagesInteractor()
+        let interactor = NetworkImagesInteractor(imageLoader: imageLoaderService)
         let presenter = NetworkImagesPresenter(interactor: interactor)
-        let view = NetworkImagesViewController()
+        let view = NetworkImagesViewController(themeService: themeService)
         view.presenter = presenter
         view.profileVC = profileVC
         interactor.presenter = presenter
