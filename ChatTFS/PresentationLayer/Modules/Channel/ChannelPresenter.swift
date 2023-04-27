@@ -12,6 +12,7 @@ protocol ChannelPresenterProtocol: AnyObject {
     func uploadMessage(messageModel: MessageNetworkModel)
     func createMessage(messageText: String?)
     func subscribeToSSE()
+    func unsubscribeFromSSE()
     func showNetworkImages(navigationController: UINavigationController, vc: UIViewController)
 }
 
@@ -145,6 +146,10 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     
     func subscribeToSSE() {
         interactor.subscribeToSSE()
+    }
+    
+    func unsubscribeFromSSE() {
+        interactor.unsubscribeFromSSE()
     }
     
     func showNetworkImages(navigationController: UINavigationController, vc: UIViewController) {

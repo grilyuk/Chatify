@@ -24,15 +24,15 @@ final class ChatTFSService: ChatServiceProtocol {
     // MARK: - Private properties
     
     private let chatTFS: ChatTFS
-    weak var SSEService: SSEService?
+    var SSEService: SSEService?
     private let mainQueue = DispatchQueue.main
     private let backgroundQueue = DispatchQueue.global(qos: .utility)
     
     // MARK: - Public methods
     
     func listenResponses() -> AnyPublisher<ChatEvent, Error> {
-        let SSEService = chatTFS.chatSSE
-        return SSEService.subscribeOnEvents()
+        SSEService = TFSChatTransport.SSEService(host: chatTFS.chatHost, port: chatTFS.chatPort)
+        return SSEService?.subscribeOnEvents() ?? chatTFS.chatSSE.subscribeOnEvents()
     }
     
     func stopListen() {

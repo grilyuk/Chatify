@@ -10,6 +10,7 @@ protocol ChannelInteractorProtocol: AnyObject {
     func createMessage(messageText: String, userID: String, userName: String)
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
     func subscribeToSSE()
+    func unsubscribeFromSSE()
 }
 
 class ChannelInteractor: ChannelInteractorProtocol {
@@ -99,6 +100,11 @@ class ChannelInteractor: ChannelInteractorProtocol {
                     self?.coreDataService.deleteChannel(channelID: id)
                 }
             }
+    }
+    
+    func unsubscribeFromSSE() {
+        chatService.stopListen()
+        eventsSubscribe?.cancel()
     }
     
     func createMessage(messageText: String, userID: String, userName: String) {

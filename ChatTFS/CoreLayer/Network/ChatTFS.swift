@@ -10,8 +10,8 @@ final class ChatTFS: ChatProtocol {
     
     // MARK: - Private properties
     
-    private var chatHost = "167.235.86.234"
-    private var chatPort = 8080
+    var chatHost = "167.235.86.234"
+    var chatPort = 8080
     
     // MARK: - Public properties
     
