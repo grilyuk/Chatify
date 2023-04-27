@@ -4,15 +4,17 @@ protocol ChannelViewProtocol: AnyObject {
     func showChannel(channel: ChannelModel)
     func addMessage(message: MessageModel)
     var messages: [MessageModel] { get set }
+    func setImageMessage(link: String)
 }
 
 class ChannelViewController: UIViewController {
+    
+    typealias DataSource = UITableViewDiffableDataSource<Date, UUID>
     
     // MARK: - Initialization
     
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
-        self.dataSource = ChannelDataSource(tableView: tableView, themeService: themeService)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -37,7 +39,42 @@ class ChannelViewController: UIViewController {
     
     // MARK: - Private
     
-    private var dataSource: ChannelDataSource
+    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, uuid in
+        guard let model = self?.messages.first(where: { $0.uuid == uuid }),
+              let themeService = self?.themeService
+        else {
+            return UITableViewCell()
+        }
+        switch model.myMessage {
+        case true:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingChannelViewCell.identifier,
+                                                           for: indexPath) as? OutgoingChannelViewCell else {
+                return UITableViewCell()
+            }
+            cell.configureTheme(theme: themeService)
+            cell.configure(with: model)
+            return cell
+        case false:
+            switch model.isSameUser {
+            case true:
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: SameIncomingChannelViewCell.identifier,
+                                                               for: indexPath) as? SameIncomingChannelViewCell else {
+                    return UITableViewCell()
+                }
+                cell.configureTheme(theme: themeService)
+                cell.configure(with: model)
+                return cell
+            case false:
+                guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier,
+                                                               for: indexPath) as? IncomingChannelViewCell else {
+                    return UITableViewCell()
+                }
+                cell.configureTheme(theme: themeService)
+                cell.configure(with: model)
+                return cell
+            }
+        }
+    }
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -115,6 +152,13 @@ class ChannelViewController: UIViewController {
         return button
     }()
     
+    private lazy var choosePhotoButton: UIButton = {
+        let button = UIButton(type: .system)
+        let image = UIImage(systemName: "photo.circle")?.withTintColor(.blue, renderingMode: .alwaysOriginal)
+        button.setImage(image, for: .normal)
+        return button
+    }()
+    
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     
     // MARK: - Lifecycle
@@ -122,11 +166,13 @@ class ChannelViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.delegate = self
+        tableView.dataSource = dataSource
         presenter?.viewReady()
         setTableView()
         setGesture()
         activityIndicator.startAnimating()
         sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
+        choosePhotoButton.addTarget(self, action: #selector(pickPhoto), for: .touchUpInside)
         NotificationCenter.default.addObserver(self,
                                                selector: #selector(showKeyboard ),
                                                name: UIResponder.keyboardWillShowNotification,
@@ -138,9 +184,9 @@ class ChannelViewController: UIViewController {
     }
     
     override func viewWillAppear(_ animated: Bool) {
-        
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
+        presenter?.subscribeToSSE()
         view.backgroundColor = themeService.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
         tabBarController?.tabBar.isHidden = true
@@ -167,7 +213,7 @@ class ChannelViewController: UIViewController {
             titlesSections.append(formatter.string(from: date))
             messages.sort { $0.date < $1.date }
             snapshot.appendSections([date])
-            snapshot.appendItems(messages)
+            snapshot.appendItems(messages.map({ $0.uuid }))
         }
         dataSource.apply(snapshot)
     }
@@ -229,6 +275,15 @@ class ChannelViewController: UIViewController {
         navigationController?.popToRootViewController(animated: true)
     }
     
+    @objc
+    private func pickPhoto() {
+        guard let navigationController = self.navigationController else {
+            return
+        }
+        presenter?.showNetworkImages(navigationController: navigationController,
+                                     vc: self)
+    }
+    
     // MARK: - Setup UI
     
     private func setTableView() {
@@ -237,20 +292,22 @@ class ChannelViewController: UIViewController {
         view.addSubview(activityIndicator)
         textFieldView.addSubview(textField)
         textFieldView.addSubview(sendButton)
+        textFieldView.addSubview(choosePhotoButton)
         view.addSubview(customNavBar)
         customNavBar.addSubview(channelLogo)
         customNavBar.addSubview(channelName)
         customNavBar.addSubview(backButton)
         
+        tableView.translatesAutoresizingMaskIntoConstraints = false
         textFieldView.translatesAutoresizingMaskIntoConstraints = false
         textField.translatesAutoresizingMaskIntoConstraints = false
-        tableView.translatesAutoresizingMaskIntoConstraints = false
         sendButton.translatesAutoresizingMaskIntoConstraints = false
         customNavBar.translatesAutoresizingMaskIntoConstraints = false
         channelLogo.translatesAutoresizingMaskIntoConstraints = false
         channelName.translatesAutoresizingMaskIntoConstraints = false
         backButton.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
+        choosePhotoButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
             tableView.bottomAnchor.constraint(equalTo: textFieldView.topAnchor),
@@ -265,13 +322,18 @@ class ChannelViewController: UIViewController {
             
             textField.bottomAnchor.constraint(equalTo: textFieldView.bottomAnchor, constant: -5),
             textField.topAnchor.constraint(equalTo: textFieldView.topAnchor, constant: 5),
-            textField.leadingAnchor.constraint(equalTo: textFieldView.leadingAnchor, constant: 10),
+            textField.leadingAnchor.constraint(equalTo: choosePhotoButton.trailingAnchor),
             textField.trailingAnchor.constraint(equalTo: textFieldView.trailingAnchor, constant: -10),
             
-            sendButton.heightAnchor.constraint(equalTo: textField.heightAnchor),
+            sendButton.heightAnchor.constraint(equalTo: textFieldView.heightAnchor),
             sendButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
             sendButton.trailingAnchor.constraint(equalTo: textField.trailingAnchor),
-            sendButton.widthAnchor.constraint(equalTo: textField.heightAnchor),
+            sendButton.widthAnchor.constraint(equalTo: textFieldView.heightAnchor),
+            
+            choosePhotoButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
+            choosePhotoButton.heightAnchor.constraint(equalTo: textFieldView.heightAnchor),
+            choosePhotoButton.widthAnchor.constraint(equalTo: textFieldView.heightAnchor),
+            choosePhotoButton.leadingAnchor.constraint(equalTo: textFieldView.leadingAnchor),
             
             customNavBar.topAnchor.constraint(equalTo: view.topAnchor),
             customNavBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -305,7 +367,7 @@ extension ChannelViewController: UITableViewDelegate {
         let blurEffectView = UIVisualEffectView(effect: blur)
         blurEffectView.frame = CGRect(origin: .zero, size: CGSize(width: view.frame.width, height: tableView.estimatedSectionHeaderHeight))
         title.frame = blurEffectView.bounds
-        blurEffectView.alpha = 0.8
+        blurEffectView.alpha = 0.6
         title.translatesAutoresizingMaskIntoConstraints = false
         blurEffectView.contentView.addSubview(title)
         NSLayoutConstraint.activate([
@@ -332,23 +394,31 @@ extension ChannelViewController: ChannelViewProtocol {
     }
     
     func addMessage(message: MessageModel) {
+        messages.append(message)
         var snapshot = dataSource.snapshot()
         if snapshot.numberOfSections == 0 {
             snapshot.appendSections([message.date])
-            snapshot.appendItems([message], toSection: message.date)
+            snapshot.appendItems([message.uuid], toSection: message.date)
         } else {
-            snapshot.appendItems([message])
+            snapshot.appendItems([message.uuid])
         }
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self else {
+                return
+            }
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy"
             self.titlesSections.append(formatter.string(from: message.date))
-            self.dataSource.apply(snapshot)
+            self.dataSource.apply(snapshot, animatingDifferences: true)
             let lastSectionNumber = self.tableView.numberOfSections - 1
             let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
             self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),
                                                      at: .none, animated: true)
         }
+    }
+    
+    func setImageMessage(link: String) {
+        textField.text = link
     }
 }

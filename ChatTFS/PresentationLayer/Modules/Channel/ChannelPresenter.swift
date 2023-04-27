@@ -11,6 +11,8 @@ protocol ChannelPresenterProtocol: AnyObject {
     func dataUploaded()
     func uploadMessage(messageModel: MessageNetworkModel)
     func createMessage(messageText: String?)
+    func subscribeToSSE()
+    func showNetworkImages(navigationController: UINavigationController, vc: UIViewController)
 }
 
 class ChannelPresenter {
@@ -28,6 +30,7 @@ class ChannelPresenter {
 
     private var userID: String?
     private var userName: String?
+    var currentUserID = ""
     
     // MARK: - Initialization
     
@@ -123,10 +126,28 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     }
     
     func uploadMessage(messageModel: MessageNetworkModel) {
+        let isMyMessage = { messageModel.userID == userID }()
+        let isSameUser = {
+            if currentUserID == messageModel.userID {
+                return true
+            } else {
+                currentUserID = messageModel.userID
+                return false
+            }
+        }()
+        currentUserID = messageModel.userID
         view?.addMessage(message: MessageModel(text: messageModel.text,
                                                    date: messageModel.date,
-                                                   myMessage: true,
-                                                   userName: "",
-                                                   isSameUser: true))
+                                                   myMessage: isMyMessage,
+                                               userName: messageModel.userName,
+                                                   isSameUser: isSameUser))
+    }
+    
+    func subscribeToSSE() {
+        interactor.subscribeToSSE()
+    }
+    
+    func showNetworkImages(navigationController: UINavigationController, vc: UIViewController) {
+        router?.showNetworkImages(navigationController: navigationController, vc: vc)
     }
 }

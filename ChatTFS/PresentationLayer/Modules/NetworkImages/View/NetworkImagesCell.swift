@@ -48,10 +48,6 @@ class NetworkImagesCell: UICollectionViewCell {
     // MARK: - Public methods
     
     func configure(with model: NetworkImageModel) {
-        if model.image == nil {
-            imageAvatar.image = UIImage(systemName: "photo")?.withTintColor(.lightGray, renderingMode: .alwaysOriginal)
-        } else {
-            imageAvatar.image = model.image
-        }
+        imageAvatar.image = model.image
     }
 }

@@ -13,7 +13,7 @@ class NetworkService: NetworkServiceProtocol {
     
     // MARK: - Private properties
     
-    private let session = URLSession.shared
+    private lazy var session = URLSession.shared
     
     // MARK: - Public methods
     

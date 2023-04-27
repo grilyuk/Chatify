@@ -14,6 +14,8 @@ protocol ChannelsListPresenterProtocol: AnyObject {
     func deleteFromView(channelID: String)
     func interactorError()
     func updateChannel(channel: ChannelNetworkModel)
+    func subscribeToSSE()
+    func unsubscribeFromSSE()
 }
 
 class ChannelsListPresenter: ChannelsListPresenterProtocol {
@@ -127,5 +129,13 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
         actualChannel.date = channel.lastActivity
         actualChannel.message = channel.lastMessage
         view?.updateChannel(channel: actualChannel)
+    }
+    
+    func subscribeToSSE() {
+        interactor.subscribeToSSE()
+    }
+    
+    func unsubscribeFromSSE() {
+        interactor.unsubscribeFromSSE()
     }
 }

@@ -10,6 +10,7 @@ protocol ChatServiceProtocol {
     func createMessageData(messageText: String, channelID: String, userID: String, userName: String) -> AnyPublisher<MessageNetworkModel, Error>
     func loadMessagesFrom(channelID: String) -> AnyPublisher<[MessageNetworkModel], Error>
     func listenResponses() -> AnyPublisher<ChatEvent, Error>
+    func stopListen()
 }
 
 final class ChatTFSService: ChatServiceProtocol {
@@ -23,14 +24,19 @@ final class ChatTFSService: ChatServiceProtocol {
     // MARK: - Private properties
     
     private let chatTFS: ChatTFS
-    private var eventsSubscribe: Cancellable?
+    weak var SSEService: SSEService?
     private let mainQueue = DispatchQueue.main
     private let backgroundQueue = DispatchQueue.global(qos: .utility)
     
     // MARK: - Public methods
     
     func listenResponses() -> AnyPublisher<ChatEvent, Error> {
-        chatTFS.chatSSE.subscribeOnEvents()
+        let SSEService = chatTFS.chatSSE
+        return SSEService.subscribeOnEvents()
+    }
+    
+    func stopListen() {
+        SSEService?.cancelSubscription()
     }
     
     func loadChannel(id: String) -> AnyPublisher<ChannelNetworkModel, Error> {

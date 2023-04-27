@@ -34,8 +34,7 @@ class NetworkImagesInteractor: NetworkImagesInteractorProtocol {
             switch result {
             case .success(let links):
                 let cellModels = links.map { link in
-                    return NetworkImageModel(image: nil,
-                                             isAvailable: false,
+                    return NetworkImageModel(isAvailable: false,
                                              link: link.url)
                 }
                 DispatchQueue.main.async {
@@ -48,6 +47,7 @@ class NetworkImagesInteractor: NetworkImagesInteractorProtocol {
     }
     
     func downloadImage(link: String) -> UIImage {
-        imageLoader.downloadImage(with: link)
+//        sleep(1)
+        return imageLoader.downloadImage(with: link)
     }
 }

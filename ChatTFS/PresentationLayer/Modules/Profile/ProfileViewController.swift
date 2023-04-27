@@ -369,6 +369,6 @@ extension ProfileViewController: ProfileViewProtocol {
     }
     
     func showNetworkImages() {
-        presenter?.showNetworkImages(navigationController: self.navigationController ?? UINavigationController(), profileVC: self)
+        presenter?.showNetworkImages(navigationController: self.navigationController ?? UINavigationController(), vc: self)
     }
 }

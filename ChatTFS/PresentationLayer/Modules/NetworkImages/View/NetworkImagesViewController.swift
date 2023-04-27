@@ -25,7 +25,7 @@ class NetworkImagesViewController: UIViewController {
     
     var images: [NetworkImageModel] = []
     var presenter: NetworkImagesPresenterProtocol?
-    weak var profileVC: ProfileViewProtocol?
+    weak var vc: UIViewController?
     weak var themeService: ThemeServiceProtocol?
     
     // MARK: - Private properties
@@ -110,7 +110,11 @@ extension NetworkImagesViewController: UICollectionViewDelegate {
         else {
             return
         }
-        profileVC?.profilePhoto.image = images[index].image
+        if let profileVC = vc as? ProfileViewProtocol {
+            profileVC.profilePhoto.image = images[index].image
+        } else if let channelVC = vc as? ChannelViewProtocol {
+            channelVC.setImageMessage(link: images[index].link)
+        }
         dismiss(animated: true) { [weak self] in
             self?.images.removeAll()
             self?.presenter?.uploadedImages.removeAll()

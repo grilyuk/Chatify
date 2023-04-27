@@ -6,6 +6,8 @@ protocol ChannelsListInteractorProtocol: AnyObject {
     func createChannel(channelName: String)
     func deleteChannel(id: String)
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
+    func subscribeToSSE()
+    func unsubscribeFromSSE()
 }
 
 class ChannelsListInteractor: ChannelsListInteractorProtocol {
@@ -43,7 +45,9 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
 
         loadFromCoreData()
         loadFromNetwork()
-        
+    }
+    
+    func subscribeToSSE() {
         eventsSubscribe = chatService.listenResponses()
             .sink { _ in
             } receiveValue: { [weak self] event in
@@ -70,6 +74,11 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                     self?.coreDataService.deleteChannel(channelID: id)
                 }
             }
+    }
+    
+    func unsubscribeFromSSE() {
+        chatService.stopListen()
+        eventsSubscribe?.cancel()
     }
     
     func createChannel(channelName: String) {

@@ -40,8 +40,9 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - Private properties
     
-    private lazy var dataSource = DataSource(tableView: tableView) { tableView, indexPath, itemIdentifier in
-        guard let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
+    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, itemIdentifier in
+        guard let self,
+              let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
               let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
         else {
             return ChannelListCell()
@@ -127,7 +128,13 @@ class ChannelsListViewController: UIViewController {
         view.backgroundColor = themeService.currentTheme.backgroundColor
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
         dataSource.updateColorCells(channels: channels)
+        presenter?.subscribeToSSE()
         setupNavigationBar()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        presenter?.unsubscribeFromSSE()
     }
     
     // MARK: - Private methods

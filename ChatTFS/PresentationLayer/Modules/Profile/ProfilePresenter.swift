@@ -4,7 +4,7 @@ protocol ProfilePresenterProtocol: AnyObject {
     func viewReady()
     func dataUploaded()
     func updateProfile(profile: ProfileModel)
-    func showNetworkImages(navigationController: UINavigationController, profileVC: ProfileViewProtocol)
+    func showNetworkImages(navigationController: UINavigationController, vc: UIViewController)
     var profile: ProfileModel? { get set }
     var router: RouterProtocol { get }
 }
@@ -41,7 +41,7 @@ extension ProfilePresenter: ProfilePresenterProtocol {
         interactor.updateData(profile: profile)
     }
     
-    func showNetworkImages(navigationController: UINavigationController, profileVC: ProfileViewProtocol) {
-        router.showNetworkImages(navigationController: navigationController, profileVC: profileVC)
+    func showNetworkImages(navigationController: UINavigationController, vc: UIViewController) {
+        router.showNetworkImages(navigationController: navigationController, vc: vc)
     }
 }
