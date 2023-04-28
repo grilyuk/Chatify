@@ -1,4 +1,4 @@
-import UIKit
+import Foundation
 
 struct ProfileModel: Codable {
     let fullName: String?

@@ -11,11 +11,3 @@ struct ChannelModel: Hashable {
     let channelID: String?
     let uuid = UUID()
 }
-
-struct ChannelNetworkModel: Hashable {
-    let id: String
-    let name: String
-    let logoURL: String?
-    let lastMessage: String?
-    let lastActivity: Date?
-}

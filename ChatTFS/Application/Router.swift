@@ -2,7 +2,7 @@ import UIKit
 import TFSChatTransport
 
 protocol RouterMain: AnyObject {
-    var moduleBuilder: ModuleBuilderProtocol? {get set}
+    var moduleBuilder: ModuleAssemblyProtocol? {get set}
 }
 
 protocol RouterProtocol: RouterMain {
@@ -11,17 +11,17 @@ protocol RouterProtocol: RouterMain {
 
 class Router: RouterProtocol {
     
-    // MARK: - Public
+    // MARK: - Initialization
     
-    var moduleBuilder: ModuleBuilderProtocol?
-    
-    // MARK: - Init
-    
-    init(moduleBuilder: ModuleBuilderProtocol) {
+    init(moduleBuilder: ModuleAssemblyProtocol) {
         self.moduleBuilder = moduleBuilder
     }
     
-    // MARK: - Methods
+    // MARK: - Public properties
+    
+    var moduleBuilder: ModuleAssemblyProtocol?
+    
+    // MARK: - Public methods
     
     func showChannel(channel: String, navigationController: UINavigationController) {
         guard let channelViewController = moduleBuilder?.buildChannel(router: self, channel: channel) else { return }
