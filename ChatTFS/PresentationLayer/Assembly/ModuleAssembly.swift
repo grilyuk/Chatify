@@ -51,7 +51,8 @@ class ModuleAssembly: ModuleAssemblyProtocol {
         let interactor = ChannelInteractor(chatService: chatService,
                                            channelID: channel,
                                            coreDataService: coreDataService,
-                                           dataManager: dataManager)
+                                           dataManager: dataManager,
+                                           imageLoaderService: imageLoaderService)
         let presenter = ChannelPresenter(router: router, interactor: interactor)
         let view = ChannelViewController(themeService: themeService)
         view.presenter = presenter

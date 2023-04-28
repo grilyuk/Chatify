@@ -38,13 +38,14 @@ class ChannelViewController: UIViewController {
     var themeService: ThemeServiceProtocol
     
     // MARK: - Private
-    
+
     private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, uuid in
         guard let model = self?.messages.first(where: { $0.uuid == uuid }),
               let themeService = self?.themeService
         else {
             return UITableViewCell()
         }
+        
         switch model.myMessage {
         case true:
             guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingChannelViewCell.identifier,
@@ -168,6 +169,7 @@ class ChannelViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = dataSource
         presenter?.viewReady()
+        dataSource.defaultRowAnimation = .fade
         setTableView()
         setGesture()
         activityIndicator.startAnimating()

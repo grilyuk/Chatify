@@ -60,10 +60,10 @@ extension ChannelPresenter: ChannelPresenterProtocol {
             self?.view?.messages = messages
             self?.view?.showChannel(channel: channel)
         }
-        
-        var currentUserID = ""
+//        var currentUserID = ""
         var messages: [MessageModel] = []
-        messagesData?.forEach({ [weak self] message in
+        DispatchQueue.global().async { [weak self] in
+            self?.messagesData?.forEach({ [weak self] message in
             if message.userID == self?.userID && message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                 messages.append(MessageModel(text: message.text,
                                                  date: message.date,
@@ -73,22 +73,31 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                 
             } else if message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                 let isSameUser = {
-                    if currentUserID == message.userID {
+                    if self?.currentUserID == message.userID {
                         return true
                     } else {
-                        currentUserID = message.userID
+                        self?.currentUserID = message.userID
                         return false
                     }
                 }()
-                messages.append(MessageModel(text: message.text,
-                                                 date: message.date,
-                                                 myMessage: false,
-                                                 userName: message.userName,
-                                                 isSameUser: isSameUser))
+                
+                let imageForMessage: UIImage? = {
+                    if message.text.isLink() {
+                        return self?.interactor.getImageForMessage(link: message.text)
+                    } else {
+                        return nil
+                    }
+                }()
+                
+                messages.append(MessageModel(image: imageForMessage,
+                                             text: message.text,
+                                             date: message.date,
+                                             myMessage: false,
+                                             userName: message.userName,
+                                             isSameUser: isSameUser))
             }
         })
         
-        DispatchQueue.global().async { [weak self] in
             guard
                 let channelData = self?.channelData
             else {

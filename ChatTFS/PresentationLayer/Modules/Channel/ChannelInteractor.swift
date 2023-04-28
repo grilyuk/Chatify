@@ -9,6 +9,7 @@ protocol ChannelInteractorProtocol: AnyObject {
     func loadData()
     func createMessage(messageText: String, userID: String, userName: String)
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
+    func getImageForMessage(link: String) -> UIImage
     func subscribeToSSE()
     func unsubscribeFromSSE()
 }
@@ -20,18 +21,21 @@ class ChannelInteractor: ChannelInteractorProtocol {
     init(chatService: ChatServiceProtocol,
          channelID: String,
          coreDataService: CoreDataServiceProtocol,
-         dataManager: FileManagerServiceProtocol) {
+         dataManager: FileManagerServiceProtocol,
+         imageLoaderService: ImageLoaderServiceProtocol) {
         
         self.chatService = chatService
         self.channelID = channelID
         self.coreDataService = coreDataService
         self.DBChannel = coreDataService.getDBChannel(channel: channelID)
         self.dataManager = dataManager
+        self.imageLoaderService = imageLoaderService
     }
     
     // MARK: - Public properties
     
     weak var presenter: ChannelPresenterProtocol?
+    weak var imageLoaderService: ImageLoaderServiceProtocol?
     var handler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)?
     var userName = ""
     var userID = ""
@@ -117,13 +121,19 @@ class ChannelInteractor: ChannelInteractorProtocol {
             guard let self else { return }
             self.coreDataService.saveMessagesForChannel(for: self.channelID,
                                                         messages: [message])
-            self.presenter?.uploadMessage(messageModel: message)
         })
         .cancel()
     }
     
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage {
         dataManager.getChannelImage(for: channel)
+    }
+    
+    func getImageForMessage(link: String) -> UIImage {
+        guard let placeholder = UIImage(systemName: "photo") else {
+            return UIImage()
+        }
+        return imageLoaderService?.downloadImage(with: link) ?? placeholder
     }
     
     // MARK: - Private methods

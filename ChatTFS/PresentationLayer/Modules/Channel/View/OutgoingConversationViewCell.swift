@@ -90,7 +90,11 @@ class OutgoingChannelViewCell: UITableViewCell {
 
 extension OutgoingChannelViewCell: ConfigurableViewProtocol {
     func configure(with model: MessageModel) {
-        messageText.text = model.text
+        if model.text.isLink() {
+            
+        } else {
+            messageText.text = model.text
+        }
         let format = DateFormatter()
         format.dateFormat = "HH:mm"
         dateLabel.text = format.string(from: model.date)

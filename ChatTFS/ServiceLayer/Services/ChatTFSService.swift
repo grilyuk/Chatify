@@ -24,7 +24,7 @@ final class ChatTFSService: ChatServiceProtocol {
     // MARK: - Private properties
     
     private let chatTFS: ChatTFS
-    var SSEService: SSEService?
+    private var SSEService: SSEService?
     private let mainQueue = DispatchQueue.main
     private let backgroundQueue = DispatchQueue.global(qos: .utility)
     

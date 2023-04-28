@@ -118,6 +118,7 @@ class ChannelsListViewController: UIViewController {
         tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
         presenter?.viewReady()
+        dataSource.defaultRowAnimation = .fade
         setupTableViewConstraints()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         activityIndicator.startAnimating()

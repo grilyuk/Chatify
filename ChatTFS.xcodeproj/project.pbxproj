@@ -25,6 +25,7 @@
 		5E12625B29F857D8009B5289 /* ImageLoaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625A29F857D8009B5289 /* ImageLoaderService.swift */; };
 		5E12625F29F86EF4009B5289 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625E29F86EF4009B5289 /* NetworkService.swift */; };
 		5E12626129F92686009B5289 /* ImageLinkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12626029F92686009B5289 /* ImageLinkModel.swift */; };
+		5E12628329FB3193009B5289 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12628229FB3193009B5289 /* StringExtension.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */; };
@@ -80,6 +81,7 @@
 		5E12625A29F857D8009B5289 /* ImageLoaderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoaderService.swift; sourceTree = "<group>"; };
 		5E12625E29F86EF4009B5289 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		5E12626029F92686009B5289 /* ImageLinkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLinkModel.swift; sourceTree = "<group>"; };
+		5E12628229FB3193009B5289 /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SameIncomingChannelViewCell.swift; sourceTree = "<group>"; };
@@ -353,6 +355,7 @@
 				5E97BF3629BE33B3003BBA1B /* UIViewExtension.swift */,
 				5EC4498A29C3BF8A00D6C51C /* UIImageExtension.swift */,
 				5ECA720329D3858E0049E635 /* ErrorExtension.swift */,
+				5E12628229FB3193009B5289 /* StringExtension.swift */,
 			);
 			path = Extension;
 			sourceTree = "<group>";
@@ -581,6 +584,7 @@
 				5EDC6597299ECEAD009B6586 /* ChannelsListViewController.swift in Sources */,
 				5E42B9D629C24FF700F472D1 /* MessageModel.swift in Sources */,
 				5E92E9F429B72B9F0038EED2 /* ChannelPresenter.swift in Sources */,
+				5E12628329FB3193009B5289 /* StringExtension.swift in Sources */,
 				5E97BF3D29BE8542003BBA1B /* OutgoingConversationViewCell.swift in Sources */,
 				5E12622729EF14B7009B5289 /* FileManagerStack.swift in Sources */,
 				5E12624A29F33FBD009B5289 /* NetworkImagesCell.swift in Sources */,
