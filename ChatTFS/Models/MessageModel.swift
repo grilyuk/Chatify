@@ -7,5 +7,6 @@ struct MessageModel: Hashable {
     let myMessage: Bool
     let userName: String
     let isSameUser: Bool
+    let id: String
     let uuid = UUID()
 }

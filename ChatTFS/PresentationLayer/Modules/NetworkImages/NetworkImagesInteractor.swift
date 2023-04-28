@@ -3,7 +3,7 @@ import UIKit
 
 protocol NetworkImagesInteractorProtocol: AnyObject {
     func loadData()
-    func downloadImage(link: String) -> UIImage
+    func downloadImage(link: String, completion: @escaping (Result<UIImage, Error>) -> Void)
 }
 
 class NetworkImagesInteractor: NetworkImagesInteractorProtocol {
@@ -46,8 +46,8 @@ class NetworkImagesInteractor: NetworkImagesInteractorProtocol {
         }
     }
     
-    func downloadImage(link: String) -> UIImage {
+    func downloadImage(link: String, completion: @escaping (Result<UIImage, Error>) -> Void) {
 //        sleep(1)
-        return imageLoader.downloadImage(with: link)
+        imageLoader.downloadImage(with: link, completion: completion)
     }
 }

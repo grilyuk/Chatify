@@ -66,24 +66,35 @@ extension ChannelPresenter: ChannelPresenterProtocol {
         var messages: [MessageModel] = []
         background.async { [weak self] in
             self?.messagesData?.forEach({ [weak self] message in
+                
             if message.userID == self?.userID && message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                 
-                let imageForMessage: UIImage? = {
-                    if message.text.isLink() {
-                        return self?.interactor.getImageForMessage(link: message.text)
-                    } else {
-                        return nil
-                    }
-                }()
-                
-                messages.append(MessageModel(image: imageForMessage,
+                messages.append(MessageModel(image: nil,
                                              text: message.text,
                                              date: message.date,
                                              myMessage: true,
                                              userName: message.userName,
-                                             isSameUser: true))
+                                             isSameUser: true,
+                                             id: message.id))
+                
+                if message.text.isLink() {
+                    self?.interactor.getImageForMessage(link: message.text) { result in
+                        switch result {
+                        case .success(let image):
+                            guard let uuid = messages.first(where: { $0.id == message.id })?.uuid else {
+                                return
+                            }
+                            self?.mainQueue.async { [weak self] in
+                                self?.view?.updateImage(image: image, id: uuid)
+                            }
+                        case .failure(let error):
+                            print(error)
+                        }
+                    }
+                }
                 
             } else if message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+                
                 let isSameUser = {
                     if self?.currentUserID == message.userID {
                         return true
@@ -93,26 +104,33 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                     }
                 }()
                 
-                let imageForMessage: UIImage? = {
-                    if message.text.isLink() {
-                        return self?.interactor.getImageForMessage(link: message.text)
-                    } else {
-                        return nil
+                if message.text.isLink() {
+                    self?.interactor.getImageForMessage(link: message.text) { result in
+                        switch result {
+                        case .success(let image):
+                            guard let uuid = messages.first(where: { $0.id == message.id })?.uuid else {
+                                return
+                            }
+                            self?.mainQueue.async { [weak self] in
+                                self?.view?.updateImage(image: image, id: uuid)
+                            }
+                        case .failure(let error):
+                            print(error)
+                        }
                     }
-                }()
+                }
                 
-                messages.append(MessageModel(image: imageForMessage,
+                messages.append(MessageModel(image: nil,
                                              text: message.text,
                                              date: message.date,
                                              myMessage: false,
                                              userName: message.userName,
-                                             isSameUser: isSameUser))
+                                             isSameUser: isSameUser,
+                                             id: message.id))
             }
         })
         
-            guard
-                let channelData = self?.channelData
-            else {
+            guard let channelData = self?.channelData else {
                 return
             }
             
@@ -158,21 +176,32 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                     return false
                 }
             }()
-            let imageForMessage: UIImage? = {
-                if messageModel.text.isLink() {
-                    return self?.interactor.getImageForMessage(link: messageModel.text)
-                } else {
-                    return nil
+            
+            if messageModel.text.isLink() {
+                self?.interactor.getImageForMessage(link: messageModel.text) { result in
+                    switch result {
+                    case .success(let image):
+                        guard let uuid = self?.view?.messages.first(where: { $0.id == messageModel.id })?.uuid else {
+                            return
+                        }
+                        self?.mainQueue.async { [weak self] in
+                            self?.view?.updateImage(image: image, id: uuid)
+                        }
+                    case .failure(let error):
+                        print(error)
+                    }
                 }
-            }()
+            }
+            
             self?.currentUserID = messageModel.userID
             self?.mainQueue.async { [weak self] in
-                self?.view?.addMessage(message: MessageModel(image: imageForMessage,
+                self?.view?.addMessage(message: MessageModel(image: nil,
                                                        text: messageModel.text,
-                                                       date: messageModel.date,
-                                                       myMessage: isMyMessage,
-                                                       userName: messageModel.userName,
-                                                       isSameUser: isSameUser))
+                                                             date: messageModel.date,
+                                                             myMessage: isMyMessage,
+                                                             userName: messageModel.userName,
+                                                             isSameUser: isSameUser,
+                                                             id: messageModel.id))
             }
         }
     }

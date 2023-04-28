@@ -45,8 +45,17 @@ class NetworkImagesPresenter: NetworkImagesPresenterProtocol {
         guard let index = view?.images.firstIndex(where: { $0.uuid == uuid }) else {
             return
         }
-        view?.images[index].image = interactor.downloadImage(link: url)
-        view?.images[index].isAvailable = true
+        
+        interactor.downloadImage(link: url) { [weak self] result in
+            switch result {
+            case .success(let image):
+                self?.view?.images[index].image = image
+                self?.view?.images[index].isAvailable = true
+            case .failure(let error):
+                print(error)
+            }
+        }
+        
         DispatchQueue.main.async { [weak self] in
             self?.view?.updateImageInCell(uuid: uuid)
         }

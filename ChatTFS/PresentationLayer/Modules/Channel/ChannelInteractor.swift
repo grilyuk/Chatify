@@ -9,7 +9,7 @@ protocol ChannelInteractorProtocol: AnyObject {
     func loadData()
     func createMessage(messageText: String, userID: String, userName: String)
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
-    func getImageForMessage(link: String) -> UIImage
+    func getImageForMessage(link: String, completion: @escaping (Result<UIImage, Error>) -> Void)
     func subscribeToSSE()
     func unsubscribeFromSSE()
 }
@@ -129,11 +129,8 @@ class ChannelInteractor: ChannelInteractorProtocol {
         dataManager.getChannelImage(for: channel)
     }
     
-    func getImageForMessage(link: String) -> UIImage {
-        guard let placeholder = UIImage(systemName: "photo") else {
-            return UIImage()
-        }
-        return imageLoaderService?.downloadImage(with: link) ?? placeholder
+    func getImageForMessage(link: String, completion: @escaping (Result<UIImage, Error>) -> Void) {
+        imageLoaderService?.downloadImage(with: link, completion: completion)
     }
     
     // MARK: - Private methods

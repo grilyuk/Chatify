@@ -3,7 +3,7 @@ import UIKit
 
 protocol ImageLoaderServiceProtocol: AnyObject {
     func getLinks(completion: @escaping (Result<[ImageLinkModel], Error>) -> Void)
-    func downloadImage(with url: String) -> UIImage
+    func downloadImage(with url: String, completion: @escaping (Result<UIImage, Error>) -> Void)
 }
 
 class ImageLoaderService: ImageLoaderServiceProtocol {
@@ -32,13 +32,10 @@ class ImageLoaderService: ImageLoaderServiceProtocol {
         networkService.sendRequest(request, completion: completion)
     }
     
-    func downloadImage(with url: String) -> UIImage {
-        guard let link = URL(string: url),
-              let data = try? Data(contentsOf: link),
-              let image = UIImage(data: data)
-        else {
-            return UIImage(systemName: "questionmark.app") ?? UIImage()
+    func downloadImage(with url: String, completion: @escaping (Result<UIImage, Error>) -> Void) {
+        guard let url = URL(string: url) else {
+            return
         }
-        return image
+        networkService.sendRequestForImage(URLRequest(url: url), completion: completion)
     }
 }

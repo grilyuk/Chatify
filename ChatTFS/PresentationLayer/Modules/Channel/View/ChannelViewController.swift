@@ -5,6 +5,7 @@ protocol ChannelViewProtocol: AnyObject {
     func addMessage(message: MessageModel)
     var messages: [MessageModel] { get set }
     func setImageMessage(link: String)
+    func updateImage(image: UIImage, id: UUID)
 }
 
 class ChannelViewController: UIViewController {
@@ -423,5 +424,17 @@ extension ChannelViewController: ChannelViewProtocol {
     
     func setImageMessage(link: String) {
         textField.text = link
+    }
+    
+    func updateImage(image: UIImage, id: UUID) {
+        guard let index = messages.firstIndex(where: { $0.uuid == id }) else {
+            return
+        }
+        messages[index].image = image
+        var snapshot = dataSource.snapshot()
+        if id == snapshot.itemIdentifiers.first(where: { $0 == id }) {
+            snapshot.reloadItems([id])
+        }
+        dataSource.apply(snapshot)
     }
 }
