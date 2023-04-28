@@ -77,47 +77,12 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                                              isSameUser: true,
                                              id: message.id))
                 
-                if message.text.isLink() {
-                    self?.interactor.getImageForMessage(link: message.text) { result in
-                        switch result {
-                        case .success(let image):
-                            guard let uuid = messages.first(where: { $0.id == message.id })?.uuid else {
-                                return
-                            }
-                            self?.mainQueue.async { [weak self] in
-                                self?.view?.updateImage(image: image, id: uuid)
-                            }
-                        case .failure(let error):
-                            print(error)
-                        }
-                    }
-                }
+                _ = self?.configureMessageModel(from: message)
                 
             } else if message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                 
-                let isSameUser = {
-                    if self?.currentUserID == message.userID {
-                        return true
-                    } else {
-                        self?.currentUserID = message.userID
-                        return false
-                    }
-                }()
-                
-                if message.text.isLink() {
-                    self?.interactor.getImageForMessage(link: message.text) { result in
-                        switch result {
-                        case .success(let image):
-                            guard let uuid = messages.first(where: { $0.id == message.id })?.uuid else {
-                                return
-                            }
-                            self?.mainQueue.async { [weak self] in
-                                self?.view?.updateImage(image: image, id: uuid)
-                            }
-                        case .failure(let error):
-                            print(error)
-                        }
-                    }
+                guard let configure = self?.configureMessageModel(from: message) else {
+                    return
                 }
                 
                 messages.append(MessageModel(image: nil,
@@ -125,7 +90,7 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                                              date: message.date,
                                              myMessage: false,
                                              userName: message.userName,
-                                             isSameUser: isSameUser,
+                                             isSameUser: configure.isSameUser,
                                              id: message.id))
             }
         })
@@ -167,30 +132,9 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     
     func uploadMessage(messageModel: MessageNetworkModel) {
         background.async { [weak self] in
-            let isMyMessage = { messageModel.userID == self?.userID }()
-            let isSameUser = {
-                if self?.currentUserID == messageModel.userID {
-                    return true
-                } else {
-                    self?.currentUserID = messageModel.userID
-                    return false
-                }
-            }()
             
-            if messageModel.text.isLink() {
-                self?.interactor.getImageForMessage(link: messageModel.text) { result in
-                    switch result {
-                    case .success(let image):
-                        guard let uuid = self?.view?.messages.first(where: { $0.id == messageModel.id })?.uuid else {
-                            return
-                        }
-                        self?.mainQueue.async { [weak self] in
-                            self?.view?.updateImage(image: image, id: uuid)
-                        }
-                    case .failure(let error):
-                        print(error)
-                    }
-                }
+            guard let configure = self?.configureMessageModel(from: messageModel) else {
+                return
             }
             
             self?.currentUserID = messageModel.userID
@@ -198,9 +142,9 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                 self?.view?.addMessage(message: MessageModel(image: nil,
                                                        text: messageModel.text,
                                                              date: messageModel.date,
-                                                             myMessage: isMyMessage,
+                                                             myMessage: configure.isMyMessage,
                                                              userName: messageModel.userName,
-                                                             isSameUser: isSameUser,
+                                                             isSameUser: configure.isSameUser,
                                                              id: messageModel.id))
             }
         }
@@ -216,5 +160,36 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     
     func showNetworkImages(navigationController: UINavigationController, vc: UIViewController) {
         router?.showNetworkImages(navigationController: navigationController, vc: vc)
+    }
+    
+    // MARK: - Private methods
+    
+    private func configureMessageModel(from messageModel: MessageNetworkModel) -> (isMyMessage: Bool, isSameUser: Bool) {
+        let isMyMessage = { messageModel.userID == self.userID }()
+        let isSameUser = {
+            if self.currentUserID == messageModel.userID {
+                return true
+            } else {
+                self.currentUserID = messageModel.userID
+                return false
+            }
+        }()
+        
+        if messageModel.text.isLink() {
+            self.interactor.getImageForMessage(link: messageModel.text) { result in
+                switch result {
+                case .success(let image):
+                    guard let uuid = self.view?.messages.first(where: { $0.id == messageModel.id })?.uuid else {
+                        return
+                    }
+                    self.mainQueue.async { [weak self] in
+                        self?.view?.updateImage(image: image, id: uuid)
+                    }
+                case .failure(let error):
+                    print(error)
+                }
+            }
+        }
+        return (isMyMessage, isSameUser)
     }
 }
