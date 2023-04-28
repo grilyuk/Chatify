@@ -32,6 +32,8 @@ class ChannelPresenter {
     private var userID: String?
     private var userName: String?
     var currentUserID = ""
+    private let mainQueue = DispatchQueue.main
+    private let background = DispatchQueue.global(qos: .userInteractive)
     
     // MARK: - Initialization
     
@@ -60,16 +62,26 @@ extension ChannelPresenter: ChannelPresenterProtocol {
             self?.view?.messages = messages
             self?.view?.showChannel(channel: channel)
         }
-//        var currentUserID = ""
+        
         var messages: [MessageModel] = []
-        DispatchQueue.global().async { [weak self] in
+        background.async { [weak self] in
             self?.messagesData?.forEach({ [weak self] message in
             if message.userID == self?.userID && message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
-                messages.append(MessageModel(text: message.text,
-                                                 date: message.date,
-                                                 myMessage: true,
-                                                 userName: message.userName,
-                                                 isSameUser: true))
+                
+                let imageForMessage: UIImage? = {
+                    if message.text.isLink() {
+                        return self?.interactor.getImageForMessage(link: message.text)
+                    } else {
+                        return nil
+                    }
+                }()
+                
+                messages.append(MessageModel(image: imageForMessage,
+                                             text: message.text,
+                                             date: message.date,
+                                             myMessage: true,
+                                             userName: message.userName,
+                                             isSameUser: true))
                 
             } else if message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
                 let isSameUser = {
@@ -114,7 +126,7 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                                        hasUnreadMessages: nil,
                                        channelID: nil)
             
-            DispatchQueue.main.async { [weak self] in
+            self?.mainQueue.async { [weak self] in
                 self?.handler?(channel, messages)
             }
         }
@@ -136,21 +148,33 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     }
     
     func uploadMessage(messageModel: MessageNetworkModel) {
-        let isMyMessage = { messageModel.userID == userID }()
-        let isSameUser = {
-            if currentUserID == messageModel.userID {
-                return true
-            } else {
-                currentUserID = messageModel.userID
-                return false
+        background.async { [weak self] in
+            let isMyMessage = { messageModel.userID == self?.userID }()
+            let isSameUser = {
+                if self?.currentUserID == messageModel.userID {
+                    return true
+                } else {
+                    self?.currentUserID = messageModel.userID
+                    return false
+                }
+            }()
+            let imageForMessage: UIImage? = {
+                if messageModel.text.isLink() {
+                    return self?.interactor.getImageForMessage(link: messageModel.text)
+                } else {
+                    return nil
+                }
+            }()
+            self?.currentUserID = messageModel.userID
+            self?.mainQueue.async { [weak self] in
+                self?.view?.addMessage(message: MessageModel(image: imageForMessage,
+                                                       text: messageModel.text,
+                                                       date: messageModel.date,
+                                                       myMessage: isMyMessage,
+                                                       userName: messageModel.userName,
+                                                       isSameUser: isSameUser))
             }
-        }()
-        currentUserID = messageModel.userID
-        view?.addMessage(message: MessageModel(text: messageModel.text,
-                                                   date: messageModel.date,
-                                                   myMessage: isMyMessage,
-                                               userName: messageModel.userName,
-                                                   isSameUser: isSameUser))
+        }
     }
     
     func subscribeToSSE() {

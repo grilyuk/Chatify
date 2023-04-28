@@ -38,6 +38,14 @@ class OutgoingChannelViewCell: UITableViewCell {
         return date
     }()
     
+    private lazy var imageMessage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = UIConstants.cornerRadius
+        imageView.clipsToBounds = true
+        return imageView
+    }()
+    
     // MARK: - Lifecycle
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -90,11 +98,23 @@ class OutgoingChannelViewCell: UITableViewCell {
 
 extension OutgoingChannelViewCell: ConfigurableViewProtocol {
     func configure(with model: MessageModel) {
-        if model.text.isLink() {
-            
+        if model.image != nil {
+            imageMessage.image = model.image
+            contentView.addSubview(imageMessage)
+            imageMessage.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                imageMessage.topAnchor.constraint(equalTo: messageBubble.topAnchor, constant: UIConstants.edge),
+                imageMessage.bottomAnchor.constraint(equalTo: dateLabel.topAnchor, constant: -UIConstants.edge),
+                imageMessage.leadingAnchor.constraint(equalTo: messageBubble.leadingAnchor, constant: UIConstants.edge),
+                imageMessage.trailingAnchor.constraint(equalTo: messageBubble.trailingAnchor, constant: -UIConstants.edge),
+                imageMessage.heightAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, multiplier: 0.75),
+                imageMessage.widthAnchor.constraint(lessThanOrEqualTo: contentView.widthAnchor, multiplier: 0.75)
+            ])
+            layoutIfNeeded()
         } else {
             messageText.text = model.text
         }
+        
         let format = DateFormatter()
         format.dateFormat = "HH:mm"
         dateLabel.text = format.string(from: model.date)
