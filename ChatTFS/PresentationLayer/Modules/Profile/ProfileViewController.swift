@@ -14,7 +14,6 @@ class ProfileViewController: UIViewController {
     init(themeService: ThemeServiceProtocol, profilePublisher: CurrentValueSubject<ProfileModel, Never>) {
         self.themeService = themeService
         self.profilePublisher = profilePublisher
-        print("TEST")
         super.init(nibName: nil, bundle: nil)
     }
     
