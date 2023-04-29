@@ -98,6 +98,7 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                 return
                             }
                             self?.presenter?.uploadMessage(messageModel: lastMessage)
+                            self?.coreDataService.saveMessagesForChannel(for: id, messages: [lastMessage])
                         }
                         .cancel()
                 case .delete:

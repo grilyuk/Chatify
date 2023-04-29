@@ -176,7 +176,7 @@ extension ChannelPresenter: ChannelPresenterProtocol {
         }()
         
         if messageModel.text.isLink() {
-            self.interactor.getImageForMessage(link: messageModel.text) { result in
+            interactor.getImageForMessage(link: messageModel.text) { result in
                 switch result {
                 case .success(let image):
                     guard let uuid = self.view?.messages.first(where: { $0.id == messageModel.id })?.uuid else {

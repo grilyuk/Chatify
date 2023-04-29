@@ -36,6 +36,9 @@ class ImageLoaderService: ImageLoaderServiceProtocol {
         guard let url = URL(string: url) else {
             return
         }
-        networkService.sendRequestForImage(URLRequest(url: url), completion: completion)
+        
+        let request = URLRequest(url: url)
+        
+        networkService.sendRequestForImage(request, completion: completion)
     }
 }
