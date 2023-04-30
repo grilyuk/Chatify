@@ -174,12 +174,25 @@ class ProfileViewController: UIViewController {
     
     @objc
     private func stopAnimate(_ sender: UILongPressGestureRecognizer) {
+        let currentPosition = editButton.layer.presentation()?.value(forKeyPath: #keyPath(CALayer.position))
+        let currentAngle = editButton.layer.presentation()?.value(forKeyPath: "transform.rotation")
         editButton.layer.removeAllAnimations()
-        let endShake = CABasicAnimation(keyPath: "transform.rotation")
-        endShake.fromValue = -CGFloat.pi / 30
-        endShake.toValue = 0.0
-        endShake.duration = 0.5
-        editButton.layer.add(endShake, forKey: "endShake")
+        
+        let endShakePosition = CABasicAnimation(keyPath: #keyPath(CALayer.position))
+        endShakePosition.fromValue = currentPosition
+        endShakePosition.toValue = editButton.center
+        
+        let endShakeRotation = CABasicAnimation(keyPath: "transform.rotation")
+        
+        endShakeRotation.fromValue = currentAngle
+        endShakeRotation.toValue = 0.0
+        
+        let group = CAAnimationGroup()
+        group.duration = 0.5
+        group.animations = [endShakePosition, endShakeRotation]
+        group.fillMode = .forwards
+        
+        editButton.layer.add(group, forKey: nil)
         editButton.addGestureRecognizer(turnOnAnimate)
         editButton.removeGestureRecognizer(turnOffAnimate)
     }

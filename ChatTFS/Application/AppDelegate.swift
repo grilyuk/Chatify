@@ -18,6 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private lazy var coreAssembly = CoreAssembly()
     private lazy var serviceAssembly = ServiceAssembly(coreAssembly: coreAssembly)
+    private lazy var logoEmitterAnimation = EmitterAnimation()
 
     // MARK: - Lifecycle
     
@@ -27,6 +28,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let tabBarController = moduleBuilder.buildTabBarController()
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanTouch(sender: )))
+        window?.addGestureRecognizer(panGesture)
         switch serviceAssembly.themeService.currentTheme {
         case .light:
             application.windows[0].overrideUserInterfaceStyle = .light
@@ -34,6 +37,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             application.windows[0].overrideUserInterfaceStyle = .dark
         }
         return true
+    }
+    
+    @objc
+    private func handlePanTouch(sender: UIPanGestureRecognizer) {
+        logoEmitterAnimation.snowLayer.birthRate = 50
+        logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
+        let location = sender.location(in: window)
+        logoEmitterAnimation.snowLayer.emitterPosition = location
+        window?.layer.addSublayer(logoEmitterAnimation.snowLayer)
+        if sender.state == .ended {
+            logoEmitterAnimation.snowLayer.birthRate = 0
+        }
     }
     
 //    @objc func handleTapTouch(sender: UIGestureRecognizer) {

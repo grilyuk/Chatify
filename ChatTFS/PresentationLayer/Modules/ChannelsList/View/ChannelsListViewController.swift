@@ -41,9 +41,9 @@ class ChannelsListViewController: UIViewController {
     // MARK: - Private properties
     
     private var themeService: ThemeServiceProtocol
-    private lazy var snowLayer = CAEmitterLayer()
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var pullToRefresh = UIRefreshControl()
+    private lazy var logoEmitterAnimation = EmitterAnimation()
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -67,24 +67,6 @@ class ChannelsListViewController: UIViewController {
         cell.configure(with: model)
         return cell
     }
-    
-    private lazy var snowCell: CAEmitterCell = {
-        var snowCell = CAEmitterCell()
-        snowCell.scale = 0.06
-        snowCell.scaleRange = 0.3
-        snowCell.emissionRange = .pi
-        snowCell.birthRate = 5
-        snowCell.velocityRange = -20
-        snowCell.yAcceleration = 30
-        snowCell.xAcceleration = 5
-        let image = UIImage(named: "tinkoff")
-        snowCell.contents = image?.cgImage
-        snowCell.velocity = 25
-        snowCell.lifetime = 1
-        snowCell.spin = -0.5
-        snowCell.spinRange = 1.0
-        return snowCell
-    }()
 
     private lazy var errorAlert: UIAlertController = {
         let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так", preferredStyle: .alert)
@@ -209,12 +191,6 @@ class ChannelsListViewController: UIViewController {
         }
     }
     
-    private func setupSnowLayer(layer: CAEmitterLayer) {
-        layer.emitterSize = CGSize(width: 50, height: 50)
-        layer.emitterShape = CAEmitterLayerEmitterShape.point
-        layer.emitterCells = [snowCell]
-    }
-    
     private func setupTableViewConstraints() {
         view.addSubviews(tableView)
         tableView.addSubview(activityIndicator)
@@ -245,13 +221,13 @@ class ChannelsListViewController: UIViewController {
     
     @objc
     private func handlePanTouch(sender: UIPanGestureRecognizer) {
-        snowLayer.birthRate = 50
-        setupSnowLayer(layer: snowLayer)
+        logoEmitterAnimation.snowLayer.birthRate = 50
+        logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
         let location = sender.location(in: view.window)
-        snowLayer.emitterPosition = CGPoint(x: location.x, y: location.y)
-        view.window?.layer.addSublayer(snowLayer)
+        logoEmitterAnimation.snowLayer.emitterPosition = CGPoint(x: location.x, y: location.y)
+        view.window?.layer.addSublayer(logoEmitterAnimation.snowLayer)
         if sender.state == .ended {
-            snowLayer.birthRate = 0
+            logoEmitterAnimation.snowLayer.birthRate = 0
         }
     }
 }
