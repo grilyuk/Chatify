@@ -40,18 +40,10 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - Private properties
     
-    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, itemIdentifier in
-        guard let self,
-              let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
-              let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
-        else {
-            return ChannelListCell()
-        }
-        cell.configureTheme(theme: self.themeService)
-        cell.configure(with: model)
-        return cell
-    }
     private var themeService: ThemeServiceProtocol
+    private lazy var snowLayer = CAEmitterLayer()
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
+    private lazy var pullToRefresh = UIRefreshControl()
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -64,6 +56,36 @@ class ChannelsListViewController: UIViewController {
         return table
     }()
     
+    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, itemIdentifier in
+        guard let self,
+              let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
+              let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
+        else {
+            return ChannelListCell()
+        }
+        cell.configureTheme(theme: self.themeService)
+        cell.configure(with: model)
+        return cell
+    }
+    
+    private lazy var snowCell: CAEmitterCell = {
+        var snowCell = CAEmitterCell()
+        snowCell.scale = 0.06
+        snowCell.scaleRange = 0.3
+        snowCell.emissionRange = .pi
+        snowCell.birthRate = 5
+        snowCell.velocityRange = -20
+        snowCell.yAcceleration = 30
+        snowCell.xAcceleration = 5
+        let image = UIImage(named: "tinkoff")
+        snowCell.contents = image?.cgImage
+        snowCell.velocity = 25
+        snowCell.lifetime = 1
+        snowCell.spin = -0.5
+        snowCell.spinRange = 1.0
+        return snowCell
+    }()
+
     private lazy var errorAlert: UIAlertController = {
         let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -107,13 +129,11 @@ class ChannelsListViewController: UIViewController {
         return alert
     }()
     
-    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
-    private lazy var pullToRefresh = UIRefreshControl()
-    
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         tableView.delegate = self
         tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
@@ -189,6 +209,12 @@ class ChannelsListViewController: UIViewController {
         }
     }
     
+    private func setupSnowLayer(layer: CAEmitterLayer) {
+        layer.emitterSize = CGSize(width: 50, height: 50)
+        layer.emitterShape = CAEmitterLayerEmitterShape.point
+        layer.emitterCells = [snowCell]
+    }
+    
     private func setupTableViewConstraints() {
         view.addSubviews(tableView)
         tableView.addSubview(activityIndicator)
@@ -215,6 +241,18 @@ class ChannelsListViewController: UIViewController {
     @objc
     private func updateChannelList() {
         presenter?.viewReady()
+    }
+    
+    @objc
+    private func handlePanTouch(sender: UIPanGestureRecognizer) {
+        snowLayer.birthRate = 50
+        setupSnowLayer(layer: snowLayer)
+        let location = sender.location(in: view.window)
+        snowLayer.emitterPosition = CGPoint(x: location.x, y: location.y)
+        view.window?.layer.addSublayer(snowLayer)
+        if sender.state == .ended {
+            snowLayer.birthRate = 0
+        }
     }
 }
 

@@ -118,10 +118,10 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                       userID: userID,
                                       userName: userName)
         .sink(receiveCompletion: { _ in
-        }, receiveValue: { [weak self] message in
-            guard let self else { return }
-            self.coreDataService.saveMessagesForChannel(for: self.channelID,
-                                                        messages: [message])
+        }, receiveValue: { _ in
+//            guard let self else { return }
+//            self.coreDataService.saveMessagesForChannel(for: self.channelID,
+//                                                        messages: [message])
         })
         .cancel()
     }

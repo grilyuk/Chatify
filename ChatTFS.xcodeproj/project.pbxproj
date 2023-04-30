@@ -26,6 +26,7 @@
 		5E12625F29F86EF4009B5289 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625E29F86EF4009B5289 /* NetworkService.swift */; };
 		5E12626129F92686009B5289 /* ImageLinkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12626029F92686009B5289 /* ImageLinkModel.swift */; };
 		5E12628329FB3193009B5289 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12628229FB3193009B5289 /* StringExtension.swift */; };
+		5E12628B29FDD4D4009B5289 /* EditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12628A29FDD4D4009B5289 /* EditProfileViewController.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */; };
@@ -82,6 +83,7 @@
 		5E12625E29F86EF4009B5289 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		5E12626029F92686009B5289 /* ImageLinkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLinkModel.swift; sourceTree = "<group>"; };
 		5E12628229FB3193009B5289 /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
+		5E12628A29FDD4D4009B5289 /* EditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileViewController.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SameIncomingChannelViewCell.swift; sourceTree = "<group>"; };
@@ -376,6 +378,7 @@
 				5E08ADC229A16B10004510A6 /* ProfileViewController.swift */,
 				5EB6218229AB609700029FB8 /* ProfilePresenter.swift */,
 				5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */,
+				5E12628A29FDD4D4009B5289 /* EditProfileViewController.swift */,
 			);
 			path = Profile;
 			sourceTree = "<group>";
@@ -605,6 +608,7 @@
 				5E92E9EF29B6939F0038EED2 /* ChannelViewController.swift in Sources */,
 				5E12625729F60E4C009B5289 /* ChannelsDataSource.swift in Sources */,
 				5E12625329F4716C009B5289 /* NetworkImageModel.swift in Sources */,
+				5E12628B29FDD4D4009B5289 /* EditProfileViewController.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ChannelsListPresenter.swift in Sources */,
 				5E74BCB629A8E438009236A1 /* PhotoPickerController.swift in Sources */,
 				5E92E9E029B2A7570038EED2 /* Router.swift in Sources */,

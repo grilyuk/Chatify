@@ -3,7 +3,7 @@ import Combine
 
 protocol ProfileViewProtocol: AnyObject {
     var profilePhoto: UIImageView { get set }
-    func showProfile()
+    func showProfile(data: ProfileModel)
     func showNetworkImages()
 }
 
@@ -34,55 +34,41 @@ class ProfileViewController: UIViewController {
         static let nameLabelToInfoText: CGFloat = 10
     }
     
-    // MARK: - Public
+    // MARK: - Public properties
     
-    var profilePhoto = UIImageView()
+    var profilePhoto: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFill
+        return imageView
+    }()
+    
     var presenter: ProfilePresenterProtocol?
     weak var themeService: ThemeServiceProtocol?
 
-    // MARK: - Private
-    
-    private enum State {
-        case loading
-        case error
-        case profile(ProfileModel)
-        case profileUploaded(ProfileModel)
-    }
-    
-    private var state: State = .loading {
-        didSet {
-            switch state {
-            case .loading:
-                self.activityIndicator.startAnimating()
-                self.addPhotoButton.isEnabled = false
-                self.editableNameSection.isEnabled = false
-                self.editableBioSection.isEnabled = false
-            case .profile(let profile):
-                profileUploaded(profile: profile)
-                self.setEditFinished()
-            case .profileUploaded(let profile):
-                profileUploaded(profile: profile)
-                self.setEditFinished()
-                self.tabBarController?.show(successAlert, sender: self)
-            case .error:
-                break
-            }
-        }
-    }
+    // MARK: - Private properties
     
     private var profilePublisher: CurrentValueSubject<ProfileModel, Never>
-    private var profileRequest: Cancellable?
-    private lazy var placeholderImage = UIImage(systemName: "person.fill")?
-        .scalePreservingAspectRatio(targetSize: CGSize(width: 100, height: 100)).withTintColor(.gray)
-    private lazy var okAction = UIAlertAction(title: "OK", style: .default)
-    private lazy var successAlert = UIAlertController(title: "Success!", message: "Data saved", preferredStyle: .alert)
-    private lazy var failureAlert = UIAlertController(title: "Failure...", message: "Can't saved data", preferredStyle: .alert)
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
+    private lazy var placeholderImage = UIImage(systemName: "person.fill")
+    private lazy var turnOnAnimate = UILongPressGestureRecognizer(target: self, action: #selector(showAnimate))
+    private lazy var turnOffAnimate = UILongPressGestureRecognizer(target: self, action: #selector(stopAnimate))
+    private lazy var animationGroup = CAAnimationGroup()
     
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: UIConstants.largerFontSize, weight: .bold)
         return label
+    }()
+    
+    private lazy var bioTextView: UITextView = {
+        let textView = UITextView()
+        textView.isEditable = false
+        textView.textColor = .systemGray3
+        textView.textContainer.maximumNumberOfLines = 3
+        textView.textAlignment = .center
+        textView.font = UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)
+        textView.isScrollEnabled = false
+        return textView
     }()
     
     private lazy var addPhotoButton: UIButton = {
@@ -92,61 +78,32 @@ class ProfileViewController: UIViewController {
         return button
     }()
     
-    private lazy var bioText: UITextView = {
-        let textView = UITextView()
-        textView.isEditable = false
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.textAlignment = .center
-        textView.font = UIFont.systemFont(ofSize: UIConstants.fontSize, weight: .regular)
-        textView.isScrollEnabled = false
-        return textView
+    private lazy var bubble: UIView = {
+        let view = UIView()
+        view.layer.cornerRadius = 16
+        view.clipsToBounds = true
+        return view
     }()
     
-    private lazy var editableNameSection: UITextField = {
-        let textField = UITextField()
-        textField.isHidden = true
-        return textField
-    }()
-    
-    private lazy var editableBioSection: UITextField = {
-        let textField = UITextField()
-        textField.isHidden = true
-        return textField
-    }()
-    
-    private lazy var nameCell: UITableViewCell = {
-        let nameCell = UITableViewCell()
-        var config = UIListContentConfiguration.cell()
-        config.text = "Name"
-        nameCell.separatorInset = .init(top: 20, left: 20, bottom: 0, right: 0)
-        nameCell.contentConfiguration = config
-        nameCell.isHidden = true
-        nameCell.backgroundColor = .white
-        return nameCell
-    }()
-    
-    private lazy var bioCell: UITableViewCell = {
-        let bioCell = UITableViewCell()
-        var config = UIListContentConfiguration.cell()
-        config.text = "Bio"
-        bioCell.contentConfiguration = config
-        bioCell.isHidden = true
-        bioCell.backgroundColor = .white
-        return bioCell
-    }()
-    
-    private lazy var userAvatar: UIImageView = {
-        let imageView = UIImageView(frame: CGRect(x: 0, y: 0, width: 150, height: 150))
-        imageView.layer.cornerRadius = 50
-        imageView.clipsToBounds = true
-        return imageView
+    private lazy var editButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Edit profile", for: .normal)
+        button.titleLabel?.font = .boldSystemFont(ofSize: UIConstants.fontSize)
+        button.setTitleColor(.white, for: .normal)
+        button.layer.cornerRadius = 8
+        button.clipsToBounds = true
+        button.backgroundColor = .systemBlue
+        return button
     }()
     
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        successAlert.addAction(okAction)
+        profilePhoto.image = placeholderImage
+        activityIndicator.startAnimating()
+        editButton.addGestureRecognizer(turnOnAnimate)
+        editButton.addTarget(self, action: #selector(editProfileTapped), for: .touchUpInside)
         addPhotoButton.addTarget(self, action: #selector(addPhotoTapped), for: .touchUpInside)
         presenter?.viewReady()
         setupUI()
@@ -154,173 +111,100 @@ class ProfileViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        bubble.backgroundColor = themeService?.currentTheme.themeBubble
         view.backgroundColor = themeService?.currentTheme.backgroundColor
-        bioText.textColor = themeService?.currentTheme.textColor
-        bioText.backgroundColor = themeService?.currentTheme.backgroundColor
-        nameLabel.textColor = themeService?.currentTheme.textColor
-        navigationController?.navigationBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        profilePhoto.contentMode = .scaleAspectFill
-        profilePhoto.layer.cornerRadius = profilePhoto.frame.height / 2
-        profilePhoto.clipsToBounds = true
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        profileRequest?.cancel()
     }
     
     // MARK: - Setup UI
     
     private func setupUI() {
         setNavBar()
-        setNavBarButtons()
         setConstraints()
-        setGesture()
     }
     
     // MARK: - Methods
     
-    private func setGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
-    }
-    
-    private func setNavBarButtons() {
-        let navEditProfile = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editProfileTapped))
-        navigationItem.rightBarButtonItem = navEditProfile
-    }
-    
     private func setNavBar() {
-        navigationController?.navigationItem.title = "My Profile"
+        self.title = "My Profile"
+        self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
         navigationController?.navigationBar.prefersLargeTitles = true
-        let appearance = UINavigationBarAppearance()
-        appearance.configureWithTransparentBackground()
-        appearance.titleTextAttributes = [NSAttributedString.Key.font: UIFont.systemFont(ofSize: UIConstants.fontSize,
-                                                                                          weight: .bold)]
-        appearance.titleTextAttributes = [NSAttributedString.Key.foregroundColor: themeService?.currentTheme.textColor ?? .gray]
-        UINavigationBar.appearance().standardAppearance = appearance
-        navigationItem.leftBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
-            .systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
-        navigationItem.rightBarButtonItem?.setTitleTextAttributes([ NSAttributedString.Key.font: UIFont
-            .systemFont(ofSize: UIConstants.fontSize, weight: .regular)], for: .normal)
-    }
-    
-    private func profileUploaded(profile: ProfileModel) {
-        nameLabel.text = profile.fullName
-        bioText.text = profile.statusText
-        if profile.profileImageData == nil {
-            profilePhoto.image = placeholderImage
-        } else {
-            guard let imageData = profile.profileImageData else { return }
-            profilePhoto.image = UIImage(data: imageData)
-        }
-    }
-    
-    private func editableMode() {
-        editableBioSection.text = bioText.text
-        editableNameSection.text = nameLabel.text
-        navigationItem.rightBarButtonItem = UIBarButtonItem(title: "Save", style: .plain, target: self, action: #selector(saveProfile))
-        nameLabel.isHidden = true
-        bioText.isHidden = true
-        editableNameSection.isHidden = false
-        editableBioSection.isHidden = false
-        navigationItem.title = "Edit profile"
-        nameCell.isHidden = false
-        bioCell.isHidden = false
-        editableNameSection.becomeFirstResponder()
-    }
-    
-    private func setEditFinished() {
-        nameCell.isHidden = true
-        bioCell.isHidden = true
-        editableNameSection.isHidden = true
-        editableBioSection.isHidden = true
-        editableNameSection.isEnabled = true
-        editableBioSection.isEnabled = true
-        addPhotoButton.isEnabled = true
-        nameLabel.isHidden = false
-        bioText.isHidden = false
-        navigationItem.title = "My Profile"
-        navigationItem.rightBarButtonItems?.removeAll()
-        activityIndicator.stopAnimating()
-        let navEditProfile = UIBarButtonItem(title: "Edit", style: .plain, target: self, action: #selector(editProfileTapped))
-        navigationItem.rightBarButtonItem = navEditProfile
-    }
-    
-    @objc
-    private func saveProfile() {
-        guard let bioText = editableBioSection.text,
-              let nameText = editableNameSection.text
-        else {
-            return
-        }
-        
-        var imageData: Data?
-        
-        if self.profilePhoto.image == placeholderImage {
-            imageData = nil
-        } else {
-            imageData = self.profilePhoto.image?.jpegData(compressionQuality: 1)
-        }
-        
-        let profileToSave = ProfileModel(fullName: nameText, statusText: bioText, profileImageData: imageData)
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: activityIndicator)
-        state = .loading
-        presenter?.updateProfile(profile: profileToSave)
     }
     
     @objc
     private func editProfileTapped() {
-        editableMode()
-    }
-    
-    @objc
-    private func dismissKeyboard() {
-        view.endEditing(true)
-    }
-    
-    @objc
-    private func closeProfileTapped() {
-        if editableNameSection.isHidden == false {
-            setEditFinished()
-        } else {
-            self.dismiss(animated: true)
-        }
+//        presenter?.editProfile()
     }
     
     @objc
     private func addPhotoTapped() {
-        editableMode()
         let chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
         tabBarController?.present(chooseSourceAlert, animated: true) {
             chooseSourceAlert.profileVC = self
-            chooseSourceAlert.router = self.presenter?.router
         }
     }
     
+    @objc
+    private func showAnimate(_ sender: UILongPressGestureRecognizer) {
+        let rotation = CAKeyframeAnimation(keyPath: "transform.rotation")
+        rotation.values = [
+            0.0,
+            -CGFloat.pi / 10,
+            0.0,
+            CGFloat.pi / 10,
+            0.0
+        ]
+        
+        let position = CAKeyframeAnimation(keyPath: #keyPath(CALayer.position))
+        position.values = [
+            editButton.layer.position,
+            CGPoint(x: editButton.center.x, y: editButton.center.y - 5),
+            CGPoint(x: editButton.center.x - 5, y: editButton.center.y),
+            CGPoint(x: editButton.center.x, y: editButton.center.y + 5),
+            CGPoint(x: editButton.center.x + 5, y: editButton.center.y),
+            editButton.layer.position
+        ]
+        
+        animationGroup.animations = [rotation, position]
+        animationGroup.duration = 0.3
+        animationGroup.repeatCount = .infinity
+        editButton.layer.add(animationGroup, forKey: "shake")
+        editButton.removeGestureRecognizer(turnOnAnimate)
+        editButton.addGestureRecognizer(turnOffAnimate)
+    }
+    
+    @objc
+    private func stopAnimate(_ sender: UILongPressGestureRecognizer) {
+        editButton.layer.removeAllAnimations()
+        let endShake = CABasicAnimation(keyPath: "transform.rotation")
+        endShake.fromValue = -CGFloat.pi / 30
+        endShake.toValue = 0.0
+        endShake.duration = 0.5
+        editButton.layer.add(endShake, forKey: "endShake")
+        editButton.addGestureRecognizer(turnOnAnimate)
+        editButton.removeGestureRecognizer(turnOffAnimate)
+    }
+    
     private func setConstraints() {
-        view.addSubviews(profilePhoto, addPhotoButton, nameLabel, bioText, nameCell, bioCell)
-        nameCell.addSubview(editableNameSection)
-        bioCell.addSubview(editableBioSection)
+        view.addSubview(bubble)
+        bubble.addSubviews(profilePhoto, addPhotoButton, nameLabel, bioTextView, editButton)
+        
+        bubble.translatesAutoresizingMaskIntoConstraints = false
         profilePhoto.translatesAutoresizingMaskIntoConstraints = false
         addPhotoButton.translatesAutoresizingMaskIntoConstraints = false
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
-        nameCell.translatesAutoresizingMaskIntoConstraints = false
-        bioCell.translatesAutoresizingMaskIntoConstraints = false
-        editableNameSection.translatesAutoresizingMaskIntoConstraints = false
-        editableBioSection.translatesAutoresizingMaskIntoConstraints = false
+        bioTextView.translatesAutoresizingMaskIntoConstraints = false
+        editButton.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
+            bubble.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 15),
+            bubble.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            bubble.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            bubble.heightAnchor.constraint(equalTo: view.safeAreaLayoutGuide.heightAnchor, multiplier: 8 / 11),
             
             profilePhoto.widthAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
             profilePhoto.heightAnchor.constraint(equalToConstant: UIConstants.imageProfileSize),
             profilePhoto.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            profilePhoto.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: UIConstants.navBarToProfileImage),
+            profilePhoto.topAnchor.constraint(equalTo: bubble.topAnchor, constant: 32),
             
             addPhotoButton.topAnchor.constraint(equalTo: profilePhoto.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
             addPhotoButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -328,24 +212,15 @@ class ProfileViewController: UIViewController {
             nameLabel.topAnchor.constraint(equalTo: addPhotoButton.bottomAnchor, constant: UIConstants.addPhotoToNameLabel),
             nameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             
-            bioText.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: UIConstants.nameLabelToInfoText),
-            bioText.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            bioTextView.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: UIConstants.nameLabelToInfoText),
+            bioTextView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            bioTextView.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor, multiplier: 3 / 4),
             
-            nameCell.widthAnchor.constraint(equalTo: view.widthAnchor),
-            nameCell.topAnchor.constraint(equalTo: addPhotoButton.bottomAnchor, constant: 24),
-            nameCell.heightAnchor.constraint(equalToConstant: 44),
-            
-            bioCell.widthAnchor.constraint(equalTo: view.widthAnchor),
-            bioCell.topAnchor.constraint(equalTo: nameCell.bottomAnchor),
-            bioCell.heightAnchor.constraint(equalToConstant: 44),
-            
-            editableNameSection.centerYAnchor.constraint(equalTo: nameCell.centerYAnchor),
-            editableNameSection.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 120),
-            editableNameSection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
-            editableBioSection.centerYAnchor.constraint(equalTo: bioCell.centerYAnchor),
-            editableBioSection.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 120),
-            editableBioSection.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+            editButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            editButton.topAnchor.constraint(equalTo: bioTextView.bottomAnchor, constant: 16),
+            editButton.bottomAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -16),
+            editButton.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 3 / 4),
+            editButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 1)
         ])
     }
 }
@@ -353,19 +228,23 @@ class ProfileViewController: UIViewController {
 // MARK: - ProfileViewController + ProfileViewProtocol
 
 extension ProfileViewController: ProfileViewProtocol {
-    
-    func showProfile() {
-        profileRequest = profilePublisher
-            .map({ [weak self] profile in
-                guard let self = self else { return State.error }
-                if self.nameLabel.text == profile.fullName,
-                   self.bioText.text == profile.statusText {
-                    return State.profileUploaded(profile)
-                } else {
-                    return State.profile(profile)
+    func showProfile(data: ProfileModel) {
+        _ = profilePublisher
+            .sink { [weak self] profile in
+                self?.nameLabel.text = profile.fullName
+                self?.bioTextView.text = profile.statusText
+                DispatchQueue.main.async { [weak self] in
+                    guard let data = profile.profileImageData,
+                          let self else {
+                        return
+                    }
+                    self.profilePhoto.layer.cornerRadius = self.profilePhoto.frame.height / 2
+                    self.profilePhoto.clipsToBounds = true
+                    self.profilePhoto.image = UIImage(data: data)
+                    self.view.layoutIfNeeded()
+                    self.activityIndicator.stopAnimating()
                 }
-            })
-            .assign(to: \.state, on: self)
+            }
     }
     
     func showNetworkImages() {

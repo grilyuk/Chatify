@@ -131,6 +131,7 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     }
     
     func uploadMessage(messageModel: MessageNetworkModel) {
+
         background.async { [weak self] in
             
             guard let configure = self?.configureMessageModel(from: messageModel) else {
@@ -140,12 +141,13 @@ extension ChannelPresenter: ChannelPresenterProtocol {
             self?.currentUserID = messageModel.userID
             self?.mainQueue.async { [weak self] in
                 self?.view?.addMessage(message: MessageModel(image: nil,
-                                                       text: messageModel.text,
+                                                             text: messageModel.text,
                                                              date: messageModel.date,
                                                              myMessage: configure.isMyMessage,
                                                              userName: messageModel.userName,
                                                              isSameUser: configure.isSameUser,
                                                              id: messageModel.id))
+                self?.downloadImage(from: messageModel)
             }
         }
     }
@@ -174,7 +176,11 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                 return false
             }
         }()
-        
+        downloadImage(from: messageModel)
+        return (isMyMessage, isSameUser)
+    }
+    
+    private func downloadImage(from messageModel: MessageNetworkModel) {
         if messageModel.text.isLink() {
             interactor.getImageForMessage(link: messageModel.text) { result in
                 switch result {
@@ -190,6 +196,5 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                 }
             }
         }
-        return (isMyMessage, isSameUser)
     }
 }

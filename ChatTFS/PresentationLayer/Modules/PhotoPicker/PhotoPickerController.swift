@@ -20,7 +20,9 @@ class PhotoPickerController: UIImagePickerController, UIImagePickerControllerDel
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
         if let image = info[UIImagePickerController.InfoKey.originalImage] as? UIImage {
             imagePicked = image
-            guard let profileVC else { return }
+            guard let profileVC else {
+                return
+            }
             profileVC.profilePhoto.image = imagePicked
             dismiss(animated: true)
         }

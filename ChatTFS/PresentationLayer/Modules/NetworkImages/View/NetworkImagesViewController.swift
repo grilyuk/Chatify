@@ -112,6 +112,8 @@ extension NetworkImagesViewController: UICollectionViewDelegate {
         }
         if let profileVC = vc as? ProfileViewProtocol {
             profileVC.profilePhoto.image = images[index].image
+            profileVC.profilePhoto.layer.cornerRadius = profileVC.profilePhoto.frame.height / 2
+            profileVC.profilePhoto.clipsToBounds = true
         } else if let channelVC = vc as? ChannelViewProtocol {
             channelVC.setImageMessage(link: images[index].link)
         }

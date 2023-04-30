@@ -33,7 +33,18 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         case .dark:
             application.windows[0].overrideUserInterfaceStyle = .dark
         }
-        
         return true
     }
+    
+//    @objc func handleTapTouch(sender: UIGestureRecognizer) {
+//        let location = sender.location(in: window)
+//        let newSnowLayer = CAEmitterLayer()
+//        setupSnowLayer(layer: newSnowLayer)
+//        newSnowLayer.emitterPosition = location
+//        newSnowLayer.lifetime = 5
+//        window?.layer.addSublayer(newSnowLayer)
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+//            newSnowLayer.birthRate = 0
+//        }
+//    }
 }
