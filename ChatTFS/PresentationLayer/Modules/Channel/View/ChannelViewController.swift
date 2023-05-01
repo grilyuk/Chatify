@@ -39,6 +39,8 @@ class ChannelViewController: UIViewController {
     var themeService: ThemeServiceProtocol
     
     // MARK: - Private
+    
+    private lazy var logoEmitterAnimation = EmitterAnimation()
 
     private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, uuid in
         guard let model = self?.messages.first(where: { $0.uuid == uuid }),
@@ -170,6 +172,7 @@ class ChannelViewController: UIViewController {
         tableView.delegate = self
         tableView.dataSource = dataSource
         presenter?.viewReady()
+        tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         dataSource.defaultRowAnimation = .fade
         setTableView()
         setGesture()
@@ -286,6 +289,18 @@ class ChannelViewController: UIViewController {
         }
         presenter?.showNetworkImages(navigationController: navigationController,
                                      vc: self)
+    }
+    
+    @objc
+    private func handlePanTouch(sender: UIPanGestureRecognizer) {
+        logoEmitterAnimation.snowLayer.birthRate = 50
+        logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
+        let location = sender.location(in: view.window)
+        logoEmitterAnimation.snowLayer.emitterPosition = CGPoint(x: location.x, y: location.y)
+        view.window?.layer.addSublayer(logoEmitterAnimation.snowLayer)
+        if sender.state == .ended {
+            logoEmitterAnimation.snowLayer.birthRate = 0
+        }
     }
     
     // MARK: - Setup UI

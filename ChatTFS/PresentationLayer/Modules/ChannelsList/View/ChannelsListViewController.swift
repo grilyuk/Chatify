@@ -113,8 +113,15 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - Lifecycle
     
+    @objc func handleTapTouch(sender: UIGestureRecognizer) {
+        print("TAP")
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        let tapGesture = UIHoverGestureRecognizer(target: self.view.window, action: #selector(handleTapTouch(sender: )))
+        tableView.addGestureRecognizer(tapGesture)
+        tableView.gestureRecognizers?.forEach({ print($0) })
         tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         tableView.delegate = self
         tableView.addSubview(pullToRefresh)

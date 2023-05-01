@@ -6,9 +6,10 @@
 //
 
 import UIKit
+import QuartzCore
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UIGestureRecognizerDelegate {
 
     // MARK: - Public properties
     
@@ -29,7 +30,10 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanTouch(sender: )))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapTouch(sender: )))
+        tapGesture.cancelsTouchesInView = false
         window?.addGestureRecognizer(panGesture)
+        window?.rootViewController?.view.addGestureRecognizer(tapGesture)
         switch serviceAssembly.themeService.currentTheme {
         case .light:
             application.windows[0].overrideUserInterfaceStyle = .light
@@ -40,7 +44,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     @objc
-    private func handlePanTouch(sender: UIPanGestureRecognizer) {
+    private func handlePanTouch(sender: UIGestureRecognizer) {
         logoEmitterAnimation.snowLayer.birthRate = 50
         logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
         let location = sender.location(in: window)
@@ -51,15 +55,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         }
     }
     
-//    @objc func handleTapTouch(sender: UIGestureRecognizer) {
-//        let location = sender.location(in: window)
-//        let newSnowLayer = CAEmitterLayer()
-//        setupSnowLayer(layer: newSnowLayer)
-//        newSnowLayer.emitterPosition = location
-//        newSnowLayer.lifetime = 5
-//        window?.layer.addSublayer(newSnowLayer)
-//        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-//            newSnowLayer.birthRate = 0
-//        }
-//    }
+    @objc func handleTapTouch(sender: UIGestureRecognizer) {
+        print("TAP")
+        logoEmitterAnimation.snowLayer.birthRate = 10
+        logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
+        let location = sender.location(in: window?.inputView)
+        logoEmitterAnimation.snowLayer.emitterPosition = location
+        window?.layer.addSublayer(logoEmitterAnimation.snowLayer)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.logoEmitterAnimation.snowLayer.birthRate = 0
+        }
+    }
+    
+    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
+        true
+    }
 }

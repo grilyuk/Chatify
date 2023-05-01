@@ -52,6 +52,7 @@ class ProfileViewController: UIViewController {
     private lazy var placeholderImage = UIImage(systemName: "person.fill")
     private lazy var turnOnAnimate = UILongPressGestureRecognizer(target: self, action: #selector(showAnimate))
     private lazy var turnOffAnimate = UILongPressGestureRecognizer(target: self, action: #selector(stopAnimate))
+    private lazy var tapEditButton = UITapGestureRecognizer(target: self, action: #selector(editProfileTapped))
     private lazy var animationGroup = CAAnimationGroup()
     
     private lazy var nameLabel: UILabel = {
@@ -103,7 +104,7 @@ class ProfileViewController: UIViewController {
         profilePhoto.image = placeholderImage
         activityIndicator.startAnimating()
         editButton.addGestureRecognizer(turnOnAnimate)
-        editButton.addTarget(self, action: #selector(editProfileTapped), for: .touchUpInside)
+        editButton.addGestureRecognizer(tapEditButton)
         addPhotoButton.addTarget(self, action: #selector(addPhotoTapped), for: .touchUpInside)
         presenter?.viewReady()
         setupUI()
@@ -247,6 +248,7 @@ extension ProfileViewController: ProfileViewProtocol {
                 self?.nameLabel.text = profile.fullName
                 self?.bioTextView.text = profile.statusText
                 DispatchQueue.main.async { [weak self] in
+                    self?.activityIndicator.stopAnimating()
                     guard let data = profile.profileImageData,
                           let self else {
                         return
@@ -255,7 +257,6 @@ extension ProfileViewController: ProfileViewProtocol {
                     self.profilePhoto.clipsToBounds = true
                     self.profilePhoto.image = UIImage(data: data)
                     self.view.layoutIfNeeded()
-                    self.activityIndicator.stopAnimating()
                 }
             }
     }
