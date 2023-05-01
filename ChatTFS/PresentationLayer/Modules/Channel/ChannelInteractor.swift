@@ -1,5 +1,6 @@
-import UIKit
+import Foundation
 import Combine
+import TFSChatTransport
 
 protocol ChannelInteractorProtocol: AnyObject {
     var handler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)? { get set }
@@ -97,7 +98,6 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                 return
                             }
                             self?.presenter?.uploadMessage(messageModel: lastMessage)
-                            self?.coreDataService.saveMessagesForChannel(for: id, messages: [lastMessage])
                         }
                         .cancel()
                 case .delete:
@@ -117,7 +117,10 @@ class ChannelInteractor: ChannelInteractorProtocol {
                                       userID: userID,
                                       userName: userName)
         .sink(receiveCompletion: { _ in
-        }, receiveValue: { _ in
+        }, receiveValue: { [weak self] message in
+            guard let self else { return }
+            self.coreDataService.saveMessagesForChannel(for: self.channelID,
+                                                        messages: [message])
         })
         .cancel()
     }
