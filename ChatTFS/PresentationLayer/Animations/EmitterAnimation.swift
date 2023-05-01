@@ -25,4 +25,15 @@ class EmitterAnimation: CAEmitterLayer {
         layer.emitterShape = CAEmitterLayerEmitterShape.point
         layer.emitterCells = [logoCell]
     }
+    
+    func setupGesture(sender: UIGestureRecognizer, view: UIView) {
+        self.birthRate = 50
+        setupLogoLayer(layer: self)
+        let location = sender.location(in: view.window)
+        self.emitterPosition = CGPoint(x: location.x, y: location.y)
+        view.window?.layer.addSublayer(self)
+        if sender.state == .ended {
+            self.birthRate = 0
+        }
+    }
 }

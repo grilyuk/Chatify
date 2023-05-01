@@ -30,6 +30,7 @@
 		5E12629129FF424B009B5289 /* ChannelsListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12629029FF424B009B5289 /* ChannelsListDataSource.swift */; };
 		5E12629329FF454A009B5289 /* ChannelsListDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12629229FF454A009B5289 /* ChannelsListDelegate.swift */; };
 		5E13D6CA2A002203002EE4F3 /* ShakeAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D6C92A002203002EE4F3 /* ShakeAnimation.swift */; };
+		5E13D72C2A0055BE002EE4F3 /* TransitionAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D72B2A0055BE002EE4F3 /* TransitionAnimation.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */; };
@@ -90,6 +91,7 @@
 		5E12629029FF424B009B5289 /* ChannelsListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsListDataSource.swift; sourceTree = "<group>"; };
 		5E12629229FF454A009B5289 /* ChannelsListDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsListDelegate.swift; sourceTree = "<group>"; };
 		5E13D6C92A002203002EE4F3 /* ShakeAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShakeAnimation.swift; sourceTree = "<group>"; };
+		5E13D72B2A0055BE002EE4F3 /* TransitionAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionAnimation.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SameIncomingChannelViewCell.swift; sourceTree = "<group>"; };
@@ -331,6 +333,7 @@
 			children = (
 				5E12628E29FF2560009B5289 /* EmitterAnimation.swift */,
 				5E13D6C92A002203002EE4F3 /* ShakeAnimation.swift */,
+				5E13D72B2A0055BE002EE4F3 /* TransitionAnimation.swift */,
 			);
 			path = Animations;
 			sourceTree = "<group>";
@@ -609,6 +612,7 @@
 				5E08ADC329A16B10004510A6 /* ProfileViewController.swift in Sources */,
 				5E12625B29F857D8009B5289 /* ImageLoaderService.swift in Sources */,
 				5E12623429EF3B1B009B5289 /* ServiceAssembly.swift in Sources */,
+				5E13D72C2A0055BE002EE4F3 /* TransitionAnimation.swift in Sources */,
 				5EB6218529AB60A400029FB8 /* ProfileInteractor.swift in Sources */,
 				5EB6218D29AB6FE800029FB8 /* ChannelsListInteractor.swift in Sources */,
 				5EDC6597299ECEAD009B6586 /* ChannelsListViewController.swift in Sources */,

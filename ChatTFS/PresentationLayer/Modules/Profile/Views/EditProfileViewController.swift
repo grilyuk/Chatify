@@ -105,6 +105,11 @@ class EditProfileViewController: UIViewController {
         setupNavigationBar()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        view.transform = view.transform.rotated(by: .pi)
+    }
+    
     private func setupNavigationBar() {
         let cancelButton = UIBarButtonItem(barButtonSystemItem: .cancel,
                                            target: self,
@@ -154,7 +159,6 @@ class EditProfileViewController: UIViewController {
             nameTextField.centerYAnchor.constraint(equalTo: nameLabel.centerYAnchor),
             bioTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 120),
             bioTextField.centerYAnchor.constraint(equalTo: bioLabel.centerYAnchor)
-
         ])
     }
     
@@ -183,6 +187,6 @@ class EditProfileViewController: UIViewController {
     
     @objc
     private func close() {
-        dismiss(animated: true)
+        self.navigationController?.popToRootViewController(animated: true)
     }
 }

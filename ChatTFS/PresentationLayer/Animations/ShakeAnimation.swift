@@ -1,10 +1,3 @@
-//
-//  ShakeAnimation.swift
-//  ChatTFS
-//
-//  Created by Григорий Данилюк on 01.05.2023.
-//
-
 import UIKit
 
 class ShakeAnimation: CAAnimationGroup {

@@ -100,6 +100,7 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        navigationController?.delegate = self
         profilePhoto.image = placeholderImage
         activityIndicator.startAnimating()
         editButton.addGestureRecognizer(turnOnAnimate)
@@ -133,10 +134,12 @@ class ProfileViewController: UIViewController {
     @objc
     private func editProfileTapped() {
         let profile = ProfileModel(fullName: nameLabel.text, statusText: bioTextView.text, profileImageData: nil)
-        let nc = UINavigationController(rootViewController: EditProfileViewController(profile: profile,
-                                                                                      profileImage: profilePhoto.image ?? UIImage(),
-                                                                                      view: self))
-        present(nc, animated: true)
+        let profileEditVC = EditProfileViewController(profile: profile,
+                                                      profileImage: profilePhoto.image ?? UIImage(),
+                                                      view: self)
+        editButton.addGestureRecognizer(turnOnAnimate)
+        editButton.removeGestureRecognizer(turnOffAnimate)
+        self.navigationController?.pushViewController(profileEditVC, animated: true)
     }
     
     @objc
@@ -215,4 +218,15 @@ extension ProfileViewController: ProfileViewProtocol {
                 }
             }
     }
+}
+
+// MARK: - ProfileViewController + UINavigationControllerDelegate
+
+extension ProfileViewController: UINavigationControllerDelegate {
+    func navigationController(_ navigationController: UINavigationController,
+                              animationControllerFor operation: UINavigationController.Operation,
+                              from fromVC: UIViewController,
+                              to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return TransitionAnimation()
+        }
 }

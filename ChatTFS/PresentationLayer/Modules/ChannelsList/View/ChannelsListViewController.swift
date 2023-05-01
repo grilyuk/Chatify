@@ -214,14 +214,7 @@ class ChannelsListViewController: UIViewController {
     
     @objc
     private func handlePanTouch(sender: UIPanGestureRecognizer) {
-        logoEmitterAnimation.birthRate = 50
-        logoEmitterAnimation.setupLogoLayer(layer: logoEmitterAnimation)
-        let location = sender.location(in: view.window)
-        logoEmitterAnimation.emitterPosition = CGPoint(x: location.x, y: location.y)
-        view.window?.layer.addSublayer(logoEmitterAnimation)
-        if sender.state == .ended {
-            logoEmitterAnimation.birthRate = 0
-        }
+        logoEmitterAnimation.setupGesture(sender: sender, view: self.view)
     }
 }
 
