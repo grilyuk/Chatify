@@ -9,7 +9,7 @@ import UIKit
 import QuartzCore
 
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate, UIGestureRecognizerDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // MARK: - Public properties
     
@@ -32,8 +32,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIGestureRecognizerDelega
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanTouch(sender: )))
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapTouch(sender: )))
         tapGesture.cancelsTouchesInView = false
+        panGesture.cancelsTouchesInView = false
         window?.addGestureRecognizer(panGesture)
-        window?.rootViewController?.view.addGestureRecognizer(tapGesture)
+        window?.addGestureRecognizer(tapGesture)
         switch serviceAssembly.themeService.currentTheme {
         case .light:
             application.windows[0].overrideUserInterfaceStyle = .light
@@ -56,7 +57,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIGestureRecognizerDelega
     }
     
     @objc func handleTapTouch(sender: UIGestureRecognizer) {
-        print("TAP")
         logoEmitterAnimation.snowLayer.birthRate = 10
         logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
         let location = sender.location(in: window?.inputView)
@@ -65,9 +65,5 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UIGestureRecognizerDelega
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.logoEmitterAnimation.snowLayer.birthRate = 0
         }
-    }
-    
-    func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-        true
     }
 }

@@ -21,13 +21,14 @@
 		5E12624F29F46129009B5289 /* NetworkImagesPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12624E29F46129009B5289 /* NetworkImagesPresenter.swift */; };
 		5E12625129F46134009B5289 /* NetworkImagesInteractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625029F46134009B5289 /* NetworkImagesInteractor.swift */; };
 		5E12625329F4716C009B5289 /* NetworkImageModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625229F4716C009B5289 /* NetworkImageModel.swift */; };
-		5E12625729F60E4C009B5289 /* ChannelsDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */; };
 		5E12625B29F857D8009B5289 /* ImageLoaderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625A29F857D8009B5289 /* ImageLoaderService.swift */; };
 		5E12625F29F86EF4009B5289 /* NetworkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12625E29F86EF4009B5289 /* NetworkService.swift */; };
 		5E12626129F92686009B5289 /* ImageLinkModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12626029F92686009B5289 /* ImageLinkModel.swift */; };
 		5E12628329FB3193009B5289 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12628229FB3193009B5289 /* StringExtension.swift */; };
 		5E12628B29FDD4D4009B5289 /* EditProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12628A29FDD4D4009B5289 /* EditProfileViewController.swift */; };
 		5E12628F29FF2561009B5289 /* EmitterAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12628E29FF2560009B5289 /* EmitterAnimation.swift */; };
+		5E12629129FF424B009B5289 /* ChannelsListDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12629029FF424B009B5289 /* ChannelsListDataSource.swift */; };
+		5E12629329FF454A009B5289 /* ChannelsListDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E12629229FF454A009B5289 /* ChannelsListDelegate.swift */; };
 		5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B729E17D1E0014B1CC /* CoreDataService.swift */; };
 		5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 5E2033B929E17E940014B1CC /* Chat.xcdatamodeld */; };
 		5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */; };
@@ -79,13 +80,14 @@
 		5E12624E29F46129009B5289 /* NetworkImagesPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesPresenter.swift; sourceTree = "<group>"; };
 		5E12625029F46134009B5289 /* NetworkImagesInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImagesInteractor.swift; sourceTree = "<group>"; };
 		5E12625229F4716C009B5289 /* NetworkImageModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkImageModel.swift; sourceTree = "<group>"; };
-		5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsDataSource.swift; sourceTree = "<group>"; };
 		5E12625A29F857D8009B5289 /* ImageLoaderService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLoaderService.swift; sourceTree = "<group>"; };
 		5E12625E29F86EF4009B5289 /* NetworkService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkService.swift; sourceTree = "<group>"; };
 		5E12626029F92686009B5289 /* ImageLinkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageLinkModel.swift; sourceTree = "<group>"; };
 		5E12628229FB3193009B5289 /* StringExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		5E12628A29FDD4D4009B5289 /* EditProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditProfileViewController.swift; sourceTree = "<group>"; };
 		5E12628E29FF2560009B5289 /* EmitterAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmitterAnimation.swift; sourceTree = "<group>"; };
+		5E12629029FF424B009B5289 /* ChannelsListDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsListDataSource.swift; sourceTree = "<group>"; };
+		5E12629229FF454A009B5289 /* ChannelsListDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsListDelegate.swift; sourceTree = "<group>"; };
 		5E2033B729E17D1E0014B1CC /* CoreDataService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataService.swift; sourceTree = "<group>"; };
 		5E2033BA29E17E940014B1CC /* Chat.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = Chat.xcdatamodel; sourceTree = "<group>"; };
 		5E2C6D9829E89F5500D27C70 /* SameIncomingChannelViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SameIncomingChannelViewCell.swift; sourceTree = "<group>"; };
@@ -216,8 +218,9 @@
 			children = (
 				5E92E9E529B4B4C60038EED2 /* ChannelsListCell.swift */,
 				5EDC6596299ECEAD009B6586 /* ChannelsListViewController.swift */,
-				5E12625629F60E4C009B5289 /* ChannelsDataSource.swift */,
 				5E12628E29FF2560009B5289 /* EmitterAnimation.swift */,
+				5E12629029FF424B009B5289 /* ChannelsListDataSource.swift */,
+				5E12629229FF454A009B5289 /* ChannelsListDelegate.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -597,12 +600,14 @@
 				5E12624A29F33FBD009B5289 /* NetworkImagesCell.swift in Sources */,
 				5EDC6593299ECEAD009B6586 /* AppDelegate.swift in Sources */,
 				5E12624729F3356A009B5289 /* NetworkImagesViewController.swift in Sources */,
+				5E12629329FF454A009B5289 /* ChannelsListDelegate.swift in Sources */,
 				5E42B9D829C2502900F472D1 /* ChannelModel.swift in Sources */,
 				5E2C6D9929E89F5500D27C70 /* SameIncomingChannelViewCell.swift in Sources */,
 				5E74BCB429A8DCA3009236A1 /* ChooseSourceAlertController.swift in Sources */,
 				5E92E9F229B72B930038EED2 /* ChannelInteractor.swift in Sources */,
 				5EB6218329AB609700029FB8 /* ProfilePresenter.swift in Sources */,
 				5E058E4029EACF9900D470D0 /* MessageNetworkModel.swift in Sources */,
+				5E12629129FF424B009B5289 /* ChannelsListDataSource.swift in Sources */,
 				5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */,
 				5E2033B829E17D1E0014B1CC /* CoreDataService.swift in Sources */,
 				5E12626129F92686009B5289 /* ImageLinkModel.swift in Sources */,
@@ -610,7 +615,6 @@
 				5E2033BB29E17E940014B1CC /* Chat.xcdatamodeld in Sources */,
 				5E97BF3029BCEB61003BBA1B /* ThemesViewController.swift in Sources */,
 				5E92E9EF29B6939F0038EED2 /* ChannelViewController.swift in Sources */,
-				5E12625729F60E4C009B5289 /* ChannelsDataSource.swift in Sources */,
 				5E12625329F4716C009B5289 /* NetworkImageModel.swift in Sources */,
 				5E12628B29FDD4D4009B5289 /* EditProfileViewController.swift in Sources */,
 				5EB6218F29AB6FF100029FB8 /* ChannelsListPresenter.swift in Sources */,

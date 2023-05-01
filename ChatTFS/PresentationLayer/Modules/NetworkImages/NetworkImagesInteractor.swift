@@ -24,7 +24,7 @@ class NetworkImagesInteractor: NetworkImagesInteractorProtocol {
     // MARK: - Public methods
     
     func loadData() {
-        
+
         handler = { [weak self] cellModels in
             self?.presenter?.uploadedImages = cellModels
             self?.presenter?.dataUploaded()

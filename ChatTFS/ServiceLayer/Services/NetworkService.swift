@@ -15,7 +15,8 @@ class NetworkService: NetworkServiceProtocol {
         configuration.urlCache = URLCache(memoryCapacity: 50 * 1024 * 1024,
                                           diskCapacity: 100 * 1024 * 1024,
                                           diskPath: "networking")
-        self.session = URLSession(configuration: configuration)
+//        self.session = URLSession(configuration: configuration)
+        self.session = .shared
     }
     
     // MARK: - Private properties

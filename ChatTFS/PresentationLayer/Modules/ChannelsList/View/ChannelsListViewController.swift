@@ -27,7 +27,7 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - UIConstants
     
-    private enum UIConstants {
+    enum UIConstants {
         static let rowHeight: CGFloat = 76
         static let sectionHeight: CGFloat = 44
         static let imageSize: CGSize = CGSize(width: 44, height: 44)
@@ -37,6 +37,7 @@ class ChannelsListViewController: UIViewController {
     
     var presenter: ChannelsListPresenterProtocol?
     var channels: [ChannelModel] = []
+    lazy var dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService, view: self)
     
     // MARK: - Private properties
     
@@ -56,18 +57,6 @@ class ChannelsListViewController: UIViewController {
         return table
     }()
     
-    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, itemIdentifier in
-        guard let self,
-              let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
-              let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
-        else {
-            return ChannelListCell()
-        }
-        cell.configureTheme(theme: self.themeService)
-        cell.configure(with: model)
-        return cell
-    }
-
     private lazy var errorAlert: UIAlertController = {
         let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так", preferredStyle: .alert)
         let cancelAction = UIAlertAction(title: "Cancel", style: .cancel)
@@ -112,17 +101,14 @@ class ChannelsListViewController: UIViewController {
     }()
     
     // MARK: - Lifecycle
-    
-    @objc func handleTapTouch(sender: UIGestureRecognizer) {
-        print("TAP")
-    }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        let tapGesture = UIHoverGestureRecognizer(target: self.view.window, action: #selector(handleTapTouch(sender: )))
-        tableView.addGestureRecognizer(tapGesture)
-        tableView.gestureRecognizers?.forEach({ print($0) })
         tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
+//        let panGes = UIPanGestureRecognizer(target: self, action: #selector(handlePanTouch(sender: )))
+//        panGes.cancelsTouchesInView = false
+//        tableView.panGestureRecognizer.cancelsTouchesInView = false
+//        view.addGestureRecognizer(panGes)
         tableView.delegate = self
         tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
@@ -239,51 +225,6 @@ class ChannelsListViewController: UIViewController {
     }
 }
 
-// MARK: - ChannelsListViewController + UITableViewDelegate
-
-extension ChannelsListViewController: UITableViewDelegate {
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        UIConstants.sectionHeight
-    }
-    
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        UIConstants.rowHeight
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let idCell = dataSource.snapshot().itemIdentifiers[indexPath.row]
-        guard let navigationController = navigationController,
-              let channelID = channels.first(where: { $0.uuid == idCell })?.channelID
-        else {
-            return
-        }
-        presenter?.didTappedChannel(to: channelID, navigationController: navigationController)
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-    
-    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        var snapshot = dataSource.snapshot()
-        let identifiers = snapshot.itemIdentifiers
-
-        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, _) in
-            
-            guard let self,
-                  let idChannel = channels.first(where: { $0.uuid == identifiers[indexPath.item] })?.channelID
-            else {
-                return
-            }
-            self.presenter?.deleteChannel(id: idChannel)
-            snapshot.deleteItems([identifiers[indexPath.row]])
-            self.dataSource.apply(snapshot)
-        }
-        
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
-        configuration.performsFirstActionWithFullSwipe = true
-        return configuration
-    }
-}
-
 // MARK: - ChannelsListViewController + ChannelsListViewProtocol
 
 extension ChannelsListViewController: ChannelsListViewProtocol {
@@ -307,7 +248,7 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
     }
     
     func updateChannel(channel: ChannelModel) {
-        dataSource.updateCell(channel: channel, view: self)
+        dataSource.updateCell(channel: channel)
     }
     
     func deleteChannel(channel: ChannelModel) {
