@@ -214,13 +214,13 @@ class ChannelsListViewController: UIViewController {
     
     @objc
     private func handlePanTouch(sender: UIPanGestureRecognizer) {
-        logoEmitterAnimation.snowLayer.birthRate = 50
-        logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
+        logoEmitterAnimation.birthRate = 50
+        logoEmitterAnimation.setupLogoLayer(layer: logoEmitterAnimation)
         let location = sender.location(in: view.window)
-        logoEmitterAnimation.snowLayer.emitterPosition = CGPoint(x: location.x, y: location.y)
-        view.window?.layer.addSublayer(logoEmitterAnimation.snowLayer)
+        logoEmitterAnimation.emitterPosition = CGPoint(x: location.x, y: location.y)
+        view.window?.layer.addSublayer(logoEmitterAnimation)
         if sender.state == .ended {
-            logoEmitterAnimation.snowLayer.birthRate = 0
+            logoEmitterAnimation.birthRate = 0
         }
     }
 }

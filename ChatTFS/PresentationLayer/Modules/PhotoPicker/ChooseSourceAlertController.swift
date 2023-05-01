@@ -4,7 +4,7 @@ class ChooseSourceAlertController: UIAlertController {
 
     // MARK: - Properties
     
-    weak var profileVC: ProfileViewProtocol?
+    weak var profileVC: EditProfileViewController?
     var photoPickerController: PhotoPickerController?
 
     // MARK: - Lifecycle
@@ -31,7 +31,7 @@ class ChooseSourceAlertController: UIAlertController {
         })
         
         addAction(UIAlertAction(title: "Загрузить", style: .default) { [weak self] _ in
-            guard let profileVC = self?.profileVC as? ProfileViewProtocol
+            guard let profileVC = self?.profileVC as? EditProfileViewController
             else {
                 return
             }
@@ -42,12 +42,12 @@ class ChooseSourceAlertController: UIAlertController {
     }
     
     private func configureSource() {
-        guard let profileVC = self.profileVC as? UIViewController,
+        guard let profileVC = self.profileVC,
               let photoPickerController = self.photoPickerController
         else {
             return
         }
-        photoPickerController.profileVC = profileVC as? ProfileViewProtocol
+        photoPickerController.profileVC = profileVC
         profileVC.present(photoPickerController, animated: true)
     }
 }

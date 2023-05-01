@@ -46,24 +46,24 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     @objc
     private func handlePanTouch(sender: UIGestureRecognizer) {
-        logoEmitterAnimation.snowLayer.birthRate = 50
-        logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
+        logoEmitterAnimation.birthRate = 50
+        logoEmitterAnimation.setupLogoLayer(layer: logoEmitterAnimation)
         let location = sender.location(in: window)
-        logoEmitterAnimation.snowLayer.emitterPosition = location
-        window?.layer.addSublayer(logoEmitterAnimation.snowLayer)
+        logoEmitterAnimation.emitterPosition = location
+        window?.layer.addSublayer(logoEmitterAnimation)
         if sender.state == .ended {
-            logoEmitterAnimation.snowLayer.birthRate = 0
+            logoEmitterAnimation.birthRate = 0
         }
     }
     
     @objc func handleTapTouch(sender: UIGestureRecognizer) {
-        logoEmitterAnimation.snowLayer.birthRate = 10
-        logoEmitterAnimation.setupSnowLayer(layer: logoEmitterAnimation.snowLayer)
+        logoEmitterAnimation.birthRate = 10
+        logoEmitterAnimation.setupLogoLayer(layer: logoEmitterAnimation)
         let location = sender.location(in: window?.inputView)
-        logoEmitterAnimation.snowLayer.emitterPosition = location
-        window?.layer.addSublayer(logoEmitterAnimation.snowLayer)
+        logoEmitterAnimation.emitterPosition = location
+        window?.layer.addSublayer(logoEmitterAnimation)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.logoEmitterAnimation.snowLayer.birthRate = 0
+            self.logoEmitterAnimation.birthRate = 0
         }
     }
 }

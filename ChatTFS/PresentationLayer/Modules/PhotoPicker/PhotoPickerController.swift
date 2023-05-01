@@ -5,7 +5,7 @@ class PhotoPickerController: UIImagePickerController, UIImagePickerControllerDel
     // MARK: - Properties
     
     var imagePicked: UIImage?
-    weak var profileVC: ProfileViewProtocol?
+    weak var profileVC: EditProfileViewController?
 
     // MARK: - Lifecycle
     

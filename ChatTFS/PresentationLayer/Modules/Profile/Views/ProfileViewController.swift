@@ -4,7 +4,6 @@ import Combine
 protocol ProfileViewProtocol: AnyObject {
     var profilePhoto: UIImageView { get set }
     func showProfile(data: ProfileModel)
-    func showNetworkImages()
 }
 
 class ProfileViewController: UIViewController {
@@ -53,7 +52,7 @@ class ProfileViewController: UIViewController {
     private lazy var turnOnAnimate = UILongPressGestureRecognizer(target: self, action: #selector(showAnimate))
     private lazy var turnOffAnimate = UILongPressGestureRecognizer(target: self, action: #selector(stopAnimate))
     private lazy var tapEditButton = UITapGestureRecognizer(target: self, action: #selector(editProfileTapped))
-    private lazy var animationGroup = CAAnimationGroup()
+    private lazy var shakeAnimation = ShakeAnimation()
     
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
@@ -105,7 +104,7 @@ class ProfileViewController: UIViewController {
         activityIndicator.startAnimating()
         editButton.addGestureRecognizer(turnOnAnimate)
         editButton.addGestureRecognizer(tapEditButton)
-        addPhotoButton.addTarget(self, action: #selector(addPhotoTapped), for: .touchUpInside)
+        addPhotoButton.addTarget(self, action: #selector(editProfileTapped), for: .touchUpInside)
         presenter?.viewReady()
         setupUI()
     }
@@ -133,67 +132,23 @@ class ProfileViewController: UIViewController {
     
     @objc
     private func editProfileTapped() {
-//        presenter?.editProfile()
-    }
-    
-    @objc
-    private func addPhotoTapped() {
-        let chooseSourceAlert = ChooseSourceAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-        tabBarController?.present(chooseSourceAlert, animated: true) {
-            chooseSourceAlert.profileVC = self
-        }
+        let profile = ProfileModel(fullName: nameLabel.text, statusText: bioTextView.text, profileImageData: nil)
+        let nc = UINavigationController(rootViewController: EditProfileViewController(profile: profile,
+                                                                                      profileImage: profilePhoto.image ?? UIImage(),
+                                                                                      view: self))
+        present(nc, animated: true)
     }
     
     @objc
     private func showAnimate(_ sender: UILongPressGestureRecognizer) {
-        let rotation = CAKeyframeAnimation(keyPath: "transform.rotation")
-        rotation.values = [
-            0.0,
-            -CGFloat.pi / 10,
-            0.0,
-            CGFloat.pi / 10,
-            0.0
-        ]
-        
-        let position = CAKeyframeAnimation(keyPath: #keyPath(CALayer.position))
-        position.values = [
-            editButton.layer.position,
-            CGPoint(x: editButton.center.x, y: editButton.center.y - 5),
-            CGPoint(x: editButton.center.x - 5, y: editButton.center.y),
-            CGPoint(x: editButton.center.x, y: editButton.center.y + 5),
-            CGPoint(x: editButton.center.x + 5, y: editButton.center.y),
-            editButton.layer.position
-        ]
-        
-        animationGroup.animations = [rotation, position]
-        animationGroup.duration = 0.3
-        animationGroup.repeatCount = .infinity
-        editButton.layer.add(animationGroup, forKey: "shake")
+        shakeAnimation.startShake(targetView: editButton)
         editButton.removeGestureRecognizer(turnOnAnimate)
         editButton.addGestureRecognizer(turnOffAnimate)
     }
     
     @objc
     private func stopAnimate(_ sender: UILongPressGestureRecognizer) {
-        let currentPosition = editButton.layer.presentation()?.value(forKeyPath: #keyPath(CALayer.position))
-        let currentAngle = editButton.layer.presentation()?.value(forKeyPath: "transform.rotation")
-        editButton.layer.removeAllAnimations()
-        
-        let endShakePosition = CABasicAnimation(keyPath: #keyPath(CALayer.position))
-        endShakePosition.fromValue = currentPosition
-        endShakePosition.toValue = editButton.center
-        
-        let endShakeRotation = CABasicAnimation(keyPath: "transform.rotation")
-        
-        endShakeRotation.fromValue = currentAngle
-        endShakeRotation.toValue = 0.0
-        
-        let group = CAAnimationGroup()
-        group.duration = 0.5
-        group.animations = [endShakePosition, endShakeRotation]
-        group.fillMode = .forwards
-        
-        editButton.layer.add(group, forKey: nil)
+        shakeAnimation.stopShake(targetView: editButton)
         editButton.addGestureRecognizer(turnOnAnimate)
         editButton.removeGestureRecognizer(turnOffAnimate)
     }
@@ -259,9 +214,5 @@ extension ProfileViewController: ProfileViewProtocol {
                     self.view.layoutIfNeeded()
                 }
             }
-    }
-    
-    func showNetworkImages() {
-        presenter?.showNetworkImages(navigationController: self.navigationController ?? UINavigationController(), vc: self)
     }
 }
