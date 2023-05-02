@@ -4,6 +4,7 @@ protocol ChannelViewProtocol: AnyObject {
     func showChannel(channel: ChannelModel)
     func addMessage(message: MessageModel)
     var messages: [MessageModel] { get set }
+    var titlesSections: [String] { get set }
     func setImageMessage(link: String)
     func updateImage(image: UIImage, id: UUID)
 }
@@ -40,43 +41,7 @@ class ChannelViewController: UIViewController {
     
     // MARK: - Private
 
-    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, uuid in
-        guard let model = self?.messages.first(where: { $0.uuid == uuid }),
-              let themeService = self?.themeService
-        else {
-            return UITableViewCell()
-        }
-        
-        switch model.myMessage {
-        case true:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingChannelViewCell.identifier,
-                                                           for: indexPath) as? OutgoingChannelViewCell else {
-                return UITableViewCell()
-            }
-            cell.configureTheme(theme: themeService)
-            cell.configure(with: model)
-            return cell
-        case false:
-            switch model.isSameUser {
-            case true:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: SameIncomingChannelViewCell.identifier,
-                                                               for: indexPath) as? SameIncomingChannelViewCell else {
-                    return UITableViewCell()
-                }
-                cell.configureTheme(theme: themeService)
-                cell.configure(with: model)
-                return cell
-            case false:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier,
-                                                               for: indexPath) as? IncomingChannelViewCell else {
-                    return UITableViewCell()
-                }
-                cell.configureTheme(theme: themeService)
-                cell.configure(with: model)
-                return cell
-            }
-        }
-    }
+    private lazy var dataSource = ChannelDataSource(tableView: tableView, themeService: themeService, view: self)
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -172,18 +137,11 @@ class ChannelViewController: UIViewController {
         presenter?.viewReady()
         dataSource.defaultRowAnimation = .fade
         setTableView()
-        setGesture()
         activityIndicator.startAnimating()
         sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
         choosePhotoButton.addTarget(self, action: #selector(pickPhoto), for: .touchUpInside)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(showKeyboard ),
-                                               name: UIResponder.keyboardWillShowNotification,
-                                               object: nil)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(hideKeyboard),
-                                               name: UIResponder.keyboardWillHideNotification,
-                                               object: nil)
+        addKeyboardObserver()
+        hideKeyboardWhenTappedOutside()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -203,31 +161,6 @@ class ChannelViewController: UIViewController {
     
     // MARK: - Methods
     
-    private func setupSnapshot() {
-        var snapshot = dataSource.snapshot()
-        snapshot.deleteAllItems()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy"
-        
-        let groupedMessages = Dictionary(grouping: messages, by: { Calendar.current.startOfDay(for: $0.date) })
-        let sortedDates = groupedMessages.keys.sorted()
-        
-        for date in sortedDates {
-            var messages = groupedMessages[date] ?? []
-            titlesSections.append(formatter.string(from: date))
-            messages.sort { $0.date < $1.date }
-            snapshot.appendSections([date])
-            snapshot.appendItems(messages.map({ $0.uuid }))
-        }
-        dataSource.apply(snapshot)
-    }
-    
-    private func setGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
-    }
-    
     private func sendMessage() {
         presenter?.createMessage(messageText: textField.text)
         textField.text = ""
@@ -243,35 +176,7 @@ class ChannelViewController: UIViewController {
     
     @objc
     private func checkMessage() {
-        if textField.text == nil || textField.text == "" {
-            return
-        }
-        sendMessage()
-    }
-    
-    @objc
-    private func showKeyboard(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
-        
-        let keyboardHeight = keyboardFrame.height
-        let viewYMax = view.frame.maxY
-        let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
-        let height = viewYMax - safeAreaYMax
-        let offset = keyboardHeight - height
-        additionalSafeAreaInsets.bottom = offset
-        view.layoutIfNeeded()
-        scrollToLastRow()
-    }
-    
-    @objc
-    private func hideKeyboard(_ notification: Notification) {
-        additionalSafeAreaInsets.bottom = 0
-    }
-    
-    @objc
-    private func dismissKeyboard() {
-        view.endEditing(true)
+        !(textField.text == nil || textField.text == "") ? sendMessage() : ()
     }
     
     @objc
@@ -391,7 +296,7 @@ extension ChannelViewController: UITableViewDelegate {
 
 extension ChannelViewController: ChannelViewProtocol {
     func showChannel(channel: ChannelModel) {
-        setupSnapshot()
+        dataSource.setupSnapshot()
         channelName.text = channel.name
         channelLogo.image = channel.channelImage
         activityIndicator.stopAnimating()
@@ -399,13 +304,7 @@ extension ChannelViewController: ChannelViewProtocol {
     
     func addMessage(message: MessageModel) {
         messages.append(message)
-        var snapshot = dataSource.snapshot()
-        if snapshot.numberOfSections == 0 {
-            snapshot.appendSections([message.date])
-            snapshot.appendItems([message.uuid], toSection: message.date)
-        } else {
-            snapshot.appendItems([message.uuid])
-        }
+        dataSource.addMessage(message: message)
         
         DispatchQueue.main.async { [weak self] in
             guard let self else {
@@ -414,7 +313,6 @@ extension ChannelViewController: ChannelViewProtocol {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy"
             self.titlesSections.append(formatter.string(from: message.date))
-            self.dataSource.apply(snapshot, animatingDifferences: true)
             let lastSectionNumber = self.tableView.numberOfSections - 1
             let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
             self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),
@@ -431,10 +329,6 @@ extension ChannelViewController: ChannelViewProtocol {
             return
         }
         messages[index].image = image
-        var snapshot = dataSource.snapshot()
-        if id == snapshot.itemIdentifiers.first(where: { $0 == id }) {
-            snapshot.reloadItems([id])
-        }
-        dataSource.apply(snapshot)
+        dataSource.updateImage(id: id)
     }
 }

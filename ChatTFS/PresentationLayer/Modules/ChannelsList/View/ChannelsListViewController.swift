@@ -105,10 +105,6 @@ class ChannelsListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
-//        let panGes = UIPanGestureRecognizer(target: self, action: #selector(handlePanTouch(sender: )))
-//        panGes.cancelsTouchesInView = false
-//        tableView.panGestureRecognizer.cancelsTouchesInView = false
-//        view.addGestureRecognizer(panGes)
         tableView.delegate = self
         tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
