@@ -8,6 +8,7 @@ class EditProfileViewController: UIViewController {
         self.actualProfile = profile
         self.actualImage = profileImage
         self.profileView = view
+        self.themeService = view.themeService
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -34,6 +35,7 @@ class EditProfileViewController: UIViewController {
     var actualImage: UIImage
     var profileView: ProfileViewController
     lazy var router: RouterProtocol? = profileView.presenter?.router
+    weak var themeService: ThemeServiceProtocol?
     
     lazy var profilePhoto: UIImageView = {
         let imageView = UIImageView()
@@ -69,7 +71,6 @@ class EditProfileViewController: UIViewController {
     private lazy var bubble: UIView = {
         let view = UIView()
         view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.systemGray3.cgColor
         view.backgroundColor = .white
         return view
     }()
@@ -100,14 +101,16 @@ class EditProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = #colorLiteral(red: 0.9490196078, green: 0.9490196078, blue: 0.968627451, alpha: 1)
+        view.transform = view.transform.rotated(by: .pi)
         setupUI()
         setupNavigationBar()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        view.transform = view.transform.rotated(by: .pi)
+        view.backgroundColor = themeService?.currentTheme.backgroundColor
+        bubble.backgroundColor = themeService?.currentTheme.themeBubble
+        bubble.layer.borderColor = separatorLine.backgroundColor?.cgColor
     }
     
     private func setupNavigationBar() {
@@ -187,6 +190,6 @@ class EditProfileViewController: UIViewController {
     
     @objc
     private func close() {
-        self.navigationController?.popToRootViewController(animated: true)
+        navigationController?.popToRootViewController(animated: true)
     }
 }

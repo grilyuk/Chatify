@@ -35,7 +35,8 @@ class NetworkImagesInteractor: NetworkImagesInteractorProtocol {
             case .success(let links):
                 let cellModels = links.map { link in
                     return NetworkImageModel(isAvailable: false,
-                                             link: link.url)
+                                             link: link.url,
+                                             isUploaded: false)
                 }
                 DispatchQueue.main.async {
                     self?.handler?(cellModels)

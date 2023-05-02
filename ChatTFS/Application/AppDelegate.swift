@@ -6,7 +6,6 @@
 //
 
 import UIKit
-import QuartzCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {

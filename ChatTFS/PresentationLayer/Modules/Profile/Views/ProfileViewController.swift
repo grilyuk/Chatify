@@ -157,8 +157,8 @@ class ProfileViewController: UIViewController {
     }
     
     private func setConstraints() {
-        view.addSubview(bubble)
-        bubble.addSubviews(profilePhoto, addPhotoButton, nameLabel, bioTextView, editButton)
+        view.addSubviews(bubble, editButton)
+        bubble.addSubviews(profilePhoto, addPhotoButton, nameLabel, bioTextView)
         
         bubble.translatesAutoresizingMaskIntoConstraints = false
         profilePhoto.translatesAutoresizingMaskIntoConstraints = false
@@ -180,6 +180,7 @@ class ProfileViewController: UIViewController {
             
             addPhotoButton.topAnchor.constraint(equalTo: profilePhoto.bottomAnchor, constant: UIConstants.imageProfileToAddPhoto),
             addPhotoButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            addPhotoButton.heightAnchor.constraint(equalToConstant: 24),
             
             nameLabel.topAnchor.constraint(equalTo: addPhotoButton.bottomAnchor, constant: UIConstants.addPhotoToNameLabel),
             nameLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -192,7 +193,7 @@ class ProfileViewController: UIViewController {
             editButton.topAnchor.constraint(equalTo: bioTextView.bottomAnchor, constant: 16),
             editButton.bottomAnchor.constraint(equalTo: bubble.bottomAnchor, constant: -16),
             editButton.widthAnchor.constraint(equalTo: bubble.widthAnchor, multiplier: 3 / 4),
-            editButton.heightAnchor.constraint(greaterThanOrEqualToConstant: 1)
+            editButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
 }
@@ -227,6 +228,6 @@ extension ProfileViewController: UINavigationControllerDelegate {
                               animationControllerFor operation: UINavigationController.Operation,
                               from fromVC: UIViewController,
                               to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        return TransitionAnimation()
-        }
+        TransitionAnimation()
+    }
 }

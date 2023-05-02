@@ -47,17 +47,17 @@ class NetworkImagesPresenter: NetworkImagesPresenterProtocol {
         }
         
         interactor.downloadImage(link: url) { [weak self] result in
+            self?.view?.images[index].isUploaded = true
             switch result {
             case .success(let image):
                 self?.view?.images[index].image = image
                 self?.view?.images[index].isAvailable = true
             case .failure(let error):
-                print(error)
+                print(error.localizedDescription)
             }
-        }
-        
-        DispatchQueue.main.async { [weak self] in
-            self?.view?.updateImageInCell(uuid: uuid)
+            DispatchQueue.main.async { [weak self] in
+                self?.view?.updateImageInCell(uuid: uuid)
+            }
         }
     }
 }

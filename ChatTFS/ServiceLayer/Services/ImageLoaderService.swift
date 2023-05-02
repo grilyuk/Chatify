@@ -16,7 +16,7 @@ class ImageLoaderService: ImageLoaderServiceProtocol {
     
     // MARK: - Private properties
     
-    private let mockJsonLink: String = "https://run.mocky.io/v3/bd6a352b-7d31-4e1f-9ebd-9fd26a02b100"
+    private let mockJsonLink: String = "https://run.mocky.io/v3/8317ecaa-ac7d-4b6f-8d27-86fe6ab57596"
     private var networkService: NetworkServiceProtocol
     
     // MARK: - Public methods

@@ -108,11 +108,11 @@ class ChannelsListViewController: UIViewController {
         tableView.delegate = self
         tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
-        presenter?.viewReady()
         dataSource.defaultRowAnimation = .fade
         setupTableViewConstraints()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         activityIndicator.startAnimating()
+        presenter?.viewReady()
     }
     
     override func viewWillAppear(_ animated: Bool) {

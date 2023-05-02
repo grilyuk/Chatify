@@ -11,8 +11,6 @@ protocol ChannelViewProtocol: AnyObject {
 
 class ChannelViewController: UIViewController {
     
-    typealias DataSource = UITableViewDiffableDataSource<Date, UUID>
-    
     // MARK: - Initialization
     
     init(themeService: ThemeServiceProtocol) {
@@ -42,6 +40,7 @@ class ChannelViewController: UIViewController {
     // MARK: - Private
 
     private lazy var dataSource = ChannelDataSource(tableView: tableView, themeService: themeService, view: self)
+    private lazy var logoEmitterAnimation = EmitterAnimation()
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -134,6 +133,7 @@ class ChannelViewController: UIViewController {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = dataSource
+        tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         presenter?.viewReady()
         dataSource.defaultRowAnimation = .fade
         setTableView()
@@ -147,6 +147,7 @@ class ChannelViewController: UIViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
+        customNavBar.backgroundColor = themeService.currentTheme.themeBubble
         presenter?.subscribeToSSE()
         view.backgroundColor = themeService.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
@@ -155,6 +156,7 @@ class ChannelViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        view.endEditing(true)
         navigationController?.navigationBar.isHidden = false
         presenter?.unsubscribeFromSSE()
     }
@@ -191,6 +193,11 @@ class ChannelViewController: UIViewController {
         }
         presenter?.showNetworkImages(navigationController: navigationController,
                                      vc: self)
+    }
+    
+    @objc
+    private func handlePanTouch(sender: UIPanGestureRecognizer) {
+        logoEmitterAnimation.setupGesture(sender: sender, view: self.view)
     }
     
     // MARK: - Setup UI

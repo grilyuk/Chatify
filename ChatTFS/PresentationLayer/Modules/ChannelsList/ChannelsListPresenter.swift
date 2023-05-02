@@ -31,6 +31,8 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
     // MARK: - Private properties
     
     private var interactor: ChannelsListInteractorProtocol
+    private let mainQueue = DispatchQueue.main
+    private let backgroundQueue = DispatchQueue.global()
     
     // MARK: - Initialization
     
@@ -51,10 +53,8 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
             self?.view?.showChannelsList()
         }
         
-        DispatchQueue.global(qos: .background).async { [weak self] in
-            
-            guard let self
-            else {
+        backgroundQueue.async { [weak self] in
+            guard let self else {
                 return
             }
             
@@ -69,8 +69,9 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
                                     channelID: channel.id)
             }) ?? []
             
-            DispatchQueue.main.async { [weak self] in
-                self?.channels.sort { $0.date ?? Date(timeIntervalSince1970: 0) > $1.date ?? Date(timeIntervalSince1970: 0) }
+            self.channels.sort { $0.date ?? Date(timeIntervalSince1970: 0) > $1.date ?? Date(timeIntervalSince1970: 0) }
+            
+            self.mainQueue.async { [weak self] in
                 self?.handler?(self?.channels ?? [])
             }
         }
@@ -97,7 +98,7 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
     }
     
     func addChannel(channel: ChannelNetworkModel) {
-        DispatchQueue.global().async { [weak self] in
+        backgroundQueue.async { [weak self] in
             guard let self
             else {
                 return
@@ -110,7 +111,7 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
                                             isOnline: false,
                                             hasUnreadMessages: true,
                                             channelID: channel.id)
-            DispatchQueue.main.async { [weak self] in
+            self.mainQueue.async { [weak self] in
                 self?.channels.append(channelModel)
                 self?.view?.addChannel(channel: channelModel)
             }
