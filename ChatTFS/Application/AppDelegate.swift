@@ -19,6 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private lazy var coreAssembly = CoreAssembly()
     private lazy var serviceAssembly = ServiceAssembly(coreAssembly: coreAssembly)
     private lazy var logoEmitterAnimation = EmitterAnimation()
+    private lazy var tapEmitterGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapTouch(sender: )))
 
     // MARK: - Lifecycle
     
@@ -28,12 +29,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let tabBarController = moduleBuilder.buildTabBarController()
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
-        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanTouch(sender: )))
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapTouch(sender: )))
-        tapGesture.cancelsTouchesInView = false
-        panGesture.cancelsTouchesInView = false
-        window?.addGestureRecognizer(panGesture)
-        window?.addGestureRecognizer(tapGesture)
+        
+        logoEmitterAnimation.setupPanGesture(sender: tapEmitterGesture, view: window ?? UIView())
+        tapEmitterGesture.cancelsTouchesInView = false
+        window?.addGestureRecognizer(tapEmitterGesture)
+        
         switch serviceAssembly.themeService.currentTheme {
         case .light:
             application.windows[0].overrideUserInterfaceStyle = .light
@@ -43,21 +43,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         return true
     }
     
-    @objc
-    private func handlePanTouch(sender: UIGestureRecognizer) {
-        logoEmitterAnimation.birthRate = 50
-        logoEmitterAnimation.setupLogoLayer(layer: logoEmitterAnimation)
-        let location = sender.location(in: window)
-        logoEmitterAnimation.emitterPosition = location
-        window?.layer.addSublayer(logoEmitterAnimation)
-        if sender.state == .ended {
-            logoEmitterAnimation.birthRate = 0
-        }
-    }
-    
     @objc func handleTapTouch(sender: UIGestureRecognizer) {
         logoEmitterAnimation.birthRate = 10
-        logoEmitterAnimation.setupLogoLayer(layer: logoEmitterAnimation)
         let location = sender.location(in: window?.inputView)
         logoEmitterAnimation.emitterPosition = location
         window?.layer.addSublayer(logoEmitterAnimation)

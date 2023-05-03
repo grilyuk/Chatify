@@ -20,15 +20,11 @@ class EmitterAnimation: CAEmitterLayer {
         return cell
     }()
     
-    func setupLogoLayer(layer: CAEmitterLayer) {
-        layer.emitterSize = CGSize(width: 50, height: 50)
-        layer.emitterShape = CAEmitterLayerEmitterShape.point
-        layer.emitterCells = [logoCell]
-    }
-    
-    func setupGesture(sender: UIGestureRecognizer, view: UIView) {
+    func setupPanGesture(sender: UIGestureRecognizer, view: UIView) {
         self.birthRate = 50
-        setupLogoLayer(layer: self)
+        self.emitterSize = CGSize(width: 50, height: 50)
+        self.emitterShape = CAEmitterLayerEmitterShape.point
+        self.emitterCells = [logoCell]
         let location = sender.location(in: view.window)
         self.emitterPosition = CGPoint(x: location.x, y: location.y)
         view.window?.layer.addSublayer(self)

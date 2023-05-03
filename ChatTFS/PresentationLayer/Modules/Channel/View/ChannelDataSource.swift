@@ -6,8 +6,8 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, UUID> {
         self.view = view
         self.themeService = themeService
         
-        super.init(tableView: tableView) { tableView, indexPath, uuid in
-            guard let model = view.messages.first(where: { $0.uuid == uuid }) else {
+        super.init(tableView: tableView) { [weak view] tableView, indexPath, uuid in
+            guard let model = view?.messages.first(where: { $0.uuid == uuid }) else {
                 return UITableViewCell()
             }
             
@@ -54,13 +54,14 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, UUID> {
         
         let groupedMessages = Dictionary(grouping: view?.messages ?? [], by: { Calendar.current.startOfDay(for: $0.date) })
         let sortedDates = groupedMessages.keys.sorted()
-
+        sortedDates.forEach { [weak view] date in
+            view?.titlesSections.append(formatter.string(from: date))
+        }
+        snapshot.appendSections(sortedDates)
         for date in sortedDates {
             var messages = groupedMessages[date] ?? []
-            view?.titlesSections.append(formatter.string(from: date))
             messages.sort { $0.date < $1.date }
-            snapshot.appendSections([date])
-            snapshot.appendItems(messages.map({ $0.uuid }))
+            snapshot.appendItems(messages.map({ $0.uuid }), toSection: date)
         }
         apply(snapshot)
     }

@@ -101,7 +101,7 @@ class EditProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.transform = view.transform.rotated(by: .pi)
+        hideKeyboardWhenTappedOutside()
         setupUI()
         setupNavigationBar()
     }
@@ -190,6 +190,7 @@ class EditProfileViewController: UIViewController {
     
     @objc
     private func close() {
-        navigationController?.popToRootViewController(animated: true)
+//        navigationController?.popToRootViewController(animated: true)
+        dismiss(animated: true)
     }
 }

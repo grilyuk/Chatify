@@ -93,6 +93,7 @@ class ProfileViewController: UIViewController {
         button.layer.cornerRadius = 8
         button.clipsToBounds = true
         button.backgroundColor = .systemBlue
+        button.gestureRecognizers?.forEach({ $0.cancelsTouchesInView = false })
         return button
     }()
     
@@ -100,7 +101,6 @@ class ProfileViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationController?.delegate = self
         profilePhoto.image = placeholderImage
         activityIndicator.startAnimating()
         editButton.addGestureRecognizer(turnOnAnimate)
@@ -137,9 +137,9 @@ class ProfileViewController: UIViewController {
         let profileEditVC = EditProfileViewController(profile: profile,
                                                       profileImage: profilePhoto.image ?? UIImage(),
                                                       view: self)
-        editButton.addGestureRecognizer(turnOnAnimate)
-        editButton.removeGestureRecognizer(turnOffAnimate)
-        self.navigationController?.pushViewController(profileEditVC, animated: true)
+        let navigationController = UINavigationController(rootViewController: profileEditVC)
+        navigationController.transitioningDelegate = self
+        self.navigationController?.present(navigationController, animated: true)
     }
     
     @objc
@@ -221,13 +221,15 @@ extension ProfileViewController: ProfileViewProtocol {
     }
 }
 
-// MARK: - ProfileViewController + UINavigationControllerDelegate
+// MARK: - ProfileViewController + UIViewControllerTransitioningDelegate
 
-extension ProfileViewController: UINavigationControllerDelegate {
-    func navigationController(_ navigationController: UINavigationController,
-                              animationControllerFor operation: UINavigationController.Operation,
-                              from fromVC: UIViewController,
-                              to toVC: UIViewController) -> UIViewControllerAnimatedTransitioning? {
-        TransitionAnimation()
+extension ProfileViewController: UIViewControllerTransitioningDelegate {
+    func animationController(forPresented presented: UIViewController,
+                             presenting: UIViewController, source: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return PresentTransition()
+    }
+
+    func animationController(forDismissed dismissed: UIViewController) -> UIViewControllerAnimatedTransitioning? {
+        return DismissTransition()
     }
 }

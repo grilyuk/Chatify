@@ -9,11 +9,11 @@ protocol ChannelsListPresenterProtocol: AnyObject {
     func dataUploaded()
     func didTappedChannel(to channel: String, navigationController: UINavigationController)
     func addChannel(channel: ChannelNetworkModel)
+    func updateChannel(channel: ChannelNetworkModel)
     func createChannel(name: String)
     func deleteChannel(id: String)
     func deleteFromView(channelID: String)
     func interactorError()
-    func updateChannel(channel: ChannelNetworkModel)
     func subscribeToSSE()
     func unsubscribeFromSSE()
 }

@@ -197,7 +197,7 @@ class ChannelViewController: UIViewController {
     
     @objc
     private func handlePanTouch(sender: UIPanGestureRecognizer) {
-        logoEmitterAnimation.setupGesture(sender: sender, view: self.view)
+        logoEmitterAnimation.setupPanGesture(sender: sender, view: self.view)
     }
     
     // MARK: - Setup UI
@@ -282,6 +282,7 @@ extension ChannelViewController: UITableViewDelegate {
         let blur = UIBlurEffect(style: .regular)
         let blurEffectView = UIVisualEffectView(effect: blur)
         blurEffectView.frame = CGRect(origin: .zero, size: CGSize(width: view.frame.width, height: tableView.estimatedSectionHeaderHeight))
+        blurEffectView.layer.cornerRadius = blurEffectView.frame.height / 2
         title.frame = blurEffectView.bounds
         blurEffectView.alpha = 0.6
         title.translatesAutoresizingMaskIntoConstraints = false
@@ -291,11 +292,10 @@ extension ChannelViewController: UITableViewDelegate {
             title.centerXAnchor.constraint(equalTo: blurEffectView.centerXAnchor)
         ])
         title.text = titlesSections[section]
-        print(section)
         title.font = .systemFont(ofSize: 12)
         title.textAlignment = .center
         title.textColor = themeService.currentTheme.textColor
-        blurEffectView.contentView.backgroundColor = themeService.currentTheme.backgroundColor
+        blurEffectView.layoutIfNeeded()
         return blurEffectView
     }
 }

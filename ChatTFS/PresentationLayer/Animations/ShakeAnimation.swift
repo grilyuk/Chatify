@@ -6,9 +6,9 @@ class ShakeAnimation: CAAnimationGroup {
         let rotation = CAKeyframeAnimation(keyPath: "transform.rotation")
         rotation.values = [
             0.0,
-            -CGFloat.pi / 10,
-            0.0,
             CGFloat.pi / 10,
+            0.0,
+            -CGFloat.pi / 10,
             0.0
         ]
         

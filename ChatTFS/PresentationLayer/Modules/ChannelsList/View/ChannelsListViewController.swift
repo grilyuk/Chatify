@@ -210,7 +210,7 @@ class ChannelsListViewController: UIViewController {
     
     @objc
     private func handlePanTouch(sender: UIPanGestureRecognizer) {
-        logoEmitterAnimation.setupGesture(sender: sender, view: self.view)
+        logoEmitterAnimation.setupPanGesture(sender: sender, view: self.view)
     }
 }
 
