@@ -168,8 +168,9 @@ class ChannelInteractor: ChannelInteractorProtocol {
         let newMessages = networkMessagesIDs.filter { !(cacheMessagesIDs.contains($0)) }
         
         for newMessage in newMessages {
+            let messageToSave = networkMessages.filter({ $0.id == newMessage })
             self.coreDataService.saveMessagesForChannel(for: self.channelID,
-                                                        messages: networkMessages.filter({ $0.id == newMessage }))
+                                                        messages: messageToSave)
         }
     }
 }

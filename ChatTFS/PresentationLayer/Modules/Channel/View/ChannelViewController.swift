@@ -26,7 +26,7 @@ class ChannelViewController: UIViewController {
     
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
-        static let textFieldHeight: CGFloat = 55
+        static let textFieldHeight: CGFloat = 40
         static let avatarSize: CGFloat = 50
     }
     
@@ -78,8 +78,9 @@ class ChannelViewController: UIViewController {
     private lazy var sendButton: UIButton = {
         let button = UIButton(type: .system)
         let arrowImage = UIImage(systemName: "arrow.up.circle.fill")
-        button.setImage(arrowImage, for: .normal)
-        button.imageView?.frame = button.bounds
+        let image = arrowImage?.scalePreservingAspectRatio(targetSize: CGSize(width: UIConstants.textFieldHeight * 0.7,
+                                                                              height: UIConstants.textFieldHeight * 0.7))
+        button.setImage(image, for: .normal)
         return button
     }()
     
@@ -122,7 +123,9 @@ class ChannelViewController: UIViewController {
     
     private lazy var choosePhotoButton: UIButton = {
         let button = UIButton(type: .system)
-        let image = UIImage(systemName: "photo.circle")?.withTintColor(.blue, renderingMode: .alwaysOriginal)
+        let photoImage = UIImage(systemName: "photo.circle")
+        let image = photoImage?.scalePreservingAspectRatio(targetSize: CGSize(width: UIConstants.textFieldHeight * 0.75,
+                                                                              height: UIConstants.textFieldHeight * 0.75))
         button.setImage(image, for: .normal)
         return button
     }()

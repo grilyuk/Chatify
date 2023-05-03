@@ -15,7 +15,7 @@ struct MessageNetworkModel: Hashable {
         self.id = id
         self.text = text
         self.userID = userID
-        self.userName = userID
+        self.userName = userName
         self.date = date
     }
     
