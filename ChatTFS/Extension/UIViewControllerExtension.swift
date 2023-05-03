@@ -3,7 +3,6 @@ import UIKit
 extension UIViewController {
     func hideKeyboardWhenTappedOutside() {
         let tap: UITapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        tap.cancelsTouchesInView = false
         view.addGestureRecognizer(tap)
     }
 
@@ -35,6 +34,9 @@ extension UIViewController {
         let height = viewYMax - safeAreaYMax
         let offset = keyboardHeight - height
         additionalSafeAreaInsets.bottom = offset
+        if let view = self as? ChannelViewController {
+            view.scrollToLastRow()
+        }
         view.layoutIfNeeded()
     }
 }

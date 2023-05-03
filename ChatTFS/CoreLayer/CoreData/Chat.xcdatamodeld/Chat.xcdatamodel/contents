@@ -20,6 +20,7 @@
         <attribute name="text" optional="YES" attributeType="String"/>
         <attribute name="userID" optional="YES" attributeType="String"/>
         <attribute name="userName" optional="YES" attributeType="String"/>
+        <attribute name="uuid" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <relationship name="relationship" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="DBChannel" inverseName="messages" inverseEntity="DBChannel"/>
         <uniquenessConstraints>
             <uniquenessConstraint>

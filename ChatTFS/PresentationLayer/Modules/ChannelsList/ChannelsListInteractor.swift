@@ -76,10 +76,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             }
     }
     
-    func unsubscribeFromSSE() {
-//        chatService.stopListen()
-//        eventsSubscribe?.cancel()
-    }
+    func unsubscribeFromSSE() {  }
     
     func createChannel(channelName: String) {
         chatService.createChannel(channelName: channelName)

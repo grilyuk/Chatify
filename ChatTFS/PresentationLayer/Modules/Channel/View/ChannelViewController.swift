@@ -26,7 +26,7 @@ class ChannelViewController: UIViewController {
     
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
-        static let textFieldHeight: CGFloat = 36
+        static let textFieldHeight: CGFloat = 55
         static let avatarSize: CGFloat = 50
     }
     
@@ -60,9 +60,10 @@ class ChannelViewController: UIViewController {
     private lazy var textFieldView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = UIConstants.textFieldHeight / 2
+        view.clipsToBounds = true
         view.layer.borderWidth = UIConstants.borderWidth
         view.layer.borderColor = UIColor.systemGray5.cgColor
-        view.backgroundColor = themeService.currentTheme.backgroundColor
+        view.backgroundColor = themeService.currentTheme.themeBubble
         return view
     }()
     
@@ -70,7 +71,7 @@ class ChannelViewController: UIViewController {
         let field = UITextField()
         field.placeholder = "Type message"
         field.tintColor = themeService.currentTheme.incomingTextColor
-        field.backgroundColor = themeService.currentTheme.backgroundColor
+        field.backgroundColor = themeService.currentTheme.themeBubble
         return field
     }()
     
@@ -78,6 +79,7 @@ class ChannelViewController: UIViewController {
         let button = UIButton(type: .system)
         let arrowImage = UIImage(systemName: "arrow.up.circle.fill")
         button.setImage(arrowImage, for: .normal)
+        button.imageView?.frame = button.bounds
         return button
     }()
     
@@ -163,17 +165,18 @@ class ChannelViewController: UIViewController {
     
     // MARK: - Methods
     
-    private func sendMessage() {
-        presenter?.createMessage(messageText: textField.text)
-        textField.text = ""
-    }
-    
-    private func scrollToLastRow() {
+    func scrollToLastRow() {
         if !messages.isEmpty {
+            view.layoutIfNeeded()
             let lastSectionNumber = tableView.numberOfSections - 1
             let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
             tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
         }
+    }
+    
+    private func sendMessage() {
+        presenter?.createMessage(messageText: textField.text)
+        textField.text = ""
     }
     
     @objc
@@ -188,6 +191,7 @@ class ChannelViewController: UIViewController {
     
     @objc
     private func pickPhoto() {
+        view.endEditing(true)
         guard let navigationController = self.navigationController else {
             return
         }
@@ -239,11 +243,11 @@ class ChannelViewController: UIViewController {
             textField.bottomAnchor.constraint(equalTo: textFieldView.bottomAnchor, constant: -5),
             textField.topAnchor.constraint(equalTo: textFieldView.topAnchor, constant: 5),
             textField.leadingAnchor.constraint(equalTo: choosePhotoButton.trailingAnchor),
-            textField.trailingAnchor.constraint(equalTo: textFieldView.trailingAnchor, constant: -10),
+            textField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -5),
             
             sendButton.heightAnchor.constraint(equalTo: textFieldView.heightAnchor),
             sendButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
-            sendButton.trailingAnchor.constraint(equalTo: textField.trailingAnchor),
+            sendButton.trailingAnchor.constraint(equalTo: textFieldView.trailingAnchor),
             sendButton.widthAnchor.constraint(equalTo: textFieldView.heightAnchor),
             
             choosePhotoButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
@@ -321,10 +325,7 @@ extension ChannelViewController: ChannelViewProtocol {
             formatter.dateFormat = "dd.MM.yyyy"
             self.titlesSections.append(formatter.string(from: message.date))
             self.dataSource.addMessage(message: message)
-            let lastSectionNumber = self.tableView.numberOfSections - 1
-            let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
-            self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),
-                                                     at: .none, animated: true)
+            self.scrollToLastRow()
         }
     }
     

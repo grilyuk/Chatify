@@ -1,7 +1,7 @@
 import UIKit
 
 class ChannelsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
-
+    
     init(tableView: UITableView, themeService: ThemeServiceProtocol, view: ChannelsListViewProtocol) {
         self.view = view
         self.themeService = themeService

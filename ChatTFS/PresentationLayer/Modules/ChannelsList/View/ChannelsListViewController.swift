@@ -106,10 +106,11 @@ class ChannelsListViewController: UIViewController {
         super.viewDidLoad()
         tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         tableView.delegate = self
-        tableView.addSubview(pullToRefresh)
+        tableView.refreshControl = pullToRefresh
         addChanelAlert.addAction(createChannel)
         dataSource.defaultRowAnimation = .fade
         setupTableViewConstraints()
+        presenter?.subscribeToSSE()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         activityIndicator.startAnimating()
         presenter?.viewReady()
@@ -120,13 +121,7 @@ class ChannelsListViewController: UIViewController {
         view.backgroundColor = themeService.currentTheme.backgroundColor
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
         dataSource.updateColorCells(channels: channels)
-        presenter?.subscribeToSSE()
         setupNavigationBar()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        presenter?.unsubscribeFromSSE()
     }
     
     // MARK: - Private methods

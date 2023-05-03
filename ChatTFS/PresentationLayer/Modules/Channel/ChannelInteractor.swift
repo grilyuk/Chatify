@@ -70,13 +70,15 @@ class ChannelInteractor: ChannelInteractorProtocol {
                 Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))
             })
             .sink(receiveValue: { [weak self] profile in
-                self?.userName = profile.fullName ?? ""
-                self?.userID = self?.dataManager.userId ?? ""
+                guard let self else {
+                    return
+                }
+                self.userName = profile.fullName ?? ""
+                self.userID = self.dataManager.userId
+                self.loadFromCoreData(channel: self.channelID)
+                self.loadFromNetwork(channel: self.channelID)
             })
             .cancel()
-                    
-            loadFromCoreData(channel: channelID)
-            loadFromNetwork(channel: channelID)
     }
     
     func subscribeToSSE() {
