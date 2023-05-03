@@ -291,6 +291,7 @@ extension ChannelViewController: UITableViewDelegate {
             title.centerXAnchor.constraint(equalTo: blurEffectView.centerXAnchor)
         ])
         title.text = titlesSections[section]
+        print(section)
         title.font = .systemFont(ofSize: 12)
         title.textAlignment = .center
         title.textColor = themeService.currentTheme.textColor
@@ -311,7 +312,6 @@ extension ChannelViewController: ChannelViewProtocol {
     
     func addMessage(message: MessageModel) {
         messages.append(message)
-        dataSource.addMessage(message: message)
         
         DispatchQueue.main.async { [weak self] in
             guard let self else {
@@ -320,6 +320,7 @@ extension ChannelViewController: ChannelViewProtocol {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy"
             self.titlesSections.append(formatter.string(from: message.date))
+            self.dataSource.addMessage(message: message)
             let lastSectionNumber = self.tableView.numberOfSections - 1
             let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
             self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),

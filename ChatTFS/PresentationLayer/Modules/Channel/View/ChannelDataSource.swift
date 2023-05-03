@@ -54,7 +54,7 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, UUID> {
         
         let groupedMessages = Dictionary(grouping: view?.messages ?? [], by: { Calendar.current.startOfDay(for: $0.date) })
         let sortedDates = groupedMessages.keys.sorted()
-        
+
         for date in sortedDates {
             var messages = groupedMessages[date] ?? []
             view?.titlesSections.append(formatter.string(from: date))
@@ -69,7 +69,7 @@ class ChannelDataSource: UITableViewDiffableDataSource<Date, UUID> {
         var snapshot = snapshot()
         if snapshot.numberOfSections == 0 {
             snapshot.appendSections([message.date])
-            snapshot.appendItems([message.uuid], toSection: message.date)
+            snapshot.appendItems([message.uuid])
         } else {
             snapshot.appendItems([message.uuid])
         }
