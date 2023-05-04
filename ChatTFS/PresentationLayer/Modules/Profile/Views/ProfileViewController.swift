@@ -139,6 +139,7 @@ class ProfileViewController: UIViewController {
                                                       view: self)
         let navigationController = UINavigationController(rootViewController: profileEditVC)
         navigationController.transitioningDelegate = self
+        navigationController.modalPresentationStyle = .pageSheet
         self.navigationController?.present(navigationController, animated: true)
     }
     

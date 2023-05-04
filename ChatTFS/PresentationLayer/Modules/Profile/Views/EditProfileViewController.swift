@@ -31,12 +31,6 @@ class EditProfileViewController: UIViewController {
     
     // MARK: - Public properties
     
-    var actualProfile: ProfileModel
-    var actualImage: UIImage
-    var profileView: ProfileViewController
-    lazy var router: RouterProtocol? = profileView.presenter?.router
-    weak var themeService: ThemeServiceProtocol?
-    
     lazy var profilePhoto: UIImageView = {
         let imageView = UIImageView()
         imageView.image = actualImage
@@ -47,6 +41,12 @@ class EditProfileViewController: UIViewController {
     }()
     
     // MARK: - Private properties
+    
+    private lazy var router: RouterProtocol? = profileView.presenter?.router
+    private weak var themeService: ThemeServiceProtocol?
+    private var actualProfile: ProfileModel
+    private var actualImage: UIImage
+    private var profileView: ProfileViewController
     
     private lazy var addPhotoButton: UIButton = {
         let button = UIButton(type: .system)
@@ -111,6 +111,7 @@ class EditProfileViewController: UIViewController {
         view.backgroundColor = themeService?.currentTheme.backgroundColor
         bubble.backgroundColor = themeService?.currentTheme.themeBubble
         bubble.layer.borderColor = separatorLine.backgroundColor?.cgColor
+        nameTextField.becomeFirstResponder()
     }
     
     private func setupNavigationBar() {
@@ -177,6 +178,7 @@ class EditProfileViewController: UIViewController {
         let newProfile = ProfileModel(fullName: nameTextField.text,
                                       statusText: bioTextField.text,
                                       profileImageData: profilePhoto.image?.jpegData(compressionQuality: 0.5))
+        
         profileView.presenter?.updateProfile(profile: newProfile) { [weak self] result in
             switch result {
             case true:
