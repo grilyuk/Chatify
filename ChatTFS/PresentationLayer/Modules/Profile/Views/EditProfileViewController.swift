@@ -177,7 +177,26 @@ class EditProfileViewController: UIViewController {
         let newProfile = ProfileModel(fullName: nameTextField.text,
                                       statusText: bioTextField.text,
                                       profileImageData: profilePhoto.image?.jpegData(compressionQuality: 0.5))
-        profileView.presenter?.updateProfile(profile: newProfile)
+        profileView.presenter?.updateProfile(profile: newProfile) { [weak self] result in
+            switch result {
+            case true:
+                let alert = UIAlertController(title: "Data saved!",
+                                              message: "Your name is \(newProfile.fullName ?? "")",
+                                              preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default))
+                self?.present(alert, animated: true)
+            case false:
+                let alert = UIAlertController(title: "Something wrong 😕",
+                                              message: "Retry?",
+                                              preferredStyle: .alert)
+                let retryAction = UIAlertAction(title: "Retry!", style: .default) { [weak self] _ in
+                    self?.save()
+                }
+                alert.addAction(retryAction)
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+                self?.present(alert, animated: true)
+            }
+        }
     }
     
     @objc
@@ -190,7 +209,6 @@ class EditProfileViewController: UIViewController {
     
     @objc
     private func close() {
-//        navigationController?.popToRootViewController(animated: true)
         dismiss(animated: true)
     }
 }

@@ -3,7 +3,7 @@ import Combine
 
 protocol ProfileInteractorProtocol: AnyObject {
     func loadData()
-    func updateData(profile: ProfileModel)
+    func updateData(profile: ProfileModel, completion: @escaping (Bool) -> Void)
 }
 
 class ProfileInteractor: ProfileInteractorProtocol {
@@ -48,7 +48,7 @@ class ProfileInteractor: ProfileInteractorProtocol {
             .cancel()
     }
     
-    func updateData(profile: ProfileModel) {
+    func updateData(profile: ProfileModel, completion: @escaping (Bool) -> Void) {
         dataManager.writeProfilePublisher(profile: profile)
             .subscribe(on: backgroundQueue)
             .receive(on: mainQueue)
@@ -66,9 +66,10 @@ class ProfileInteractor: ProfileInteractorProtocol {
                 switch result {
                 case true:
                     self?.dataManager.currentProfile.send(profile)
+                    completion(true)
                     self?.presenter?.dataUploaded()
                 case false:
-                    break
+                    completion(false)
                 }
             })
             .cancel()

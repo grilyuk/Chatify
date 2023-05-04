@@ -106,7 +106,7 @@ class ChannelsListViewController: UIViewController {
         super.viewDidLoad()
         tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         tableView.delegate = self
-        tableView.refreshControl = pullToRefresh
+        tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
         dataSource.defaultRowAnimation = .fade
         setupTableViewConstraints()
