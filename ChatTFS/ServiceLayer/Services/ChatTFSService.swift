@@ -4,10 +4,13 @@ import Combine
 
 protocol ChatServiceProtocol {
     func loadChannels() -> AnyPublisher<[ChannelNetworkModel], Error>
+    func loadChannel(id: String) -> AnyPublisher<ChannelNetworkModel, Error>
     func createChannel(channelName: String) -> AnyPublisher<ChannelNetworkModel, Error>
     func deleteChannel(id: String) -> AnyPublisher<Void, Error>
     func createMessageData(messageText: String, channelID: String, userID: String, userName: String) -> AnyPublisher<MessageNetworkModel, Error>
     func loadMessagesFrom(channelID: String) -> AnyPublisher<[MessageNetworkModel], Error>
+    func listenResponses() -> AnyPublisher<ChatEvent, Error>
+    func stopListen()
 }
 
 final class ChatTFSService: ChatServiceProtocol {
@@ -21,13 +24,37 @@ final class ChatTFSService: ChatServiceProtocol {
     // MARK: - Private properties
     
     private let chatTFS: ChatTFS
+    private var SSEService: SSEService?
     private let mainQueue = DispatchQueue.main
     private let backgroundQueue = DispatchQueue.global(qos: .utility)
     
     // MARK: - Public methods
     
+    func listenResponses() -> AnyPublisher<ChatEvent, Error> {
+        SSEService = TFSChatTransport.SSEService(host: chatTFS.chatHost, port: chatTFS.chatPort)
+        return SSEService?.subscribeOnEvents() ?? chatTFS.chatSSE.subscribeOnEvents()
+    }
+    
+    func stopListen() {
+        SSEService?.cancelSubscription()
+    }
+    
+    func loadChannel(id: String) -> AnyPublisher<ChannelNetworkModel, Error> {
+        chatTFS.chatServer.loadChannel(id: id)
+            .subscribe(on: backgroundQueue)
+            .receive(on: mainQueue)
+            .map { channel in
+                return ChannelNetworkModel(id: channel.id,
+                                           name: channel.name,
+                                           logoURL: channel.logoURL,
+                                           lastMessage: channel.lastMessage,
+                                           lastActivity: channel.lastActivity)
+            }
+            .eraseToAnyPublisher()
+    }
+    
     func loadChannels() -> AnyPublisher<[ChannelNetworkModel], Error> {
-        return chatTFS.chatServer.loadChannels()
+        chatTFS.chatServer.loadChannels()
             .subscribe(on: backgroundQueue)
             .receive(on: mainQueue)
             .map { channels in
@@ -40,8 +67,7 @@ final class ChatTFSService: ChatServiceProtocol {
     }
     
     func createChannel(channelName: String) -> AnyPublisher<ChannelNetworkModel, Error> {
-        return chatTFS.chatServer.createChannel(name: channelName,
-                                                logoUrl: "https://source.unsplash.com/random/300x300")
+        chatTFS.chatServer.createChannel(name: channelName)
             .subscribe(on: backgroundQueue)
             .receive(on: mainQueue)
             .map({ channel in
@@ -51,7 +77,7 @@ final class ChatTFSService: ChatServiceProtocol {
     }
     
     func deleteChannel(id: String) -> AnyPublisher<Void, Error> {
-        return chatTFS.chatServer.deleteChannel(id: id)
+        chatTFS.chatServer.deleteChannel(id: id)
             .subscribe(on: backgroundQueue)
             .receive(on: mainQueue)
             .map({ _ in return })
@@ -59,7 +85,7 @@ final class ChatTFSService: ChatServiceProtocol {
     }
     
     func loadMessagesFrom(channelID: String) -> AnyPublisher<[MessageNetworkModel], Error> {
-        return chatTFS.chatServer.loadMessages(channelId: channelID)
+        chatTFS.chatServer.loadMessages(channelId: channelID)
             .subscribe(on: backgroundQueue)
             .receive(on: mainQueue)
             .map({ messages in
@@ -72,14 +98,14 @@ final class ChatTFSService: ChatServiceProtocol {
     }
     
     func createMessageData(messageText: String, channelID: String, userID: String, userName: String) -> AnyPublisher<MessageNetworkModel, Error> {
-        return chatTFS.chatServer.sendMessage(text: messageText,
+        chatTFS.chatServer.sendMessage(text: messageText,
                                                       channelId: channelID,
                                                       userId: userID,
                                                       userName: userName)
         .subscribe(on: backgroundQueue)
         .receive(on: mainQueue)
         .map({ message in
-            return MessageNetworkModel(from: message)
+            MessageNetworkModel(from: message)
         })
         .eraseToAnyPublisher()
     }

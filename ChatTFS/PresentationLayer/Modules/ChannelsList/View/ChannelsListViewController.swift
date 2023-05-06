@@ -6,15 +6,18 @@ protocol ChannelsListViewProtocol: AnyObject {
     func showChannelsList()
     func showAlert()
     func addChannel(channel: ChannelModel)
+    func updateChannel(channel: ChannelModel)
+    func deleteChannel(channel: ChannelModel)
 }
 
 class ChannelsListViewController: UIViewController {
+    
+    typealias DataSource = UITableViewDiffableDataSource<Int, UUID>
     
     // MARK: - Initialization
     
     init(themeService: ThemeServiceProtocol) {
         self.themeService = themeService
-        self.dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService)
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -37,7 +40,17 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - Private properties
     
-    private var dataSource: ChannelsListDataSource
+    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, itemIdentifier in
+        guard let self,
+              let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
+              let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
+        else {
+            return ChannelListCell()
+        }
+        cell.configureTheme(theme: self.themeService)
+        cell.configure(with: model)
+        return cell
+    }
     private var themeService: ThemeServiceProtocol
     
     private var tableView: UITableView = {
@@ -105,6 +118,7 @@ class ChannelsListViewController: UIViewController {
         tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
         presenter?.viewReady()
+        dataSource.defaultRowAnimation = .fade
         setupTableViewConstraints()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         activityIndicator.startAnimating()
@@ -114,8 +128,14 @@ class ChannelsListViewController: UIViewController {
         super.viewWillAppear(animated)
         view.backgroundColor = themeService.currentTheme.backgroundColor
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
-        dataSource.updateColorsCells()
+        dataSource.updateColorCells(channels: channels)
+        presenter?.subscribeToSSE()
         setupNavigationBar()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        presenter?.unsubscribeFromSSE()
     }
     
     // MARK: - Private methods
@@ -211,8 +231,9 @@ extension ChannelsListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let idCell = dataSource.snapshot().itemIdentifiers[indexPath.row]
         guard let navigationController = navigationController,
-              let channelID = dataSource.snapshot().itemIdentifiers[indexPath.item].channelID
+              let channelID = channels.first(where: { $0.uuid == idCell })?.channelID
         else {
             return
         }
@@ -221,16 +242,17 @@ extension ChannelsListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+        var snapshot = dataSource.snapshot()
+        let identifiers = snapshot.itemIdentifiers
 
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, _) in
             
-            guard let self
+            guard let self,
+                  let idChannel = channels.first(where: { $0.uuid == identifiers[indexPath.item] })?.channelID
             else {
                 return
             }
-            var snapshot = dataSource.snapshot()
-            let identifiers = snapshot.itemIdentifiers
-            self.presenter?.deleteChannel(id: identifiers[indexPath.row].channelID ?? "")
+            self.presenter?.deleteChannel(id: idChannel)
             snapshot.deleteItems([identifiers[indexPath.row]])
             self.dataSource.apply(snapshot)
         }
@@ -246,7 +268,7 @@ extension ChannelsListViewController: UITableViewDelegate {
 extension ChannelsListViewController: ChannelsListViewProtocol {
     
     func showChannelsList() {
-        dataSource.reload(channels: channels)
+        dataSource.applySnapshot(channels: channels)
         pullToRefresh.endRefreshing()
         activityIndicator.stopAnimating()
     }
@@ -260,12 +282,19 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
     
     func addChannel(channel: ChannelModel) {
         channels.append(channel)
-        dataSource.reload(channels: channels)
-        
-        guard let indexOfNewChannel = dataSource.snapshot().indexOfItem(channel)
+        dataSource.addChannel(channel: channel)
+    }
+    
+    func updateChannel(channel: ChannelModel) {
+        dataSource.updateCell(channel: channel, view: self)
+    }
+    
+    func deleteChannel(channel: ChannelModel) {
+        guard let index = channels.firstIndex(of: channel)
         else {
             return
         }
-        tableView.scrollToRow(at: IndexPath(item: indexOfNewChannel, section: 0), at: .bottom, animated: true)
+        dataSource.deleteChannel(channel: channel)
+        channels.remove(at: index)
     }
 }

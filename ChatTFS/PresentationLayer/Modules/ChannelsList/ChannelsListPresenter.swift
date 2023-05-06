@@ -4,7 +4,6 @@ import TFSChatTransport
 protocol ChannelsListPresenterProtocol: AnyObject {
     var router: RouterProtocol? { get set }
     var dataChannels: [ChannelNetworkModel]? { get set }
-    var handler: (([ChannelModel]) -> Void)? { get set }
     
     func viewReady()
     func dataUploaded()
@@ -12,7 +11,11 @@ protocol ChannelsListPresenterProtocol: AnyObject {
     func addChannel(channel: ChannelNetworkModel)
     func createChannel(name: String)
     func deleteChannel(id: String)
+    func deleteFromView(channelID: String)
     func interactorError()
+    func updateChannel(channel: ChannelNetworkModel)
+    func subscribeToSSE()
+    func unsubscribeFromSSE()
 }
 
 class ChannelsListPresenter: ChannelsListPresenterProtocol {
@@ -43,8 +46,6 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
     
     func dataUploaded() {
         
-        var channels: [ChannelModel] = []
-        
         handler = { [weak self] sortedChannels in
             self?.view?.channels = sortedChannels
             self?.view?.showChannelsList()
@@ -57,31 +58,20 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
                 return
             }
             
-            self.dataChannels?.forEach({ dataChannel in
-                let channelLogo: UIImage = self.interactor.getChannelImage(for: dataChannel)
-                
-                if dataChannel.lastMessage == nil {
-                    channels.append(ChannelModel(channelImage: channelLogo,
-                                                 name: dataChannel.name,
-                                                 message: dataChannel.lastMessage,
-                                                 date: dataChannel.lastActivity,
-                                                 isOnline: false,
-                                                 hasUnreadMessages: false,
-                                                 channelID: dataChannel.id))
-                } else {
-                    channels.append(ChannelModel(channelImage: channelLogo,
-                                                 name: dataChannel.name,
-                                                 message: dataChannel.lastMessage,
-                                                 date: dataChannel.lastActivity,
-                                                 isOnline: false,
-                                                 hasUnreadMessages: false,
-                                                 channelID: dataChannel.id))
-                }
-            })
+            self.channels = self.dataChannels?.map({ channel in
+                let channelLogo: UIImage = self.interactor.getChannelImage(for: channel)
+                return ChannelModel(channelImage: channelLogo,
+                                    name: channel.name,
+                                    message: channel.lastMessage,
+                                    date: channel.lastActivity,
+                                    isOnline: false,
+                                    hasUnreadMessages: false,
+                                    channelID: channel.id)
+            }) ?? []
             
             DispatchQueue.main.async { [weak self] in
-                channels.sort { $0.date ?? Date(timeIntervalSince1970: 0) > $1.date ?? Date(timeIntervalSince1970: 0) }
-                self?.handler?(channels)
+                self?.channels.sort { $0.date ?? Date(timeIntervalSince1970: 0) > $1.date ?? Date(timeIntervalSince1970: 0) }
+                self?.handler?(self?.channels ?? [])
             }
         }
     }
@@ -96,6 +86,14 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
     
     func deleteChannel(id: String) {
         interactor.deleteChannel(id: id)
+    }
+    
+    func deleteFromView(channelID: String) {
+        guard let actualChannel = channels.first(where: { $0.channelID == channelID })
+        else {
+            return
+        }
+        view?.deleteChannel(channel: actualChannel)
     }
     
     func addChannel(channel: ChannelNetworkModel) {
@@ -113,6 +111,7 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
                                             hasUnreadMessages: true,
                                             channelID: channel.id)
             DispatchQueue.main.async { [weak self] in
+                self?.channels.append(channelModel)
                 self?.view?.addChannel(channel: channelModel)
             }
         }
@@ -122,4 +121,21 @@ class ChannelsListPresenter: ChannelsListPresenterProtocol {
         view?.showAlert()
     }
     
+    func updateChannel(channel: ChannelNetworkModel) {
+        guard var actualChannel = channels.first(where: { $0.channelID == channel.id })
+        else {
+            return
+        }
+        actualChannel.date = channel.lastActivity
+        actualChannel.message = channel.lastMessage
+        view?.updateChannel(channel: actualChannel)
+    }
+    
+    func subscribeToSSE() {
+        interactor.subscribeToSSE()
+    }
+    
+    func unsubscribeFromSSE() {
+        interactor.unsubscribeFromSSE()
+    }
 }

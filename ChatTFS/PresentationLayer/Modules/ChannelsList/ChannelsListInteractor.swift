@@ -1,11 +1,13 @@
 import Combine
-import TFSChatTransport
+import UIKit
 
 protocol ChannelsListInteractorProtocol: AnyObject {
     func loadData()
     func createChannel(channelName: String)
     func deleteChannel(id: String)
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
+    func subscribeToSSE()
+    func unsubscribeFromSSE()
 }
 
 class ChannelsListInteractor: ChannelsListInteractorProtocol {
@@ -30,6 +32,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     private var handler: (([ChannelNetworkModel]) -> Void)?
     private var cacheChannels: [ChannelNetworkModel] = []
     private var networkChannels: [ChannelNetworkModel] = []
+    private var eventsSubscribe: Cancellable?
     
     // MARK: - Public methods
     
@@ -38,16 +41,48 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         handler = { [weak self] channels in
             self?.presenter?.dataChannels = channels
             self?.presenter?.dataUploaded()
-            self?.networkChannels = []
         }
-        
+
         loadFromCoreData()
         loadFromNetwork()
     }
     
+    func subscribeToSSE() {
+        eventsSubscribe = chatService.listenResponses()
+            .sink { _ in
+            } receiveValue: { [weak self] event in
+                let id = event.resourceID
+                switch event.eventType {
+                case .add:
+                    self?.chatService.loadChannel(id: id)
+                        .sink(receiveCompletion: { _ in
+                        }, receiveValue: { [weak self] newChannel in
+                            self?.presenter?.addChannel(channel: newChannel)
+                            self?.coreDataService.saveChannelsList(with: [newChannel])
+                        })
+                        .cancel()
+                case .update:
+                    self?.chatService.loadChannel(id: id)
+                        .sink(receiveCompletion: { _ in
+                        }, receiveValue: { [weak self] channel in
+                            self?.presenter?.updateChannel(channel: channel)
+                            self?.coreDataService.updateChannel(for: channel)
+                        })
+                        .cancel()
+                case .delete:
+                    self?.presenter?.deleteFromView(channelID: id)
+                    self?.coreDataService.deleteChannel(channelID: id)
+                }
+            }
+    }
+    
+    func unsubscribeFromSSE() {
+        chatService.stopListen()
+        eventsSubscribe?.cancel()
+    }
+    
     func createChannel(channelName: String) {
-        let newChannel = chatService.createChannel(channelName: channelName)
-        newChannel
+        chatService.createChannel(channelName: channelName)
             .sink { [weak self] result in
                 switch result {
                 case .finished:
@@ -56,9 +91,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                     self?.presenter?.interactorError()
                     print(error.localizedDescription)
                 }
-            } receiveValue: { [weak self] channel in
-                self?.presenter?.addChannel(channel: channel)
-                self?.coreDataService.saveChannelsList(with: [channel])
+            } receiveValue: { _ in
             }
             .cancel()
     }
@@ -112,14 +145,10 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
                                                                  lastActivity: networkChannel.lastActivity)])
             }
 
-            self.networkChannels.append(ChannelNetworkModel(id: networkChannel.id,
-                                                   name: networkChannel.name,
-                                                   logoURL: networkChannel.logoURL,
-                                                   lastMessage: networkChannel.lastMessage,
-                                                   lastActivity: networkChannel.lastActivity))
         }
         
         let cachedIDs = cacheChannels.map { $0.id }
+        
         let networkIDs = networkChannels.map { $0.id }
 
         let deletedChannels = cachedIDs.filter { !networkIDs.contains($0) }
@@ -128,6 +157,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             coreDataService.deleteChannel(channelID: deletedChannel)
         }
 
+        self.networkChannels = networkChannels
         self.networkChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
         self.cacheChannels.sort(by: { $0.lastActivity ?? Date() < $1.lastActivity ?? Date() })
 

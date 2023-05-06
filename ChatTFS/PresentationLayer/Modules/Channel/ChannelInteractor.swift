@@ -9,6 +9,9 @@ protocol ChannelInteractorProtocol: AnyObject {
     func loadData()
     func createMessage(messageText: String, userID: String, userName: String)
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage
+    func getImageForMessage(link: String, completion: @escaping (Result<UIImage, Error>) -> Void)
+    func subscribeToSSE()
+    func unsubscribeFromSSE()
 }
 
 class ChannelInteractor: ChannelInteractorProtocol {
@@ -18,21 +21,25 @@ class ChannelInteractor: ChannelInteractorProtocol {
     init(chatService: ChatServiceProtocol,
          channelID: String,
          coreDataService: CoreDataServiceProtocol,
-         dataManager: FileManagerServiceProtocol) {
+         dataManager: FileManagerServiceProtocol,
+         imageLoaderService: ImageLoaderServiceProtocol) {
         
         self.chatService = chatService
         self.channelID = channelID
         self.coreDataService = coreDataService
         self.DBChannel = coreDataService.getDBChannel(channel: channelID)
         self.dataManager = dataManager
+        self.imageLoaderService = imageLoaderService
     }
     
     // MARK: - Public properties
     
     weak var presenter: ChannelPresenterProtocol?
+    weak var imageLoaderService: ImageLoaderServiceProtocol?
     var handler: (([MessageNetworkModel], ChannelNetworkModel) -> Void)?
     var userName = ""
     var userID = ""
+    var eventsSubscribe: Cancellable?
     
     // MARK: - Private properties
     
@@ -72,6 +79,38 @@ class ChannelInteractor: ChannelInteractorProtocol {
             loadFromNetwork(channel: channelID)
     }
     
+    func subscribeToSSE() {
+        eventsSubscribe = chatService.listenResponses()
+            .sink { _ in
+            } receiveValue: { [weak self] event in
+                guard event.resourceID == self?.channelID else {
+                    return
+                }
+                let id = event.resourceID
+                switch event.eventType {
+                case .add:
+                    break
+                case .update:
+                    self?.chatService.loadMessagesFrom(channelID: id)
+                        .sink { _ in
+                        } receiveValue: { [weak self] messages in
+                            guard let lastMessage = messages.last else {
+                                return
+                            }
+                            self?.presenter?.uploadMessage(messageModel: lastMessage)
+                        }
+                        .cancel()
+                case .delete:
+                    self?.coreDataService.deleteChannel(channelID: id)
+                }
+            }
+    }
+    
+    func unsubscribeFromSSE() {
+        chatService.stopListen()
+        eventsSubscribe?.cancel()
+    }
+    
     func createMessage(messageText: String, userID: String, userName: String) {
         chatService.createMessageData(messageText: messageText,
                                       channelID: channelID,
@@ -82,13 +121,16 @@ class ChannelInteractor: ChannelInteractorProtocol {
             guard let self else { return }
             self.coreDataService.saveMessagesForChannel(for: self.channelID,
                                                         messages: [message])
-            self.presenter?.uploadMessage(messageModel: message)
         })
         .cancel()
     }
     
     func getChannelImage(for channel: ChannelNetworkModel) -> UIImage {
         dataManager.getChannelImage(for: channel)
+    }
+    
+    func getImageForMessage(link: String, completion: @escaping (Result<UIImage, Error>) -> Void) {
+        imageLoaderService?.downloadImage(with: link, completion: completion)
     }
     
     // MARK: - Private methods

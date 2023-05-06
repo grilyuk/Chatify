@@ -8,6 +8,7 @@ protocol ModuleAssemblyProtocol: AnyObject {
     func buildChannel(router: RouterProtocol, channel: String) -> ChannelViewController
     func buildThemePicker() -> UINavigationController
     func buildTabBarController() -> UITabBarController
+    func buildNetworkImages(router: RouterProtocol, vc: UIViewController) -> UINavigationController
 }
 
 class ModuleAssembly: ModuleAssemblyProtocol {
@@ -22,12 +23,13 @@ class ModuleAssembly: ModuleAssemblyProtocol {
     
     private var serviceAssembly: ServiceAssemblyProtocol
     
-    private lazy var themeService = serviceAssembly.themeService
     private lazy var router = Router(moduleBuilder: self)
+    private lazy var themeService = serviceAssembly.themeService
     private lazy var dataManager = serviceAssembly.fileManagerService
     private lazy var coreDataService = serviceAssembly.coreDataService
     private lazy var profilePublisher = dataManager.currentProfile
     private lazy var chatService = serviceAssembly.chatService
+    private lazy var imageLoaderService = serviceAssembly.imageLoaderService
     
     // MARK: - Public Methods
     
@@ -41,7 +43,7 @@ class ModuleAssembly: ModuleAssemblyProtocol {
         interactor.presenter = presenter
         presenter.view = view
         let navigationController = UINavigationController(rootViewController: view)
-        presenter.router = router
+        presenter.router = router 
         return navigationController
     }
 
@@ -49,7 +51,8 @@ class ModuleAssembly: ModuleAssemblyProtocol {
         let interactor = ChannelInteractor(chatService: chatService,
                                            channelID: channel,
                                            coreDataService: coreDataService,
-                                           dataManager: dataManager)
+                                           dataManager: dataManager,
+                                           imageLoaderService: imageLoaderService)
         let presenter = ChannelPresenter(router: router, interactor: interactor)
         let view = ChannelViewController(themeService: themeService)
         view.presenter = presenter
@@ -60,7 +63,7 @@ class ModuleAssembly: ModuleAssemblyProtocol {
     
     func buildProfile() -> UINavigationController {
         let interactor = ProfileInteractor(dataManager: dataManager)
-        let presenter = ProfilePresenter(interactor: interactor)
+        let presenter = ProfilePresenter(interactor: interactor, router: router)
         let view = ProfileViewController(themeService: themeService, profilePublisher: profilePublisher)
         view.presenter = presenter
         interactor.presenter = presenter
@@ -87,5 +90,17 @@ class ModuleAssembly: ModuleAssemblyProtocol {
         tabBarController.tabBar.items?[2].image = UIImage(systemName: "person.crop.circle")
         tabBarController.tabBar.items?[2].title = "Profile"
         return tabBarController
+    }
+    
+    func buildNetworkImages(router: RouterProtocol, vc: UIViewController) -> UINavigationController {
+        let interactor = NetworkImagesInteractor(imageLoader: imageLoaderService)
+        let presenter = NetworkImagesPresenter(interactor: interactor)
+        let view = NetworkImagesViewController(themeService: themeService)
+        view.presenter = presenter
+        view.vc = vc
+        interactor.presenter = presenter
+        presenter.view = view
+        let navigationController = UINavigationController(rootViewController: view)
+        return navigationController
     }
 }

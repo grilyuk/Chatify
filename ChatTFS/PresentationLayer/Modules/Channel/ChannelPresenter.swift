@@ -11,6 +11,9 @@ protocol ChannelPresenterProtocol: AnyObject {
     func dataUploaded()
     func uploadMessage(messageModel: MessageNetworkModel)
     func createMessage(messageText: String?)
+    func subscribeToSSE()
+    func unsubscribeFromSSE()
+    func showNetworkImages(navigationController: UINavigationController, vc: UIViewController)
 }
 
 class ChannelPresenter {
@@ -28,6 +31,9 @@ class ChannelPresenter {
 
     private var userID: String?
     private var userName: String?
+    var currentUserID = ""
+    private let mainQueue = DispatchQueue.main
+    private let background = DispatchQueue.global(qos: .userInteractive)
     
     // MARK: - Initialization
     
@@ -57,37 +63,74 @@ extension ChannelPresenter: ChannelPresenterProtocol {
             self?.view?.showChannel(channel: channel)
         }
         
-        var currentUserID = ""
         var messages: [MessageModel] = []
-        messagesData?.forEach({ [weak self] message in
+        background.async { [weak self] in
+            self?.messagesData?.forEach({ [weak self] message in
+                
             if message.userID == self?.userID && message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
-                messages.append(MessageModel(text: message.text,
-                                                 date: message.date,
-                                                 myMessage: true,
-                                                 userName: message.userName,
-                                                 isSameUser: true))
+                
+                messages.append(MessageModel(image: nil,
+                                             text: message.text,
+                                             date: message.date,
+                                             myMessage: true,
+                                             userName: message.userName,
+                                             isSameUser: true,
+                                             id: message.id))
+                
+                if message.text.isLink() {
+                    self?.interactor.getImageForMessage(link: message.text) { result in
+                        switch result {
+                        case .success(let image):
+                            guard let uuid = messages.first(where: { $0.id == message.id })?.uuid else {
+                                return
+                            }
+                            self?.mainQueue.async { [weak self] in
+                                self?.view?.updateImage(image: image, id: uuid)
+                            }
+                        case .failure(let error):
+                            print(error)
+                        }
+                    }
+                }
                 
             } else if message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+                
                 let isSameUser = {
-                    if currentUserID == message.userID {
+                    if self?.currentUserID == message.userID {
                         return true
                     } else {
-                        currentUserID = message.userID
+                        self?.currentUserID = message.userID
                         return false
                     }
                 }()
-                messages.append(MessageModel(text: message.text,
-                                                 date: message.date,
-                                                 myMessage: false,
-                                                 userName: message.userName,
-                                                 isSameUser: isSameUser))
+                
+                if message.text.isLink() {
+                    self?.interactor.getImageForMessage(link: message.text) { result in
+                        switch result {
+                        case .success(let image):
+                            guard let uuid = messages.first(where: { $0.id == message.id })?.uuid else {
+                                return
+                            }
+                            self?.mainQueue.async { [weak self] in
+                                self?.view?.updateImage(image: image, id: uuid)
+                            }
+                        case .failure(let error):
+                            print(error)
+                        }
+                    }
+                }
+                
+                messages.append(MessageModel(image: nil,
+                                             text: message.text,
+                                             date: message.date,
+                                             myMessage: false,
+                                             userName: message.userName,
+                                             isSameUser: isSameUser,
+                                             id: message.id))
             }
         })
         
-        DispatchQueue.global().async { [weak self] in
-            guard
-                let channelData = self?.channelData
-            else {
+            guard let channelData = self?.channelData else {
                 return
             }
             
@@ -101,7 +144,7 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                                        hasUnreadMessages: nil,
                                        channelID: nil)
             
-            DispatchQueue.main.async { [weak self] in
+            self?.mainQueue.async { [weak self] in
                 self?.handler?(channel, messages)
             }
         }
@@ -123,10 +166,55 @@ extension ChannelPresenter: ChannelPresenterProtocol {
     }
     
     func uploadMessage(messageModel: MessageNetworkModel) {
-        view?.addMessage(message: MessageModel(text: messageModel.text,
-                                                   date: messageModel.date,
-                                                   myMessage: true,
-                                                   userName: "",
-                                                   isSameUser: true))
+        background.async { [weak self] in
+            let isMyMessage = { messageModel.userID == self?.userID }()
+            let isSameUser = {
+                if self?.currentUserID == messageModel.userID {
+                    return true
+                } else {
+                    self?.currentUserID = messageModel.userID
+                    return false
+                }
+            }()
+            
+            if messageModel.text.isLink() {
+                self?.interactor.getImageForMessage(link: messageModel.text) { result in
+                    switch result {
+                    case .success(let image):
+                        guard let uuid = self?.view?.messages.first(where: { $0.id == messageModel.id })?.uuid else {
+                            return
+                        }
+                        self?.mainQueue.async { [weak self] in
+                            self?.view?.updateImage(image: image, id: uuid)
+                        }
+                    case .failure(let error):
+                        print(error)
+                    }
+                }
+            }
+            
+            self?.currentUserID = messageModel.userID
+            self?.mainQueue.async { [weak self] in
+                self?.view?.addMessage(message: MessageModel(image: nil,
+                                                       text: messageModel.text,
+                                                             date: messageModel.date,
+                                                             myMessage: isMyMessage,
+                                                             userName: messageModel.userName,
+                                                             isSameUser: isSameUser,
+                                                             id: messageModel.id))
+            }
+        }
+    }
+    
+    func subscribeToSSE() {
+        interactor.subscribeToSSE()
+    }
+    
+    func unsubscribeFromSSE() {
+        interactor.unsubscribeFromSSE()
+    }
+    
+    func showNetworkImages(navigationController: UINavigationController, vc: UIViewController) {
+        router?.showNetworkImages(navigationController: navigationController, vc: vc)
     }
 }
