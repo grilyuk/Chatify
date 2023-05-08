@@ -4,10 +4,25 @@ import CoreData
 
 final class CoreDataStackProtocolMock: CoreDataStackProtocol {
 
+    lazy var persistentContainer: NSPersistentContainer = {
+            let description = NSPersistentStoreDescription()
+            description.url = URL(fileURLWithPath: "/dev/null")
+            let container = NSPersistentContainer(name: "Chat")
+            container.persistentStoreDescriptions = [description]
+            container.loadPersistentStores { _, error in
+                if let error = error as NSError? {
+                    fatalError("Unresolved error \(error), \(error.userInfo)")
+                }
+            }
+            return container
+        }()
+    
+    lazy var context = persistentContainer.viewContext
+    
     var invokedFetchChannelsList = false
     var invokedFetchChannelsListCount = 0
     var stubbedFetchChannelsListError: Error?
-    var stubbedFetchChannelsListResult: [DBChannel]! = []
+    lazy var stubbedFetchChannelsListResult: [DBChannel]! = [DBChannel(context: context)]
 
     func fetchChannelsList() throws -> [DBChannel] {
         invokedFetchChannelsList = true
@@ -23,7 +38,7 @@ final class CoreDataStackProtocolMock: CoreDataStackProtocol {
     var invokedFetchChannelParameters: (channelID: String, Void)?
     var invokedFetchChannelParametersList = [(channelID: String, Void)]()
     var stubbedFetchChannelError: Error?
-    var stubbedFetchChannelResult: DBChannel!
+    lazy var stubbedFetchChannelResult: DBChannel = DBChannel(context: context)
 
     func fetchChannel(for channelID: String) throws -> DBChannel {
         invokedFetchChannel = true
@@ -41,7 +56,7 @@ final class CoreDataStackProtocolMock: CoreDataStackProtocol {
     var invokedFetchChannelMessagesParameters: (channelID: String, Void)?
     var invokedFetchChannelMessagesParametersList = [(channelID: String, Void)]()
     var stubbedFetchChannelMessagesError: Error?
-    var stubbedFetchChannelMessagesResult: [DBMessage]! = []
+    lazy var stubbedFetchChannelMessagesResult: [DBMessage]! = [DBMessage(context: context)]
 
     func fetchChannelMessages(for channelID: String) throws -> [DBMessage] {
         invokedFetchChannelMessages = true
