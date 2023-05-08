@@ -5,7 +5,7 @@ extension String {
         self.hasPrefix("http")
     }
     
-    func removeWhitespacesPrefix() -> Bool {
+    func emptyText() -> Bool {
         trimmingCharacters(in: .whitespacesAndNewlines) == ""
     }
 }

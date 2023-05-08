@@ -37,6 +37,7 @@ class ProfileViewController: UIViewController {
     
     var profilePhoto: UIImageView = {
         let imageView = UIImageView()
+        imageView.accessibilityIdentifier = "profilePhoto"
         imageView.contentMode = .scaleAspectFill
         return imageView
     }()
@@ -56,6 +57,7 @@ class ProfileViewController: UIViewController {
     
     private lazy var nameLabel: UILabel = {
         let label = UILabel()
+        label.accessibilityIdentifier = "nameLabel"
         label.font = UIFont.systemFont(ofSize: UIConstants.largerFontSize, weight: .bold)
         return label
     }()
@@ -205,8 +207,14 @@ extension ProfileViewController: ProfileViewProtocol {
     func showProfile(data: ProfileModel) {
         _ = profilePublisher
             .sink { [weak self] profile in
-                self?.nameLabel.text = profile.fullName
-                self?.bioTextView.text = profile.statusText
+                if let name = profile.fullName,
+                   let bio = profile.statusText {
+                    self?.nameLabel.text = name
+                    self?.bioTextView.text = bio
+                } else {
+                    self?.nameLabel.text = "No name"
+                    self?.bioTextView.text = "No bio"
+                }
                 DispatchQueue.main.async { [weak self] in
                     self?.activityIndicator.stopAnimating()
                     guard let data = profile.profileImageData,

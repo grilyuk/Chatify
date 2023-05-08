@@ -85,5 +85,7 @@ final class CoreDataServiceTests: XCTestCase {
         _ = coreDataService.getMessagesFromDBChannel(channel: id)
         
         // Assert
+        XCTAssertNotNil(try coreDataStack.fetchChannelMessages(for: id))
+        XCTAssert(coreDataStack.invokedFetchChannelMessages)
     }
 }

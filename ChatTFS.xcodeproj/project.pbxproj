@@ -63,6 +63,7 @@
 		5EB6218F29AB6FF100029FB8 /* ChannelsListPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB6218E29AB6FF100029FB8 /* ChannelsListPresenter.swift */; };
 		5EB624B029C0CAD7006D19B2 /* ThemeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */; };
 		5EB624B229C0CB44006D19B2 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EB624B129C0CB44006D19B2 /* Theme.swift */; };
+		5EBF42252A096A260093EAB3 /* ChatTFSUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EBF42242A096A260093EAB3 /* ChatTFSUITests.swift */; };
 		5EC4498B29C3BF8A00D6C51C /* UIImageExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC4498A29C3BF8A00D6C51C /* UIImageExtension.swift */; };
 		5ECA720429D3858E0049E635 /* ErrorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ECA720329D3858E0049E635 /* ErrorExtension.swift */; };
 		5EDC6593299ECEAD009B6586 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EDC6592299ECEAD009B6586 /* AppDelegate.swift */; };
@@ -74,6 +75,13 @@
 
 /* Begin PBXContainerItemProxy section */
 		5E76BDB22A087067004404A6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5EDC6587299ECEAD009B6586 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5EDC658E299ECEAD009B6586;
+			remoteInfo = ChatTFS;
+		};
+		5EBF42282A096A260093EAB3 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 5EDC6587299ECEAD009B6586 /* Project object */;
 			proxyType = 1;
@@ -142,6 +150,8 @@
 		5EB6218E29AB6FF100029FB8 /* ChannelsListPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelsListPresenter.swift; sourceTree = "<group>"; };
 		5EB624AF29C0CAD7006D19B2 /* ThemeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeService.swift; sourceTree = "<group>"; };
 		5EB624B129C0CB44006D19B2 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		5EBF42222A096A260093EAB3 /* ChatTFSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ChatTFSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5EBF42242A096A260093EAB3 /* ChatTFSUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChatTFSUITests.swift; sourceTree = "<group>"; };
 		5EC4498A29C3BF8A00D6C51C /* UIImageExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIImageExtension.swift; sourceTree = "<group>"; };
 		5ECA720329D3858E0049E635 /* ErrorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorExtension.swift; sourceTree = "<group>"; };
 		5EDC658F299ECEAD009B6586 /* ChatTFS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ChatTFS.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -155,6 +165,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		5E76BDAB2A087067004404A6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5EBF421F2A096A260093EAB3 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -473,6 +490,14 @@
 			path = Profile;
 			sourceTree = "<group>";
 		};
+		5EBF42232A096A260093EAB3 /* ChatTFSUITests */ = {
+			isa = PBXGroup;
+			children = (
+				5EBF42242A096A260093EAB3 /* ChatTFSUITests.swift */,
+			);
+			path = ChatTFSUITests;
+			sourceTree = "<group>";
+		};
 		5EC1749C29CE296B00F1ADA8 /* ThemePicker */ = {
 			isa = PBXGroup;
 			children = (
@@ -486,6 +511,7 @@
 			children = (
 				5EDC6591299ECEAD009B6586 /* ChatTFS */,
 				5E76BDAF2A087067004404A6 /* ChatTFSUnitTests */,
+				5EBF42232A096A260093EAB3 /* ChatTFSUITests */,
 				5EDC6590299ECEAD009B6586 /* Products */,
 				127713064A46FE04810C7ACD /* Pods */,
 				4F17F2D75BB6B372BE8AA2C0 /* Frameworks */,
@@ -497,6 +523,7 @@
 			children = (
 				5EDC658F299ECEAD009B6586 /* ChatTFS.app */,
 				5E76BDAE2A087067004404A6 /* ChatTFSUnitTests.xctest */,
+				5EBF42222A096A260093EAB3 /* ChatTFSUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -547,6 +574,24 @@
 			productReference = 5E76BDAE2A087067004404A6 /* ChatTFSUnitTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		5EBF42212A096A260093EAB3 /* ChatTFSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5EBF422C2A096A260093EAB3 /* Build configuration list for PBXNativeTarget "ChatTFSUITests" */;
+			buildPhases = (
+				5EBF421E2A096A260093EAB3 /* Sources */,
+				5EBF421F2A096A260093EAB3 /* Frameworks */,
+				5EBF42202A096A260093EAB3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5EBF42292A096A260093EAB3 /* PBXTargetDependency */,
+			);
+			name = ChatTFSUITests;
+			productName = ChatTFSUITests;
+			productReference = 5EBF42222A096A260093EAB3 /* ChatTFSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		5EDC658E299ECEAD009B6586 /* ChatTFS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5EDC65A3299ECEAE009B6586 /* Build configuration list for PBXNativeTarget "ChatTFS" */;
@@ -581,6 +626,10 @@
 						CreatedOnToolsVersion = 14.3;
 						TestTargetID = 5EDC658E299ECEAD009B6586;
 					};
+					5EBF42212A096A260093EAB3 = {
+						CreatedOnToolsVersion = 14.3;
+						TestTargetID = 5EDC658E299ECEAD009B6586;
+					};
 					5EDC658E299ECEAD009B6586 = {
 						CreatedOnToolsVersion = 14.2;
 					};
@@ -601,12 +650,20 @@
 			targets = (
 				5EDC658E299ECEAD009B6586 /* ChatTFS */,
 				5E76BDAD2A087067004404A6 /* ChatTFSUnitTests */,
+				5EBF42212A096A260093EAB3 /* ChatTFSUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		5E76BDAC2A087067004404A6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5EBF42202A096A260093EAB3 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -696,6 +753,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5EBF421E2A096A260093EAB3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5EBF42252A096A260093EAB3 /* ChatTFSUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		5EDC658B299ECEAD009B6586 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -767,6 +832,11 @@
 			target = 5EDC658E299ECEAD009B6586 /* ChatTFS */;
 			targetProxy = 5E76BDB22A087067004404A6 /* PBXContainerItemProxy */;
 		};
+		5EBF42292A096A260093EAB3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5EDC658E299ECEAD009B6586 /* ChatTFS */;
+			targetProxy = 5EBF42282A096A260093EAB3 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
@@ -816,6 +886,42 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ChatTFS.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ChatTFS";
+			};
+			name = Release;
+		};
+		5EBF422A2A096A260093EAB3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 44J3T4A266;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Grilyuk.ChatTFSUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ChatTFS;
+			};
+			name = Debug;
+		};
+		5EBF422B2A096A260093EAB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 44J3T4A266;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.4;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = Grilyuk.ChatTFSUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ChatTFS;
 			};
 			name = Release;
 		};
@@ -1009,6 +1115,15 @@
 			buildConfigurations = (
 				5E76BDB42A087068004404A6 /* Debug */,
 				5E76BDB52A087068004404A6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5EBF422C2A096A260093EAB3 /* Build configuration list for PBXNativeTarget "ChatTFSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5EBF422A2A096A260093EAB3 /* Debug */,
+				5EBF422B2A096A260093EAB3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

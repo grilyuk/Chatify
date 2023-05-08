@@ -58,8 +58,8 @@ final class FileManagerServiceTests: XCTestCase {
         fileManagerService.readProfilePublisher()
             .sink { _ in
             } receiveValue: { [weak self] _ in
-                // Assert
                 
+                // Assert
                 guard let self else {
                     return
                 }
