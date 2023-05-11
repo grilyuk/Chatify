@@ -415,7 +415,7 @@
 			isa = PBXGroup;
 			children = (
 				5E6951422A0909E000041D70 /* Mocks */,
-				5E76BDB92A090239004404A6 /* Services */,
+				5EBF42462A0C3CB00093EAB3 /* ServiceLayer */,
 			);
 			path = ChatTFSUnitTests;
 			sourceTree = "<group>";
@@ -507,6 +507,14 @@
 				5EBF42302A097D390093EAB3 /* UITestPlan.xctestplan */,
 			);
 			path = TestPlans;
+			sourceTree = "<group>";
+		};
+		5EBF42462A0C3CB00093EAB3 /* ServiceLayer */ = {
+			isa = PBXGroup;
+			children = (
+				5E76BDB92A090239004404A6 /* Services */,
+			);
+			path = ServiceLayer;
 			sourceTree = "<group>";
 		};
 		5EC1749C29CE296B00F1ADA8 /* ThemePicker */ = {
