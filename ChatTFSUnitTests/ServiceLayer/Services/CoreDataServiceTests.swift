@@ -6,7 +6,6 @@ final class CoreDataServiceTests: XCTestCase {
     
     var coreDataService: CoreDataServiceProtocol!
     var coreDataStack: CoreDataStackProtocolMock!
-    var container: NSPersistentContainer!
     var id: String!
     var channel: ChannelNetworkModel!
     
@@ -14,7 +13,6 @@ final class CoreDataServiceTests: XCTestCase {
         super.setUp()
         coreDataStack = CoreDataStackProtocolMock()
         coreDataService = CoreDataService(coreDataStack: coreDataStack)
-        container = coreDataStack.persistentContainer
         id = UUID().uuidString
         channel = ChannelNetworkModel(id: "", name: "", logoURL: nil, lastMessage: nil, lastActivity: nil)
     }
@@ -23,7 +21,6 @@ final class CoreDataServiceTests: XCTestCase {
         super.tearDown()
         coreDataStack = nil
         coreDataService = nil
-        container = nil
         id = nil
         channel = nil
     }

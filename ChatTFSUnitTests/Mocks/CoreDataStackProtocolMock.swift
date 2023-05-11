@@ -3,21 +3,20 @@ import CoreData
 @testable import ChatTFS
 
 final class CoreDataStackProtocolMock: CoreDataStackProtocol {
-
-    lazy var persistentContainer: NSPersistentContainer = {
-            let description = NSPersistentStoreDescription()
-            description.url = URL(fileURLWithPath: "/dev/null")
-            let container = NSPersistentContainer(name: "Chat")
-            container.persistentStoreDescriptions = [description]
-            container.loadPersistentStores { _, error in
-                if let error = error as NSError? {
-                    fatalError("Unresolved error \(error), \(error.userInfo)")
-                }
-            }
-            return container
-        }()
     
-    lazy var context = persistentContainer.viewContext
+    private lazy var context: NSManagedObjectContext = {
+        let managedObjectModel = NSManagedObjectModel.mergedModel(from: [Bundle.main]) ?? NSManagedObjectModel()
+        let persistentStoreCoordinator = NSPersistentStoreCoordinator(managedObjectModel: managedObjectModel)
+        do {
+            try persistentStoreCoordinator.addPersistentStore(ofType: NSInMemoryStoreType, configurationName: nil, at: nil)
+        } catch {
+            print("managedObject failed")
+        }
+        
+        let managedObjectContext = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        managedObjectContext.persistentStoreCoordinator = persistentStoreCoordinator
+        return managedObjectContext
+    }()
     
     var invokedFetchChannelsList = false
     var invokedFetchChannelsListCount = 0

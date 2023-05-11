@@ -48,8 +48,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let location = sender.location(in: window?.inputView)
         logoEmitterAnimation.emitterPosition = location
         window?.layer.addSublayer(logoEmitterAnimation)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            self.logoEmitterAnimation.birthRate = 0
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.logoEmitterAnimation.birthRate = 0
         }
     }
 }
