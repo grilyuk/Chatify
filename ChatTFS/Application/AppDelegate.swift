@@ -18,7 +18,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     private lazy var coreAssembly = CoreAssembly()
     private lazy var serviceAssembly = ServiceAssembly(coreAssembly: coreAssembly)
-    private lazy var logoEmitterAnimation = EmitterAnimation()
+    private lazy var logoEmitterAnimation = EmitterAnimation(layer: window?.layer ?? CALayer())
     private lazy var tapEmitterGesture = UITapGestureRecognizer(target: self, action: #selector(handleTapTouch(sender: )))
 
     // MARK: - Lifecycle

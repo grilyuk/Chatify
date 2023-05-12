@@ -44,7 +44,7 @@ class ChannelsListViewController: UIViewController {
     private var themeService: ThemeServiceProtocol
     private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
     private lazy var pullToRefresh = UIRefreshControl()
-    private lazy var logoEmitterAnimation = EmitterAnimation()
+    private lazy var logoEmitterAnimation = EmitterAnimation(layer: view.layer)
     
     private var tableView: UITableView = {
         let table = UITableView()

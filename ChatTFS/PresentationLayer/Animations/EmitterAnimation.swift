@@ -2,6 +2,15 @@ import UIKit
 
 class EmitterAnimation: CAEmitterLayer {
     
+    override init(layer: Any) {
+        super.init(layer: layer)
+        emitterCells = [logoCell]
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     lazy var logoCell: CAEmitterCell = {
         var cell = CAEmitterCell()
         cell.scale = 0.06
@@ -19,12 +28,11 @@ class EmitterAnimation: CAEmitterLayer {
         cell.spinRange = 1.0
         return cell
     }()
-    
+
     func setupPanGesture(sender: UIGestureRecognizer, view: UIView) {
         self.birthRate = 50
         self.emitterSize = CGSize(width: 50, height: 50)
         self.emitterShape = CAEmitterLayerEmitterShape.point
-        self.emitterCells = [logoCell]
         let location = sender.location(in: view.window)
         self.emitterPosition = CGPoint(x: location.x, y: location.y)
         view.window?.layer.addSublayer(self)
