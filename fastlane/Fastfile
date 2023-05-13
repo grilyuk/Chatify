@@ -11,5 +11,6 @@ end
 
 desc "Build and test"
 lane :custom_build_and_test do |options|
-  scan
+  custom_build_for_testing
+  custom_run_tests
 end
