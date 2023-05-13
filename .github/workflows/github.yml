@@ -1,6 +1,6 @@
 name: CI
 on: [push]
-jons:
+jobs:
   build:
     runs-on: [self-hosted]
     steps:
