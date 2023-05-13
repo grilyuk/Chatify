@@ -1,7 +1,9 @@
 
 desc "Build for testing"
 lane :custom_build_for_testing do |options|
-  cocoapods
+  cocoapods(
+    use_bundle_exec: true 
+  )
   scan(
     derived_data_path: "DerivedData",
     clean: true
