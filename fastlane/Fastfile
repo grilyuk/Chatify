@@ -8,7 +8,7 @@ end
 desc "Build for testing"
 lane :custom_build_for_testing do |options|
   cocoapods
-  scan(clean: true)
+  scan(clean: true, derived_data_path: "DerivedData")
 end
 
 desc "Run tests"
