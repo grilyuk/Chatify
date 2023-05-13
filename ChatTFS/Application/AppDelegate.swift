@@ -30,7 +30,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
         
-        logoEmitterAnimation.setupPanGesture(sender: tapEmitterGesture, view: window ?? UIView())
         tapEmitterGesture.cancelsTouchesInView = false
         window?.addGestureRecognizer(tapEmitterGesture)
         
