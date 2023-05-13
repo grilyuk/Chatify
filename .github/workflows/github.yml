@@ -1,1 +1,14 @@
-
+name: CI
+on: [push]
+jons:
+  build:
+    runs-on: [self-hosted]
+    steps:
+    - uses: actions/checkout@v3
+    - uses: ruby/setup-ruby@v1
+      with:
+        ruby-version: '3.1'
+        bundler-cache: true
+    - name: Build for testing
+      run: |
+        bundle exec fastlane custom_build_for_testing
