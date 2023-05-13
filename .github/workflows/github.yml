@@ -11,4 +11,4 @@ jobs:
         bundler-cache: true
     - name: Build for testing
       run: |
-        bundle exec fastlane custom_run_tests
+        bundle exec fastlane custom_build_for_testing

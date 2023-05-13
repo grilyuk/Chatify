@@ -273,11 +273,11 @@ GEM
       xcpretty (~> 0.2, >= 0.0.7)
 
 PLATFORMS
-  ruby
+  arm64-darwin-22
 
 DEPENDENCIES
   cocoapods (= 1.9.3)
   fastlane
 
 BUNDLED WITH
-   1.17.2
+   2.2.15
