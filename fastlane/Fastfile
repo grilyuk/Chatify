@@ -1,5 +1,15 @@
 desc "Build for testing"
 lane :custom_build_for_testing do |options|
+  cocoapods
+  scan(clean: true)
+end
+
+desc "Run tests"
+lane :custom_run_tests do |options|
   scan
 end
 
+desc "Build and test"
+lane :custom_build_and_test do |options|
+  scan
+end
