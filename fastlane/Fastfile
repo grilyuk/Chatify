@@ -1,14 +1,10 @@
-lane :lint do
-  swiftlint(
-    mode: 'lint',
-    executable: './Pods/SwiftLint/swiftlint'
-  )
-end
-
 desc "Build for testing"
 lane :custom_build_for_testing do |options|
   cocoapods
-  scan(clean: true, derived_data_path: "DerivedData")
+  scan(
+    derived_data_path: "DerivedData",
+    clean: true
+  )
 end
 
 desc "Run tests"
