@@ -96,6 +96,7 @@
 		5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNetworkModel.swift; sourceTree = "<group>"; };
 		5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelNetworkModel.swift; sourceTree = "<group>"; };
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		5E1157B42A10213E00FA5B28 /* AllTestsPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTestsPlan.xctestplan; sourceTree = "<group>"; };
 		5E12622429EF148B009B5289 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		5E12622629EF14B7009B5289 /* FileManagerStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerStack.swift; sourceTree = "<group>"; };
 		5E12623329EF3B1B009B5289 /* ServiceAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceAssembly.swift; sourceTree = "<group>"; };
@@ -505,6 +506,7 @@
 			children = (
 				5EBF422F2A097D2E0093EAB3 /* UnitTestPlan.xctestplan */,
 				5EBF42302A097D390093EAB3 /* UITestPlan.xctestplan */,
+				5E1157B42A10213E00FA5B28 /* AllTestsPlan.xctestplan */,
 			);
 			path = TestPlans;
 			sourceTree = "<group>";
