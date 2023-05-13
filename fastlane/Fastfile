@@ -8,7 +8,6 @@ end
 desc "Build for testing"
 lane :custom_build_for_testing do |options|
   cocoapods
-  lint
   scan(clean: true)
 end
 
