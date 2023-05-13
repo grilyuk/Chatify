@@ -1,5 +1,3 @@
-install_dependencies
-
 lane :lint do
   swiftlint(
     mode: 'lint',
