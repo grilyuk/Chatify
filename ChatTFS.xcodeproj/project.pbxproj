@@ -736,7 +736,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${PODS_ROOT}/SwiftLint/swiftlint\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ChatTFS/Pods-ChatTFS-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		A16DE6CD05AAA2CA47DE8E03 /* [CP] Check Pods Manifest.lock */ = {
