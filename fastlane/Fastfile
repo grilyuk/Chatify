@@ -12,7 +12,7 @@ lane :custom_build_for_testing do |options|
   cocoapods
   lint
   scan(clean: true,
-  build_only: true)
+  build_for_testing: true)
 end
 
 desc "Run tests"
