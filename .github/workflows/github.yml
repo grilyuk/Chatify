@@ -2,7 +2,7 @@ name: CI
 on: [push]
 jobs:
   build:
-    runs-on: [self-hosted]
+    runs-on: [self-hosted, intel]
     steps:
     - uses: actions/checkout@v3
     - uses: ruby/setup-ruby@v1
