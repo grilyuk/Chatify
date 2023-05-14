@@ -16,13 +16,14 @@ class ImageLoaderService: ImageLoaderServiceProtocol {
     
     // MARK: - Private properties
     
-    private let mockJsonLink: String = "https://run.mocky.io/v3/8317ecaa-ac7d-4b6f-8d27-86fe6ab57596"
+    private let token = Bundle.main.object(forInfoDictionaryKey: "Secret") as? String ?? ""
+    private lazy var mockJsonLink: String = "https://run.mocky.io/v3/" + token
     private var networkService: NetworkServiceProtocol
     
     // MARK: - Public methods
     
     func getLinks(completion: @escaping (Result<[ImageLinkModel], Error>) -> Void) {
-        
+        print(mockJsonLink)
         guard let url = URL(string: mockJsonLink) else {
             return
         }
