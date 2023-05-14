@@ -1,3 +1,4 @@
+desc "SwiftLing install"
 lane :lint do
   swiftlint(
     mode: :lint,
@@ -10,12 +11,18 @@ desc "Build for testing"
 lane :custom_build_for_testing do |options|
   cocoapods
   lint
-  scan(clean: true)
+  scan(clean: true,
+  build_only: true)
 end
 
 desc "Run tests"
 lane :custom_run_tests do |options|
-  scan
+  scan(
+    app: "build/ChatTFS.app",
+    scheme: "ChatTFS",
+    clean: true,
+    build_for_testing: true
+  )
 end
 
 desc "Build and test"
