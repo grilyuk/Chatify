@@ -1,5 +1,5 @@
 PODS:
-  - SwiftLint (0.52.2)
+  - SwiftLint
   - TFSChatTransport (3.1.0)
 
 DEPENDENCIES:
