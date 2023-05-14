@@ -13,6 +13,6 @@ jobs:
       run: |
         bundle exec fastlane custom_build_and_test
     - uses: sarisia/actions-status-discord@v1
-  if: always()
-  with:
-    webhook: ${{ https://discord.com/api/webhooks/1107274404884394024/DQiBoNQih9JZ326w0OX_iF6UM11VzV__5aLcszlTd6rDljYqhKHVbr_HcQgX0SRPUrH- }}
+      if: always()
+      with:
+      webhook: ${{ https://discord.com/api/webhooks/1107274404884394024/DQiBoNQih9JZ326w0OX_iF6UM11VzV__5aLcszlTd6rDljYqhKHVbr_HcQgX0SRPUrH- }}
