@@ -1,8 +1,9 @@
 lane :lint do
   swiftlint(
-    mode: 'lint',
-    executable: './Pods/SwiftLint/swiftlint'
-  )
+    mode: :lint,
+    executable: "Pods/SwiftLint/swiftlint",
+    config_file: ".swiftlint-ci.yml"
+)
 end
 
 desc "Build for testing"
