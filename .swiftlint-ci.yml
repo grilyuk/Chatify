@@ -3,7 +3,7 @@ excluded:
   - ChatTFSUnitTests
   - ChatTFSUITests
   - DerivedData
-  - Users/user/WorkSpace/Runner/_work/chat-app-grilyuk/chat-app-grilyuk/vendor/bundle/ruby/3.1.0/gems/fastlane-2.212.2/fastlane/swift/Fastlane.swift
+  - vendor
 
 warning_threshold: 1
 
