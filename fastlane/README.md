@@ -13,6 +13,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
+### lint
+
+```sh
+[bundle exec] fastlane lint
+```
+
+SwiftLing install
+
 ### custom_build_for_testing
 
 ```sh
