@@ -12,15 +12,12 @@ lane :custom_build_for_testing do |options|
   cocoapods
   lint
   scan(clean: true,
-  build_for_testing: true)
+  build_for_testing: false)
 end
 
 desc "Run tests"
 lane :custom_run_tests do |options|
   scan(
-    app: "build/ChatTFS.app",
-    scheme: "ChatTFS",
-    clean: true,
     build_for_testing: true
   )
 end
