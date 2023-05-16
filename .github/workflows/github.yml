@@ -12,6 +12,19 @@ jobs:
     - name: Build for testing
       run: |
         bundle exec fastlane custom_build_and_test
-    - uses: johnnyhuy/actions-discord-git-webhook@main
+    - uses: rjstone/discord-webhook-notify@v1
+      if: success()
       with:
+        severity: info
+        details: Test Succeeded!
         webhook_url: ${{ secrets.DISCORD }}
+      if: failure()
+      with:
+        severity: error
+        details: Test Failed
+        webhook_url: ${{ secrets.DISCORD }}
+      if: cancelled()
+      with:
+        severity: warn
+        details: Test Cancelled!
+        webhookUrl: ${{ secrets.DISCORD }}
