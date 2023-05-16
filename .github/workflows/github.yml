@@ -12,9 +12,8 @@ jobs:
     - name: Build for testing
       run: |
         bundle exec fastlane custom_build_and_test
-    - uses: rjstone/discord-webhook-notify@v1
+    - uses: nebularg/actions-discord-webhook@v1
       if: always()
       with:
-        webhookUrl: ${{ secrets.DISCORD }}
-        details: Test Succeeded!
-        avatarUrl: 'https://e0.pxfuel.com/wallpapers/906/85/desktop-wallpaper-wide-mouth-singing-cat-pop-cat-pop-cat-cat-memes-cat-profile-popcat.jpg'
+        webhook_url: ${{ secrets.DISCORD }}
+        status: ${{ job.status }}
