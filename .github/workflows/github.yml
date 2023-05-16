@@ -19,7 +19,6 @@ jobs:
       run: |
         LINK=$UPDATED_LINK
         LINK=${LINK%/github}
-        echo $LINK
         echo "UPDATED_LINK=$LINK" >> $GITHUB_ENV
 
     - name: Test Success
@@ -27,19 +26,24 @@ jobs:
       if: success()
       with:
         webhook: ${{ env.UPDATED_LINK }}
+        username: Капитан Хук
         image: 'https://flexagon.com/wp-content/uploads/2020/04/a-world-with-ci.cd-meme.jpg'
-        title: "deploy"
+        avatar_url: 'https://www.chathamhouse.org/sites/default/files/styles/uncropped_tiny/public/2023-03/PinClipart.com_murder-clip-art_5376441.png?itok=zKK8nOOz'
+        
     - name: Test Failure
-      uses: rjstone/discord-webhook-notify@v1
+      uses: sarisia/actions-status-discord@v1
       if: failure()
       with:
-        severity: error
-        details: Test Failed!
-        webhookUrl: ${{ secrets.DISCORD }}
+        webhook: ${{ env.UPDATED_LINK }}
+        username: Капитан Хук
+        image: 'https://flexagon.com/wp-content/uploads/2020/04/a-world-without-ci.cd-meme.jpg'
+        avatar_url: 'https://i.guim.co.uk/img/media/327e46c3ab049358fad80575146be9e0e65686e7/0_56_1023_614/master/1023.jpg?width=1200&height=900&quality=85&auto=format&fit=crop&s=1a1f3b8896b95c4590b3b7ae2d3b5d61'
+        
     - name: Test Cancelled
-      uses: rjstone/discord-webhook-notify@v1
+      uses: sarisia/actions-status-discord@v1
       if: cancelled()
       with:
-        severity: warn
-        details: Test Cancelled!
-        webhookUrl: ${{ secrets.DISCORD }}
+        webhook: ${{ env.UPDATED_LINK }}
+        username: Капитан Хук
+        image: 'https://merriam-webster.com/assets/mw/images/article/art-wap-landing-mp-lg/cancel-button-on-computer-photo-6633-981fb4efe9bfd091834d0c167dd8c9a3@1x.jpg'
+        avatar_url: 'https://chpic.su/_data/stickers/r/rzhumenpack/rzhumenpack_012.webp'
