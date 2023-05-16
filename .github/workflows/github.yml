@@ -15,7 +15,7 @@ jobs:
     - uses: sarisia/actions-status-discord@v1
       if: always()
       with:
-        webhook:  'https://discord.com/api/webhooks/1107274404884394024/DQiBoNQih9JZ326w0OX_iF6UM11VzV__5aLcszlTd6rDljYqhKHVbr_HcQgX0SRPUrH-'
+        webhook: ${{ secrets.DISCORD }}
         description: "Build and deploy to GitHub Pages"
         image: 'https://flexagon.com/wp-content/uploads/2020/04/a-world-with-ci.cd-meme.jpg'
         avatar_url: 'https://e0.pxfuel.com/wallpapers/906/85/desktop-wallpaper-wide-mouth-singing-cat-pop-cat-pop-cat-cat-memes-cat-profile-popcat.jpg'
