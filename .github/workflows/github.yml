@@ -14,12 +14,11 @@ jobs:
         bundle exec fastlane custom_build_and_test
         
     - name: Update Link
-      env:
-        UPDATED_LINK: ${{ secrets.DISCORD }}
+      id: update_link
       run: |
-        LINK=$UPDATED_LINK
+        LINK=${{ secrets.DISCORD }}
         LINK=${LINK%/github}
-        echo "UPDATED_LINK=$LINK" >> $GITHUB_ENV
+        echo "::set-env name=UPDATED_LINK::$LINK"
 
     - name: Test Success
       uses: sarisia/actions-status-discord@v1
