@@ -21,6 +21,7 @@ protocol ChannelsListPresenterProtocol: AnyObject {
 class ChannelsListPresenter: ChannelsListPresenterProtocol {
     
     // MARK: - Public properties
+    
     weak var view: ChannelsListViewProtocol?
     var router: RouterProtocol?
     var dataChannels: [ChannelNetworkModel]?
