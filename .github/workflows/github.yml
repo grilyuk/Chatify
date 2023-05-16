@@ -12,10 +12,9 @@ jobs:
     - name: Build for testing
       run: |
         bundle exec fastlane custom_build_and_test
-    - uses: sarisia/actions-status-discord@v1
+    - uses: rjstone/discord-webhook-notify@v1
       if: always()
       with:
-        webhook: ${{ secrets.DISCORD }}
-        description: "Build and deploy to GitHub Pages"
-        image: 'https://flexagon.com/wp-content/uploads/2020/04/a-world-with-ci.cd-meme.jpg'
-        avatar_url: 'https://e0.pxfuel.com/wallpapers/906/85/desktop-wallpaper-wide-mouth-singing-cat-pop-cat-pop-cat-cat-memes-cat-profile-popcat.jpg'
+        webhookUrl: ${{ secrets.DISCORD }}
+        details: Test Succeeded!
+        avatarUrl: 'https://e0.pxfuel.com/wallpapers/906/85/desktop-wallpaper-wide-mouth-singing-cat-pop-cat-pop-cat-cat-memes-cat-profile-popcat.jpg'
