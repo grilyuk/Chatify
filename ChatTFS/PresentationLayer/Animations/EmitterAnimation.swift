@@ -33,8 +33,8 @@ class EmitterAnimation: CAEmitterLayer {
         self.birthRate = 50
         self.emitterSize = CGSize(width: 50, height: 50)
         self.emitterShape = CAEmitterLayerEmitterShape.point
-        let location = sender.location(in: view.window)
-        self.emitterPosition = CGPoint(x: location.x, y: location.y)
+        let location = sender.location(in: view)
+        self.emitterPosition = location
         view.window?.layer.addSublayer(self)
         if sender.state == .ended {
             self.birthRate = 0
