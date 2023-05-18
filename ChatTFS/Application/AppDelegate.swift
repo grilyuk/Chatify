@@ -50,7 +50,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         logoEmitterAnimation.birthRate = 10
         let location = sender.location(in: window?.inputView)
         logoEmitterAnimation.emitterPosition = location
-        print(location)
         window?.layer.addSublayer(logoEmitterAnimation)
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.logoEmitterAnimation.birthRate = 0
@@ -61,7 +60,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private func handlePanGesture(sender: UIGestureRecognizer) {
         logoEmitterAnimation.birthRate = 50
         let location = sender.location(in: window)
-        print(location)
         logoEmitterAnimation.emitterPosition = location
         window?.layer.addSublayer(logoEmitterAnimation)
         if sender.state == .ended {
