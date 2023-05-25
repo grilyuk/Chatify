@@ -40,7 +40,7 @@ class ChannelViewController: UIViewController {
     // MARK: - Private
 
     private lazy var dataSource = ChannelDataSource(tableView: tableView, themeService: themeService, view: self)
-    private lazy var logoEmitterAnimation = EmitterAnimation()
+    private lazy var logoEmitterAnimation = EmitterAnimation(layer: view.layer)
     
     private var tableView: UITableView = {
         let table = UITableView()

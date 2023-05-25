@@ -96,6 +96,7 @@
 		5E058E3F29EACF9900D470D0 /* MessageNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageNetworkModel.swift; sourceTree = "<group>"; };
 		5E058E4129EACFA400D470D0 /* ChannelNetworkModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChannelNetworkModel.swift; sourceTree = "<group>"; };
 		5E08ADC229A16B10004510A6 /* ProfileViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
+		5E1157B42A10213E00FA5B28 /* AllTestsPlan.xctestplan */ = {isa = PBXFileReference; lastKnownFileType = text; path = AllTestsPlan.xctestplan; sourceTree = "<group>"; };
 		5E12622429EF148B009B5289 /* CoreDataStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataStack.swift; sourceTree = "<group>"; };
 		5E12622629EF14B7009B5289 /* FileManagerStack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerStack.swift; sourceTree = "<group>"; };
 		5E12623329EF3B1B009B5289 /* ServiceAssembly.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServiceAssembly.swift; sourceTree = "<group>"; };
@@ -143,6 +144,7 @@
 		5E97BF3629BE33B3003BBA1B /* UIViewExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
 		5E97BF3C29BE8542003BBA1B /* OutgoingConversationViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OutgoingConversationViewCell.swift; sourceTree = "<group>"; };
 		5E9F20C929C861140027EAFE /* FileManagerService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerService.swift; sourceTree = "<group>"; };
+		5EA53D832A111D3000C17F3D /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		5EB6218229AB609700029FB8 /* ProfilePresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfilePresenter.swift; sourceTree = "<group>"; };
 		5EB6218429AB60A400029FB8 /* ProfileInteractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileInteractor.swift; sourceTree = "<group>"; };
 		5EB6218A29AB683B00029FB8 /* ProfileModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileModel.swift; sourceTree = "<group>"; };
@@ -505,6 +507,7 @@
 			children = (
 				5EBF422F2A097D2E0093EAB3 /* UnitTestPlan.xctestplan */,
 				5EBF42302A097D390093EAB3 /* UITestPlan.xctestplan */,
+				5E1157B42A10213E00FA5B28 /* AllTestsPlan.xctestplan */,
 			);
 			path = TestPlans;
 			sourceTree = "<group>";
@@ -528,6 +531,7 @@
 		5EDC6586299ECEAD009B6586 = {
 			isa = PBXGroup;
 			children = (
+				5EA53D832A111D3000C17F3D /* Config.xcconfig */,
 				5EDC6591299ECEAD009B6586 /* ChatTFS */,
 				5E76BDAF2A087067004404A6 /* ChatTFSUnitTests */,
 				5EBF42232A096A260093EAB3 /* ChatTFSUITests */,
@@ -616,12 +620,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 5EDC65A3299ECEAE009B6586 /* Build configuration list for PBXNativeTarget "ChatTFS" */;
 			buildPhases = (
-				A16DE6CD05AAA2CA47DE8E03 /* [CP] Check Pods Manifest.lock */,
+				F15F6D47F493B5412B1B614E /* [CP] Check Pods Manifest.lock */,
 				5EDC658B299ECEAD009B6586 /* Sources */,
 				5EDC658C299ECEAD009B6586 /* Frameworks */,
 				5EDC658D299ECEAD009B6586 /* Resources */,
 				5E46A2D929D77183001F13AD /* ShellScript */,
-				8CCB5892648718628C7D15B3 /* [CP] Embed Pods Frameworks */,
+				876861B4FDB1BF64A9858FED /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -718,9 +722,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "${PODS_ROOT}/SwiftLint/swiftlint\n";
+			shellScript = "if [[ \"$(uname -m)\" == arm64 ]]; then\n    export PATH=\"/opt/homebrew/bin:$PATH\"\nfi\n\nif which swiftlint > /dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
 		};
-		8CCB5892648718628C7D15B3 /* [CP] Embed Pods Frameworks */ = {
+		876861B4FDB1BF64A9858FED /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -737,7 +741,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ChatTFS/Pods-ChatTFS-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		A16DE6CD05AAA2CA47DE8E03 /* [CP] Check Pods Manifest.lock */ = {
+		F15F6D47F493B5412B1B614E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -959,6 +963,7 @@
 		};
 		5EDC65A1299ECEAE009B6586 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5EA53D832A111D3000C17F3D /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1020,6 +1025,7 @@
 		};
 		5EDC65A2299ECEAE009B6586 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5EA53D832A111D3000C17F3D /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

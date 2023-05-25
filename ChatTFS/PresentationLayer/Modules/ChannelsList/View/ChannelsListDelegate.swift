@@ -21,14 +21,14 @@ extension ChannelsListViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         var snapshot = dataSource.snapshot()
         let identifiers = snapshot.itemIdentifiers
 
         let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, _) in
             
             guard let self,
-                  let idChannel = channels.first(where: { $0.uuid == identifiers[indexPath.item] })?.channelID
+                  let idChannel = self.channels.first(where: { $0.uuid == identifiers[indexPath.item] })?.channelID
             else {
                 return
             }
