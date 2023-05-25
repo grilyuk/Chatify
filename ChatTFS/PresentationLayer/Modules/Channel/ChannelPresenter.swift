@@ -3,7 +3,6 @@ import TFSChatTransport
 import Combine
 
 protocol ChannelPresenterProtocol: AnyObject {
-    var handler: ((ChannelModel, [MessageModel]) -> Void)? { get set }
     var messagesData: [MessageNetworkModel]? { get set }
     var channelData: ChannelNetworkModel? { get set }
     
