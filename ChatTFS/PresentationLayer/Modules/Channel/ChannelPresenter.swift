@@ -3,7 +3,6 @@ import TFSChatTransport
 import Combine
 
 protocol ChannelPresenterProtocol: AnyObject {
-    var handler: ((ChannelModel, [MessageModel]) -> Void)? { get set }
     var messagesData: [MessageNetworkModel]? { get set }
     var channelData: ChannelNetworkModel? { get set }
     
@@ -29,9 +28,9 @@ class ChannelPresenter {
     
     // MARK: - Private properties
 
+    private var currentUserID = ""
     private var userID: String?
     private var userName: String?
-    var currentUserID = ""
     private let mainQueue = DispatchQueue.main
     private let background = DispatchQueue.global(qos: .userInteractive)
     
@@ -64,10 +63,12 @@ extension ChannelPresenter: ChannelPresenterProtocol {
         }
         
         var messages: [MessageModel] = []
+        
         background.async { [weak self] in
+            var currentUserID = ""
             self?.messagesData?.forEach({ [weak self] message in
                 
-            if message.userID == self?.userID && message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+            if message.userID == self?.userID && !message.text.isEmpty {
                 
                 messages.append(MessageModel(image: nil,
                                              text: message.text,
@@ -93,13 +94,13 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                     }
                 }
                 
-            } else if message.text.trimmingCharacters(in: .whitespacesAndNewlines) != "" {
+            } else if !message.text.isEmpty {
                 
                 let isSameUser = {
-                    if self?.currentUserID == message.userID {
+                    if currentUserID == message.userID {
                         return true
                     } else {
-                        self?.currentUserID = message.userID
+                        currentUserID = message.userID
                         return false
                     }
                 }()
@@ -193,7 +194,6 @@ extension ChannelPresenter: ChannelPresenterProtocol {
                 }
             }
             
-            self?.currentUserID = messageModel.userID
             self?.mainQueue.async { [weak self] in
                 self?.view?.addMessage(message: MessageModel(image: nil,
                                                        text: messageModel.text,

@@ -27,7 +27,7 @@ class ChannelsListViewController: UIViewController {
     
     // MARK: - UIConstants
     
-    private enum UIConstants {
+    enum UIConstants {
         static let rowHeight: CGFloat = 76
         static let sectionHeight: CGFloat = 44
         static let imageSize: CGSize = CGSize(width: 44, height: 44)
@@ -37,21 +37,14 @@ class ChannelsListViewController: UIViewController {
     
     var presenter: ChannelsListPresenterProtocol?
     var channels: [ChannelModel] = []
+    lazy var dataSource = ChannelsListDataSource(tableView: tableView, themeService: themeService, view: self)
     
     // MARK: - Private properties
     
-    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, itemIdentifier in
-        guard let self,
-              let model = self.channels.first(where: { $0.uuid == itemIdentifier }),
-              let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
-        else {
-            return ChannelListCell()
-        }
-        cell.configureTheme(theme: self.themeService)
-        cell.configure(with: model)
-        return cell
-    }
     private var themeService: ThemeServiceProtocol
+    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
+    private lazy var pullToRefresh = UIRefreshControl()
+    private lazy var logoEmitterAnimation = EmitterAnimation(layer: view.layer)
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -107,21 +100,20 @@ class ChannelsListViewController: UIViewController {
         return alert
     }()
     
-    private lazy var activityIndicator = UIActivityIndicatorView(style: .medium)
-    private lazy var pullToRefresh = UIRefreshControl()
-    
     // MARK: - Lifecycle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         tableView.delegate = self
         tableView.addSubview(pullToRefresh)
         addChanelAlert.addAction(createChannel)
-        presenter?.viewReady()
         dataSource.defaultRowAnimation = .fade
         setupTableViewConstraints()
+        presenter?.subscribeToSSE()
         pullToRefresh.addTarget(self, action: #selector(updateChannelList), for: .valueChanged)
         activityIndicator.startAnimating()
+        presenter?.viewReady()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -129,13 +121,7 @@ class ChannelsListViewController: UIViewController {
         view.backgroundColor = themeService.currentTheme.backgroundColor
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
         dataSource.updateColorCells(channels: channels)
-        presenter?.subscribeToSSE()
         setupNavigationBar()
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        presenter?.unsubscribeFromSSE()
     }
     
     // MARK: - Private methods
@@ -216,50 +202,10 @@ class ChannelsListViewController: UIViewController {
     private func updateChannelList() {
         presenter?.viewReady()
     }
-}
-
-// MARK: - ChannelsListViewController + UITableViewDelegate
-
-extension ChannelsListViewController: UITableViewDelegate {
-
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        UIConstants.sectionHeight
-    }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        UIConstants.rowHeight
-    }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let idCell = dataSource.snapshot().itemIdentifiers[indexPath.row]
-        guard let navigationController = navigationController,
-              let channelID = channels.first(where: { $0.uuid == idCell })?.channelID
-        else {
-            return
-        }
-        presenter?.didTappedChannel(to: channelID, navigationController: navigationController)
-        tableView.deselectRow(at: indexPath, animated: true)
-    }
-    
-    func tableView(_ tableView: UITableView, leadingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        var snapshot = dataSource.snapshot()
-        let identifiers = snapshot.itemIdentifiers
-
-        let deleteAction = UIContextualAction(style: .destructive, title: "Delete") { [weak self] (_, _, _) in
-            
-            guard let self,
-                  let idChannel = channels.first(where: { $0.uuid == identifiers[indexPath.item] })?.channelID
-            else {
-                return
-            }
-            self.presenter?.deleteChannel(id: idChannel)
-            snapshot.deleteItems([identifiers[indexPath.row]])
-            self.dataSource.apply(snapshot)
-        }
-        
-        let configuration = UISwipeActionsConfiguration(actions: [deleteAction])
-        configuration.performsFirstActionWithFullSwipe = true
-        return configuration
+    @objc
+    private func handlePanTouch(sender: UIPanGestureRecognizer) {
+        logoEmitterAnimation.setupPanGesture(sender: sender, view: self.view)
     }
 }
 
@@ -286,7 +232,7 @@ extension ChannelsListViewController: ChannelsListViewProtocol {
     }
     
     func updateChannel(channel: ChannelModel) {
-        dataSource.updateCell(channel: channel, view: self)
+        dataSource.updateCell(channel: channel)
     }
     
     func deleteChannel(channel: ChannelModel) {

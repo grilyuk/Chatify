@@ -40,7 +40,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         
         handler = { [weak self] channels in
             self?.presenter?.dataChannels = channels
-            self?.presenter?.dataUploaded()
+            self?.presenter?.dataUploaded() 
         }
 
         loadFromCoreData()
@@ -76,10 +76,7 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
             }
     }
     
-    func unsubscribeFromSSE() {
-        chatService.stopListen()
-        eventsSubscribe?.cancel()
-    }
+    func unsubscribeFromSSE() {  }
     
     func createChannel(channelName: String) {
         chatService.createChannel(channelName: channelName)
@@ -99,8 +96,8 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
     func deleteChannel(id: String) {
         chatService.deleteChannel(id: id)
             .sink(receiveCompletion: { _ in
-                self.coreDataService.deleteChannel(channelID: id)
-            }, receiveValue: { _ in
+            }, receiveValue: { [weak self] _ in
+                self?.coreDataService.deleteChannel(channelID: id)
             })
             .cancel()
     }
@@ -148,11 +145,9 @@ class ChannelsListInteractor: ChannelsListInteractorProtocol {
         }
         
         let cachedIDs = cacheChannels.map { $0.id }
-        
         let networkIDs = networkChannels.map { $0.id }
 
         let deletedChannels = cachedIDs.filter { !networkIDs.contains($0) }
-
         for deletedChannel in deletedChannels {
             coreDataService.deleteChannel(channelID: deletedChannel)
         }

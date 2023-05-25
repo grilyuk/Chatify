@@ -1,6 +1,24 @@
 import UIKit
 
-extension UITableViewDiffableDataSource<Int, UUID> {
+class ChannelsListDataSource: UITableViewDiffableDataSource<Int, UUID> {
+    
+    init(tableView: UITableView, themeService: ThemeServiceProtocol, view: ChannelsListViewProtocol) {
+        self.view = view
+        self.themeService = themeService
+        super.init(tableView: tableView) { tableView, indexPath, itemIdentifier in
+            guard let model = view.channels.first(where: { $0.uuid == itemIdentifier }),
+                  let cell = tableView.dequeueReusableCell(withIdentifier: ChannelListCell.identifier, for: indexPath) as? ChannelListCell
+            else {
+                return ChannelListCell()
+            }
+            cell.configureTheme(theme: themeService)
+            cell.configure(with: model)
+            return cell
+        }
+    }
+    
+    weak var view: ChannelsListViewProtocol?
+    weak var themeService: ThemeServiceProtocol?
     
     func applySnapshot(channels: [ChannelModel]) {
         var snapshot = snapshot()
@@ -16,10 +34,9 @@ extension UITableViewDiffableDataSource<Int, UUID> {
         apply(snapshot, animatingDifferences: false)
     }
     
-    func updateCell(channel: ChannelModel, view: ChannelsListViewController ) {
-        let channels = view.channels
-        if let indexOfChannels = channels.firstIndex(where: { $0.uuid == channel.uuid }) {
-            view.channels[indexOfChannels] = channel
+    func updateCell(channel: ChannelModel) {
+        if let indexOfChannels = view?.channels.firstIndex(where: { $0.uuid == channel.uuid }) {
+            view?.channels[indexOfChannels] = channel
         }
         let idCell = channel.uuid
         var snapshot = snapshot()

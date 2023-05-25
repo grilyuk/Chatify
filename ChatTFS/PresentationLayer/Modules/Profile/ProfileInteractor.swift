@@ -3,7 +3,7 @@ import Combine
 
 protocol ProfileInteractorProtocol: AnyObject {
     func loadData()
-    func updateData(profile: ProfileModel)
+    func updateData(profile: ProfileModel, completion: @escaping (Bool) -> Void)
 }
 
 class ProfileInteractor: ProfileInteractorProtocol {
@@ -14,16 +14,18 @@ class ProfileInteractor: ProfileInteractorProtocol {
         self.dataManager = dataManager
     }
     
-    // MARK: - Public
+    // MARK: - Public properties
     
     weak var presenter: ProfilePresenterProtocol?
     
-    // MARK: - Private
+    // MARK: - Private properties
     
     private var handler: ((ProfileModel) -> Void)?
     private var dataManager: FileManagerServiceProtocol
+    private let mainQueue = DispatchQueue.main
+    private let backgroundQueue = DispatchQueue.global()
 
-    // MARK: - Methods
+    // MARK: - Public methods
     
     func loadData() {
         
@@ -33,22 +35,23 @@ class ProfileInteractor: ProfileInteractorProtocol {
         }
         
         dataManager.readProfilePublisher()
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
+            .subscribe(on: backgroundQueue)
+            .receive(on: mainQueue)
             .decode(type: ProfileModel.self, decoder: JSONDecoder())
             .catch({_ in
-                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))})
-                .sink(receiveValue: { [weak self] profile in
-                    self?.dataManager.currentProfile.send(profile)
-                    self?.handler?(profile)
-                })
-                    .cancel()
+                Just(ProfileModel(fullName: nil, statusText: nil, profileImageData: nil))
+            })
+            .sink(receiveValue: { [weak self] profile in
+                self?.dataManager.currentProfile.send(profile)
+                self?.handler?(profile)
+            })
+            .cancel()
     }
     
-    func updateData(profile: ProfileModel) {
+    func updateData(profile: ProfileModel, completion: @escaping (Bool) -> Void) {
         dataManager.writeProfilePublisher(profile: profile)
-            .subscribe(on: DispatchQueue.global())
-            .receive(on: DispatchQueue.main)
+            .subscribe(on: backgroundQueue)
+            .receive(on: mainQueue)
             .encode(encoder: JSONEncoder())
             .map({ data in
                 if let documentDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
@@ -63,9 +66,10 @@ class ProfileInteractor: ProfileInteractorProtocol {
                 switch result {
                 case true:
                     self?.dataManager.currentProfile.send(profile)
+                    completion(true)
                     self?.presenter?.dataUploaded()
                 case false:
-                    break
+                    completion(false)
                 }
             })
             .cancel()

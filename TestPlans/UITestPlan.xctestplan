@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "6EDC6013-CCD7-4481-ABA5-24C683599DFD",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:ChatTFS.xcodeproj",
+        "identifier" : "5EBF42212A096A260093EAB3",
+        "name" : "ChatTFSUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

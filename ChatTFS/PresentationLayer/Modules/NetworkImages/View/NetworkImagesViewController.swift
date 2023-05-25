@@ -37,6 +37,7 @@ class NetworkImagesViewController: UIViewController {
             return NetworkImagesCell()
         }
         cell.configure(with: model)
+        
         return cell
     }
     
@@ -110,7 +111,7 @@ extension NetworkImagesViewController: UICollectionViewDelegate {
         else {
             return
         }
-        if let profileVC = vc as? ProfileViewProtocol {
+        if let profileVC = vc as? EditProfileViewController {
             profileVC.profilePhoto.image = images[index].image
         } else if let channelVC = vc as? ChannelViewProtocol {
             channelVC.setImageMessage(link: images[index].link)
@@ -122,14 +123,13 @@ extension NetworkImagesViewController: UICollectionViewDelegate {
     }
     
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
-        DispatchQueue.global().async { [weak self] in
-            guard let index = self?.dataSource.itemIdentifier(for: indexPath),
+        DispatchQueue.global().sync { [weak self] in
+            if let index = self?.dataSource.itemIdentifier(for: indexPath),
                   let model = self?.images.first(where: { $0.uuid == index }),
-                  !model.isAvailable
-            else {
-                return
+               !model.isAvailable,
+               !model.isUploaded {
+                self?.presenter?.loadImage(for: index, url: model.link)
             }
-            self?.presenter?.loadImage(for: index, url: model.link)
         }
     }
 }

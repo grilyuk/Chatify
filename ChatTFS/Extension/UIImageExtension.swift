@@ -4,8 +4,12 @@ extension UIImage {
     
     static let placeholder = UIImage(systemName: "person.fill")?
         .withTintColor(.systemGray, renderingMode: .alwaysOriginal)
+    
     static let channelPlaceholder = UIImage(systemName: "person.2.circle")?
         .withTintColor(.systemGray, renderingMode: .alwaysOriginal) ?? UIImage()
+    
+    static let imagePlaceholder = UIImage(systemName: "photo")?
+        .withTintColor(.lightGray, renderingMode: .alwaysOriginal) ?? UIImage()
     
     func scalePreservingAspectRatio(targetSize: CGSize) -> UIImage {
         let widthRatio = targetSize.width / size.width

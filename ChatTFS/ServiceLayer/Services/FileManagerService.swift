@@ -29,10 +29,9 @@ final class FileManagerService: FileManagerServiceProtocol {
     // MARK: - Private properties
     
     private let fileManagerStack: FileManagerStackProtocol
+    private var backgroundQueue = DispatchQueue.global(qos: .utility)
     static let profileFileName = "profileData.json"
     static let userIdFileName = "userId.json"
-    
-    private var backgroundQueue = DispatchQueue.global(qos: .utility)
     
     // MARK: - Publishers
     
@@ -72,7 +71,7 @@ final class FileManagerService: FileManagerServiceProtocol {
         
         let placeholder = UIImage.channelPlaceholder
         
-        if checkPath(fileName: channel.id) {
+        if fileManagerStack.checkPath(fileName: channel.id) {
             do {
                 let path = fileManagerStack.documentDirectory
                     .appendingPathComponent(channel.id)
@@ -110,7 +109,7 @@ final class FileManagerService: FileManagerServiceProtocol {
     private func readUserID(fileName: String) -> String {
         let fileURL = fileManagerStack.documentDirectory
             .appendingPathComponent(fileName)
-        if checkPath(fileName: fileName) {
+        if fileManagerStack.checkPath(fileName: fileName) {
             do {
                 let jsonData = try Data(contentsOf: fileURL)
                 let userId = try JSONDecoder().decode(String.self, from: jsonData)
@@ -132,16 +131,10 @@ final class FileManagerService: FileManagerServiceProtocol {
         return ""
     }
     
-    private func checkPath(fileName: String) -> Bool {
-        let filePath = fileManagerStack.documentDirectory
-            .appendingPathComponent(fileName).path
-        return fileManagerStack.fileManager.fileExists(atPath: filePath) ? true : false
-    }
-    
     private func readData(fileName: String) throws -> Data {
         let fileURL = fileManagerStack.documentDirectory
             .appendingPathComponent(fileName)
-        guard checkPath(fileName: fileName) == true,
+        guard fileManagerStack.checkPath(fileName: fileName) == true,
               let jsonData = try? Data(contentsOf: fileURL)
         else {
             throw CustomError(description: "readData failed")
@@ -153,7 +146,7 @@ final class FileManagerService: FileManagerServiceProtocol {
         guard profileData.fullName != nil,
               profileData.statusText != nil
         else {
-            return ProfileModel(fullName: nil, statusText: nil, profileImageData: nil)
+            throw CustomError(description: "writeData failed")
         }
         return profileData
     }

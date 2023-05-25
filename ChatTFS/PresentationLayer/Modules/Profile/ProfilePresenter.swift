@@ -3,7 +3,7 @@ import UIKit
 protocol ProfilePresenterProtocol: AnyObject {
     func viewReady()
     func dataUploaded()
-    func updateProfile(profile: ProfileModel)
+    func updateProfile(profile: ProfileModel, completion: @escaping (Bool) -> Void)
     func showNetworkImages(navigationController: UINavigationController, vc: UIViewController)
     var profile: ProfileModel? { get set }
     var router: RouterProtocol { get }
@@ -29,16 +29,16 @@ class ProfilePresenter {
 // MARK: - ProfilePresenter + ProfilePresenterProtocol
 
 extension ProfilePresenter: ProfilePresenterProtocol {
-    func dataUploaded() {
-        view?.showProfile()
-    }
-    
     func viewReady() {
         interactor.loadData()
     }
     
-    func updateProfile(profile: ProfileModel) {
-        interactor.updateData(profile: profile)
+    func dataUploaded() {
+        view?.showProfile(data: ProfileModel(fullName: "", statusText: "", profileImageData: Data() ))
+    }
+    
+    func updateProfile(profile: ProfileModel, completion: @escaping (Bool) -> Void) {
+        interactor.updateData(profile: profile, completion: completion)
     }
     
     func showNetworkImages(navigationController: UINavigationController, vc: UIViewController) {

@@ -60,7 +60,9 @@ class NetworkService: NetworkServiceProtocol {
             if let image = UIImage(data: data) {
                 completion(.success(image))
             } else {
-                completion(.failure(CustomError(description: "not image")))
+                if let error = error {
+                    completion(.failure(error))
+                }
             }
 
         }.resume()

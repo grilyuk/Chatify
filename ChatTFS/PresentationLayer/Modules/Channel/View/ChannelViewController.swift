@@ -4,13 +4,12 @@ protocol ChannelViewProtocol: AnyObject {
     func showChannel(channel: ChannelModel)
     func addMessage(message: MessageModel)
     var messages: [MessageModel] { get set }
+    var titlesSections: [String] { get set }
     func setImageMessage(link: String)
     func updateImage(image: UIImage, id: UUID)
 }
 
 class ChannelViewController: UIViewController {
-    
-    typealias DataSource = UITableViewDiffableDataSource<Date, UUID>
     
     // MARK: - Initialization
     
@@ -27,7 +26,7 @@ class ChannelViewController: UIViewController {
     
     private enum UIConstants {
         static let borderWidth: CGFloat = 2
-        static let textFieldHeight: CGFloat = 36
+        static let textFieldHeight: CGFloat = 40
         static let avatarSize: CGFloat = 50
     }
     
@@ -40,43 +39,8 @@ class ChannelViewController: UIViewController {
     
     // MARK: - Private
 
-    private lazy var dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, uuid in
-        guard let model = self?.messages.first(where: { $0.uuid == uuid }),
-              let themeService = self?.themeService
-        else {
-            return UITableViewCell()
-        }
-        
-        switch model.myMessage {
-        case true:
-            guard let cell = tableView.dequeueReusableCell(withIdentifier: OutgoingChannelViewCell.identifier,
-                                                           for: indexPath) as? OutgoingChannelViewCell else {
-                return UITableViewCell()
-            }
-            cell.configureTheme(theme: themeService)
-            cell.configure(with: model)
-            return cell
-        case false:
-            switch model.isSameUser {
-            case true:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: SameIncomingChannelViewCell.identifier,
-                                                               for: indexPath) as? SameIncomingChannelViewCell else {
-                    return UITableViewCell()
-                }
-                cell.configureTheme(theme: themeService)
-                cell.configure(with: model)
-                return cell
-            case false:
-                guard let cell = tableView.dequeueReusableCell(withIdentifier: IncomingChannelViewCell.identifier,
-                                                               for: indexPath) as? IncomingChannelViewCell else {
-                    return UITableViewCell()
-                }
-                cell.configureTheme(theme: themeService)
-                cell.configure(with: model)
-                return cell
-            }
-        }
-    }
+    private lazy var dataSource = ChannelDataSource(tableView: tableView, themeService: themeService, view: self)
+    private lazy var logoEmitterAnimation = EmitterAnimation(layer: view.layer)
     
     private var tableView: UITableView = {
         let table = UITableView()
@@ -96,9 +60,10 @@ class ChannelViewController: UIViewController {
     private lazy var textFieldView: UIView = {
         let view = UIView()
         view.layer.cornerRadius = UIConstants.textFieldHeight / 2
+        view.clipsToBounds = true
         view.layer.borderWidth = UIConstants.borderWidth
         view.layer.borderColor = UIColor.systemGray5.cgColor
-        view.backgroundColor = themeService.currentTheme.backgroundColor
+        view.backgroundColor = themeService.currentTheme.themeBubble
         return view
     }()
     
@@ -106,14 +71,16 @@ class ChannelViewController: UIViewController {
         let field = UITextField()
         field.placeholder = "Type message"
         field.tintColor = themeService.currentTheme.incomingTextColor
-        field.backgroundColor = themeService.currentTheme.backgroundColor
+        field.backgroundColor = themeService.currentTheme.themeBubble
         return field
     }()
     
     private lazy var sendButton: UIButton = {
         let button = UIButton(type: .system)
         let arrowImage = UIImage(systemName: "arrow.up.circle.fill")
-        button.setImage(arrowImage, for: .normal)
+        let image = arrowImage?.scalePreservingAspectRatio(targetSize: CGSize(width: UIConstants.textFieldHeight * 0.7,
+                                                                              height: UIConstants.textFieldHeight * 0.7))
+        button.setImage(image, for: .normal)
         return button
     }()
     
@@ -156,7 +123,9 @@ class ChannelViewController: UIViewController {
     
     private lazy var choosePhotoButton: UIButton = {
         let button = UIButton(type: .system)
-        let image = UIImage(systemName: "photo.circle")?.withTintColor(.blue, renderingMode: .alwaysOriginal)
+        let photoImage = UIImage(systemName: "photo.circle")
+        let image = photoImage?.scalePreservingAspectRatio(targetSize: CGSize(width: UIConstants.textFieldHeight * 0.75,
+                                                                              height: UIConstants.textFieldHeight * 0.75))
         button.setImage(image, for: .normal)
         return button
     }()
@@ -169,26 +138,21 @@ class ChannelViewController: UIViewController {
         super.viewDidLoad()
         tableView.delegate = self
         tableView.dataSource = dataSource
+        tableView.panGestureRecognizer.addTarget(self, action: #selector(handlePanTouch(sender: )))
         presenter?.viewReady()
         dataSource.defaultRowAnimation = .fade
         setTableView()
-        setGesture()
         activityIndicator.startAnimating()
         sendButton.addTarget(self, action: #selector(checkMessage), for: .touchUpInside)
         choosePhotoButton.addTarget(self, action: #selector(pickPhoto), for: .touchUpInside)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(showKeyboard ),
-                                               name: UIResponder.keyboardWillShowNotification,
-                                               object: nil)
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(hideKeyboard),
-                                               name: UIResponder.keyboardWillHideNotification,
-                                               object: nil)
+        addKeyboardObserver()
+        hideKeyboardWhenTappedOutside()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         tableView.backgroundColor = themeService.currentTheme.backgroundColor
+        customNavBar.backgroundColor = themeService.currentTheme.themeBubble
         presenter?.subscribeToSSE()
         view.backgroundColor = themeService.currentTheme.backgroundColor
         navigationController?.navigationBar.isHidden = true
@@ -197,35 +161,20 @@ class ChannelViewController: UIViewController {
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
+        view.endEditing(true)
         navigationController?.navigationBar.isHidden = false
         presenter?.unsubscribeFromSSE()
     }
     
     // MARK: - Methods
     
-    private func setupSnapshot() {
-        var snapshot = dataSource.snapshot()
-        snapshot.deleteAllItems()
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd.MM.yyyy"
-        
-        let groupedMessages = Dictionary(grouping: messages, by: { Calendar.current.startOfDay(for: $0.date) })
-        let sortedDates = groupedMessages.keys.sorted()
-        
-        for date in sortedDates {
-            var messages = groupedMessages[date] ?? []
-            titlesSections.append(formatter.string(from: date))
-            messages.sort { $0.date < $1.date }
-            snapshot.appendSections([date])
-            snapshot.appendItems(messages.map({ $0.uuid }))
+    func scrollToLastRow() {
+        if !messages.isEmpty {
+            view.layoutIfNeeded()
+            let lastSectionNumber = tableView.numberOfSections - 1
+            let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
+            tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
         }
-        dataSource.apply(snapshot)
-    }
-    
-    private func setGesture() {
-        let tapGesture = UITapGestureRecognizer(target: self,
-                                                action: #selector(dismissKeyboard))
-        view.addGestureRecognizer(tapGesture)
     }
     
     private func sendMessage() {
@@ -233,45 +182,9 @@ class ChannelViewController: UIViewController {
         textField.text = ""
     }
     
-    private func scrollToLastRow() {
-        if !messages.isEmpty {
-            let lastSectionNumber = tableView.numberOfSections - 1
-            let lastRowInSection = tableView.numberOfRows(inSection: lastSectionNumber) - 1
-            tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ), at: .none, animated: true)
-        }
-    }
-    
     @objc
     private func checkMessage() {
-        if textField.text == nil || textField.text == "" {
-            return
-        }
-        sendMessage()
-    }
-    
-    @objc
-    private func showKeyboard(_ notification: Notification) {
-        guard let userInfo = notification.userInfo,
-              let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect else {return}
-        
-        let keyboardHeight = keyboardFrame.height
-        let viewYMax = view.frame.maxY
-        let safeAreaYMax = view.safeAreaLayoutGuide.layoutFrame.maxY
-        let height = viewYMax - safeAreaYMax
-        let offset = keyboardHeight - height
-        additionalSafeAreaInsets.bottom = offset
-        view.layoutIfNeeded()
-        scrollToLastRow()
-    }
-    
-    @objc
-    private func hideKeyboard(_ notification: Notification) {
-        additionalSafeAreaInsets.bottom = 0
-    }
-    
-    @objc
-    private func dismissKeyboard() {
-        view.endEditing(true)
+        !(textField.text == nil || textField.text == "") ? sendMessage() : ()
     }
     
     @objc
@@ -281,11 +194,17 @@ class ChannelViewController: UIViewController {
     
     @objc
     private func pickPhoto() {
+        view.endEditing(true)
         guard let navigationController = self.navigationController else {
             return
         }
         presenter?.showNetworkImages(navigationController: navigationController,
                                      vc: self)
+    }
+    
+    @objc
+    private func handlePanTouch(sender: UIPanGestureRecognizer) {
+        logoEmitterAnimation.setupPanGesture(sender: sender, view: self.view)
     }
     
     // MARK: - Setup UI
@@ -327,11 +246,11 @@ class ChannelViewController: UIViewController {
             textField.bottomAnchor.constraint(equalTo: textFieldView.bottomAnchor, constant: -5),
             textField.topAnchor.constraint(equalTo: textFieldView.topAnchor, constant: 5),
             textField.leadingAnchor.constraint(equalTo: choosePhotoButton.trailingAnchor),
-            textField.trailingAnchor.constraint(equalTo: textFieldView.trailingAnchor, constant: -10),
+            textField.trailingAnchor.constraint(equalTo: sendButton.leadingAnchor, constant: -5),
             
             sendButton.heightAnchor.constraint(equalTo: textFieldView.heightAnchor),
             sendButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
-            sendButton.trailingAnchor.constraint(equalTo: textField.trailingAnchor),
+            sendButton.trailingAnchor.constraint(equalTo: textFieldView.trailingAnchor),
             sendButton.widthAnchor.constraint(equalTo: textFieldView.heightAnchor),
             
             choosePhotoButton.centerYAnchor.constraint(equalTo: textField.centerYAnchor),
@@ -370,6 +289,7 @@ extension ChannelViewController: UITableViewDelegate {
         let blur = UIBlurEffect(style: .regular)
         let blurEffectView = UIVisualEffectView(effect: blur)
         blurEffectView.frame = CGRect(origin: .zero, size: CGSize(width: view.frame.width, height: tableView.estimatedSectionHeaderHeight))
+        blurEffectView.layer.cornerRadius = blurEffectView.frame.height / 2
         title.frame = blurEffectView.bounds
         blurEffectView.alpha = 0.6
         title.translatesAutoresizingMaskIntoConstraints = false
@@ -382,7 +302,7 @@ extension ChannelViewController: UITableViewDelegate {
         title.font = .systemFont(ofSize: 12)
         title.textAlignment = .center
         title.textColor = themeService.currentTheme.textColor
-        blurEffectView.contentView.backgroundColor = themeService.currentTheme.backgroundColor
+        blurEffectView.layoutIfNeeded()
         return blurEffectView
     }
 }
@@ -391,7 +311,7 @@ extension ChannelViewController: UITableViewDelegate {
 
 extension ChannelViewController: ChannelViewProtocol {
     func showChannel(channel: ChannelModel) {
-        setupSnapshot()
+        dataSource.setupSnapshot()
         channelName.text = channel.name
         channelLogo.image = channel.channelImage
         activityIndicator.stopAnimating()
@@ -399,13 +319,6 @@ extension ChannelViewController: ChannelViewProtocol {
     
     func addMessage(message: MessageModel) {
         messages.append(message)
-        var snapshot = dataSource.snapshot()
-        if snapshot.numberOfSections == 0 {
-            snapshot.appendSections([message.date])
-            snapshot.appendItems([message.uuid], toSection: message.date)
-        } else {
-            snapshot.appendItems([message.uuid])
-        }
         
         DispatchQueue.main.async { [weak self] in
             guard let self else {
@@ -414,11 +327,8 @@ extension ChannelViewController: ChannelViewProtocol {
             let formatter = DateFormatter()
             formatter.dateFormat = "dd.MM.yyyy"
             self.titlesSections.append(formatter.string(from: message.date))
-            self.dataSource.apply(snapshot, animatingDifferences: true)
-            let lastSectionNumber = self.tableView.numberOfSections - 1
-            let lastRowInSection = self.tableView.numberOfRows(inSection: lastSectionNumber) - 1
-            self.tableView.scrollToRow(at: IndexPath(item: lastRowInSection, section: lastSectionNumber ),
-                                                     at: .none, animated: true)
+            self.dataSource.addMessage(message: message)
+            self.scrollToLastRow()
         }
     }
     
@@ -431,10 +341,6 @@ extension ChannelViewController: ChannelViewProtocol {
             return
         }
         messages[index].image = image
-        var snapshot = dataSource.snapshot()
-        if id == snapshot.itemIdentifiers.first(where: { $0 == id }) {
-            snapshot.reloadItems([id])
-        }
-        dataSource.apply(snapshot)
+        dataSource.updateImage(id: id)
     }
 }

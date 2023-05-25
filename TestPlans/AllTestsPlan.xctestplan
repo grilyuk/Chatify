@@ -1,0 +1,31 @@
+{
+  "configurations" : [
+    {
+      "id" : "EF041119-E9CF-4414-AEF7-60C3D60ECA8B",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:ChatTFS.xcodeproj",
+        "identifier" : "5EBF42212A096A260093EAB3",
+        "name" : "ChatTFSUITests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:ChatTFS.xcodeproj",
+        "identifier" : "5E76BDAD2A087067004404A6",
+        "name" : "ChatTFSUnitTests"
+      }
+    }
+  ],
+  "version" : 1
+}

@@ -63,6 +63,7 @@ class OutgoingChannelViewCell: UITableViewCell {
         super.prepareForReuse()
         messageText.text = nil
         dateLabel.text = nil
+        imageMessage.image = nil
     }
     
     // MARK: - SetupUI

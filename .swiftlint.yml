@@ -1,7 +1,7 @@
 excluded:
   - Pods
-  - UnitTests
-  - UITests
+  - ChatTFSUnitTests
+  - ChatTFSUITests
   - DerivedData
 
 warning_threshold: 1
